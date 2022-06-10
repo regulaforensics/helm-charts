@@ -22,25 +22,4 @@ entries:
     urls:
     - https://github.com/regulaforensics/helm-charts/releases/download/docreader-0.1.1/docreader-0.1.1.tgz
     version: 0.1.1
-  - apiVersion: v2
-    appVersion: 6.4.163778.552
-    created: "2022-06-10T14:55:24.850835109Z"
-    description: Fast and accurate data extraction from identity documents. On-premise
-      and cloud integration
-    digest: 80f23715fa71a7088627c21a76069205bfd14242739ffb0a674313ca2b835f13
-    home: https://api.regulaforensics.com/
-    icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
-    keywords:
-    - regula
-    - docreader
-    - regulaforensics
-    maintainers:
-    - email: support@regulaforensics.com
-      name: Regula Forensics Support
-      url: https://support.regulaforensics.com
-    name: docreader
-    type: application
-    urls:
-    - https://github.com/regulaforensics/helm-charts/releases/download/docreader-0.1.0/docreader-0.1.0.tgz
-    version: 0.1.0
 generated: "2022-06-10T15:19:42.112093364Z"

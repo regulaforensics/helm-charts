@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "config" . }}
+data:
+  .env: |
+    {{- include "docreader.config" . | nindent 4 }}

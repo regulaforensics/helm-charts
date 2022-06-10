@@ -1,0 +1,4 @@
+.DS_Store
+.vscode
+charts/**/charts
+charts/**/test-values.yaml

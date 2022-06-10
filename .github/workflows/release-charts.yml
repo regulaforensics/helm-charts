@@ -4,9 +4,10 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 jobs:
-  release:
+  release-chart:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

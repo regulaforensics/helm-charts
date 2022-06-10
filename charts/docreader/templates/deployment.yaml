@@ -101,7 +101,7 @@ spec:
               mountPath: /app/certs
               readOnly: true
             {{- end }}
-            {{- if .Values.logs.persistence.accessMode }}
+            {{- if .Values.logs.persistence.enabled }}
             - name: logs
               mountPath: /app/logs
             {{- end }}

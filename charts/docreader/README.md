@@ -72,6 +72,14 @@ The command removes all the Kubernetes components associated with the chart and 
 | `logs.persistence.existingClaim`          | Use your own data Persistent Volume existing claim name   | ``                                          |
 | `rfidpkd.enabled`                         | Whether to enable RFID PA feature             | `false`                                                 |
 | `rfidpkd.existingClaim`                   | Provide Persistent Volume existing claim name prepopulated with RFID PA masterlists | `` mandatory if **rfidpkd.enabled** is set   |
+| `chipVerification.enabled`                | Whether to enable Chip verification feature   | `false`                                                 |
+| `minio.enabled`                           | Whether to enable Minio (required for Chip verification) | `false`                                      |
+| `minio.mode`                              | Minio mode                                    | `standalone`                                            |
+| `minio.rootUser`                          | Minio Root User                               | `regula`                                                |
+| `minio.rootPassword`                      | Minio Root Password                           | `Regulapasswd#1`                                        |
+| `minio.buckets.name`                      | Minio bucket name                             | `chip-verification-data`                                |
+| `minio.buckets.policy`                    | Minio bucket policy                           | `none`                                                  |
+| `minio.persistence.size`                  | Minio Volume size                             | `10Gi`                                                  |
 | `env`                                     | Additional environment variables              | `[]`                                                    |
 | `extraVolumes`                            | Additional Docreader volumes                  | `[]`                                                    |
 | `extraVolumeMounts`                       | Additional Docreader volume mounts            | `[]`                                                    |

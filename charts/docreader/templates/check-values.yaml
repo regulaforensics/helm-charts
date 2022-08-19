@@ -1,0 +1,26 @@
+{{/* The purpose of this yaml file is it to check the values file is consistent for some complexe combinations. */}}
+
+{{- /* HTTPS checks */ -}}
+{{- if .Values.https.enabled }}
+    {{- if not .Values.https.certificatesSecretName }}
+        {{ required "When 'HTTPS' mode is enabled, https.certificatesSecretName value should be set." nil }}
+    {{- end }}
+{{- end }}
+
+{{- /* RFID PKD PA checks */ -}}
+{{- if .Values.rfidpkd.enabled }}
+    {{- if not .Values.rfidpkd.existingClaim }}
+        {{ required "When 'rfidpkd' mode is enabled, https.existingClaim value should be set." nil }}
+    {{- end }}
+{{- end }}
+
+{{- /* Chip Verification checks */ -}}
+{{- if .Values.chipVerification.enabled }}
+    {{- if not .Values.minio.enabled }}
+        {{ required "When 'chipVerification' mode is enabled, minio.enabled value should be set." nil }}
+    {{- end }}
+{{- else -}}
+    {{- if .Values.minio.enabled }}
+        {{ required "When 'chipVerification' mode is not enabled, minio.enabled value should not be set." nil }}
+    {{- end }}
+{{- end }}

@@ -66,6 +66,18 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{ (printf "%s-config" .Release.Name) }}
 {{- end }}
 
+{{/* Minio endpoint */}}
+{{- define "chipVerification.storage_endpoint" -}}
+{{ default (printf "%s-minio:9000" .Release.Name) }}
+{{- end }}
+
+{{/* Minio bucket name */}}
+{{- define "minio.bucket_name" -}}
+{{- range .Values.minio.buckets -}}
+{{ .name }}
+{{- end }}
+{{- end }}
+
 
 {{/* User defined docreader environment variables */}}
 {{- define "docreader_envs" -}}

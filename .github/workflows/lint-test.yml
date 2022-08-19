@@ -10,7 +10,7 @@ on:
         type: string
       helm_version:
         description: version of the helm binary
-        default: v3.8.2
+        default: v3.9.2
         required: false
         type: string
 
@@ -36,7 +36,7 @@ jobs:
           python-version: 3.7
 
       - name: Set up chart-testing
-        uses: helm/chart-testing-action@v2.4.1
+        uses: helm/chart-testing-action@v2.2.1
 
       - name: Run chart-testing (list-changed)
         id: list-changed

@@ -4,4 +4,4 @@ on: pull_request
 
 jobs:
   call-lint-test:
-    uses: ./.github/workflows/lint-test.yaml
+    uses: ./.github/workflows/lint-test.yml

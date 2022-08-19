@@ -3,14 +3,19 @@
 apiVersion: v2
 name: docreader
 home: https://api.regulaforensics.com/
-version: 0.1.1
-appVersion: 6.4.163778.552
+version: 0.2.1
+appVersion: 6.5.172430.583
 description: Fast and accurate data extraction from identity documents. On-premise and cloud integration
 icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
 keywords:
   - regula
   - docreader
   - regulaforensics
+dependencies:
+  - name: minio
+    version: 4.0.7
+    repository: "https://charts.min.io/"
+    condition: minio.enabled
 maintainers:
   - email: support@regulaforensics.com
     name: Regula Forensics Support

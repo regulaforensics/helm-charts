@@ -62,6 +62,7 @@ general:
   # If you use your own TLS certs, place them in /etc/ssl/certs folder
   httpsProxy: ~
 
+
 # Supply the name of existing secret with regula.license file.
 # You can load it to a k8s generic secret via the following options:
 # 1. `kubectl create secret generic docreader-license -n namespace --from-file=regula.license`
@@ -99,6 +100,28 @@ https:
   # certificatesSecretName: certificates
   certificatesSecretName: ~
 
+
+rfidpkd:
+  enabled: false
+  # If enabled, Supply the name of an existing PVC with prepopulated PKD masterlists files.
+  existingClaim: ~
+
+
+chipVerification:
+  enabled: false
+
+minio:
+  enabled: false
+  mode: standalone
+  rootUser: regula
+  rootPassword: Regulapasswd#1
+  buckets:
+  - name: chip-verification-data
+    policy: none
+  persistence:
+    size: 10Gi
+
+
 cors:
   # No default, that means the web browser will allow requests to the web server from the same domain only
   origins: ~
@@ -106,6 +129,7 @@ cors:
   methods: ~
   # Default "*"
   headers: ~
+
 
 logs:
   level: "info"
@@ -128,11 +152,6 @@ logs:
     storageClassName:
     # If defined, PVC must be created manually before volume will be bound
     existingClaim:
-
-rfidpkd:
-  enabled: false
-  # If enabled, Supply the name of an existing PVC with prepopulated PKD masterlists files.
-  existingClaim: ~
 
 
 env: []

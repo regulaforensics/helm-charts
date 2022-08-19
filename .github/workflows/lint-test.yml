@@ -47,7 +47,7 @@ jobs:
           fi
 
       - name: Run chart-testing (lint)
-        run: ct lint --config "${CT_CONFIGFILE}"
+        run: ct lint --config "${CT_CONFIGFILE}" --validate-maintainers=false
 
       - name: Create kind cluster
         uses: helm/kind-action@v1.2.0

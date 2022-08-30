@@ -1,0 +1,282 @@
+# Default values for face-api.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicas: 1
+
+# Possible values: cpu (default) or gpu
+# gpu version requires nvidia gpu nodes
+# https://github.com/NVIDIA/k8s-device-plugin
+# Please mind, setting 'gpu' version also requires adding 'nvidia.com/gpu: 1' at the 'resources' section
+version: ~
+
+image:
+  # Image is also available at registry.connect.redhat.com/regulaforensics/face-api repository
+  repository: regulaforensics/face-api
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ~
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # Note, the "requests" section specifies the minimum resources required to run 1 pod with 1 worker on board
+  # Thus setting more workers would require to multiply resources respectively
+  # Also, the resources (both requests and limits) section is mandatory for autoscaling
+  # limits:
+  #   cpu: 2000m
+  #   memory: 2Gi
+  # requests:
+  #   cpu: 1000m
+  #   memory: 2Gi
+
+podAnnotations: {}
+podSecurityContext:
+  fsGroup: 0
+
+nameOverride: ""
+fullnameOverride: ""
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1001
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+
+general:
+  bind: "0.0.0.0:41101"
+  workers: 1
+  backlog: 15
+  timeout: 120
+  demoSite: true
+  # URL to regula.license file for further download, if the mount option is not available.
+  # The recommended way is to use Kubernetes generic secret
+  licenseUrl: ~
+  # Useful in closed perimeters
+  # HTTP proxy, used to connect to the license service. Do not specify protocol prefix in proxy URL.
+  # Use host:port without protocol specification
+  # If you use your own TLS certs, place them in /etc/ssl/certs folder
+  httpsProxy: ~
+
+# Supply the name of existing secret with regula.license file.
+# You can load it to a k8s generic secret via the following options:
+# 1. `kubectl create secret generic face-api-license -n namespace --from-file=regula.license`
+# 2. manifest file:
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: face-api-license
+# data:
+#   regula.license: <base64_encoded regula.license file content>
+# type: Opaque
+
+# licenseSecretName: face-api-license
+#
+licenseSecretName: ~
+
+
+# HTTPS mode
+# We recommend to expose service to public via Ingress
+https:
+  enabled: false
+  # If enabled, supply the name of existing secret with key/cert files.
+  # You can load it to a k8s tls secret via:
+  # 1. `kubectl create secret tls certificates --key="tls.key" --cert="tls.crt"`
+  # 2. manifest file:
+  # apiVersion: v1
+  # kind: Secret
+  # metadata:
+  #   name: certificates
+  # data:
+  #   tls.crt: <base64_encoded tls.crt file content>
+  #   tls.key: <base64_encoded tls.key file content>
+  # type: kubernetes.io/tls
+
+  # certificatesSecretName: certificates
+  certificatesSecretName: ~
+
+cors:
+  # No default, that means the web browser will allow requests to the web server from the same domain only
+  origins: ~
+  # Default "GET, HEAD, POST, OPTIONS, PUT, PATCH, DELETE"
+  methods: ~
+  # Default "*"
+  headers: ~
+
+
+# Enable identification module
+# Requires:
+# 1. PostgreSQL (postgresql.enabled=true OR externalPostgreSQL OR externalPostgreSQLSecret)
+# 2. Milvus (milvus.enabled=true)
+identification:
+  enabled: false
+  # s3 compaitable storage endpoint. Possible values: https://s3.amazonaws.com or http://host:port
+  storageEndpoint: ""
+  # e.g. AWS Access Key ID
+  storageAccessKey: minioadmin
+  # e.g. AWS Secret Access Key
+  storageSecretKey: minioadmin
+  # e.g. AWS Default region name
+  storageRegion: us-east-1
+  # If milvus.externalS3 values is set, please mind, bucket names must be unique across all AWS accounts (default value won't work)
+  # Bucket name for storing person data
+  storagePersonBucketName: faceapi-person
+  # If milvus.externalS3 values is set, please mind, bucket names must be unique across all AWS accounts (default value won't work)
+  # Bucket name for storing session data
+  storageSessionBucketName: faceapi-session
+  # Milvus Host (IP address or DNS). Defaults: namespace-milvus
+  milvusHost: ~
+  # Milvus Port. Defaults: 19530
+  milvusPort: 19530
+
+
+# External PostgreSQL configuration.
+# To use an external PostgreSQL instead of the automatically deployed postgresql chart:
+# 1. set postgresql.enabled to false
+# 2. uncomment and configure the externalPostgreSQL connection URL (e.g. postgresql://user:pass@host:5432/database)
+externalPostgreSQL:
+# Read external PostgreSQL configuration from a secret.
+# This should point at a secret file with a single key which specifyies the connection string.
+# Overrides any other PostgreSQL related values
+externalPostgreSQLSecret: {}
+  # name: face-api-postgres
+  # key: connectionString
+
+
+# Configuration for postgresql subchart
+# Not recommended for production
+postgresql:
+  enabled: false
+  postgresqlUsername: regula
+  postgresqlPassword: Regulapasswd#1
+  postgresqlDatabase: regula_db
+
+
+# Configuration for milvus subchart
+# Not recommended for production
+milvus:
+  enabled: false
+  cluster:
+    enabled: false
+  minio:
+    enabled: true
+    mode: standalone
+    accessKey: minioadmin
+    secretKey: minioadmin
+    persistence:
+      size: 10Gi
+  pulsar:
+    enabled: false
+  externalS3:
+    enabled: false
+    host: ""
+    port: ""
+    accessKey: ""
+    secretKey: ""
+    useSSL: false
+    bucketName: ""
+    rootPath: ""
+
+
+logs:
+  level: "info"
+  type:
+    accessLog: true
+    appLog: true
+    processLog:
+      enabled: true
+      saveResult: true
+  format: "text"
+
+  persistence:
+    # Enable persistent volume for storing logs (Access/App/Process)
+    enabled: false
+    # https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes
+    ## ReadWriteMany access mode required for face-api installation with multiple replicas.
+    accessMode: ReadWriteMany
+    # Volume size for logs
+    size: 10Gi
+    # If using a custom storageClass, pass name here
+    storageClassName:
+    # If defined, PVC must be created manually before volume will be bound
+    existingClaim:
+
+env: []
+# - name: ""
+#   value: ""
+
+
+# Mount additional volumes into face-api pod.
+extraVolumes: []
+extraVolumeMounts: []
+
+
+service:
+  type: ClusterIP
+  port: 80
+  ## service annotations
+  annotations: {}
+  # Optionally assign a known public LB IP
+  # loadBalancerIP: ~
+  # LoadBalancerSourcesRange is a list of allowed CIDR values, which are combined with ServicePort to
+  # set allowed inbound rules on the security group assigned to the master load balancer
+  # loadBalancerSourceRanges:
+  #   - "10.123.0.0/16"
+  loadBalancerSourceRanges: []
+
+
+ingress:
+  # Enable ingress resource
+  enabled: false
+  # The Ingress Class for the web Ingress (used only with Kubernetes v1.19 and above)
+  className: ""
+  # Annotations for the web Ingress
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  # The hostnames or hosts configuration for the web Ingress
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  # Enable TLS termination for the web Ingress
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+
+livenessProbe:
+  enabled: false
+  initialDelaySeconds: 5
+  periodSeconds: 30
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 5
+
+readinessProbe:
+  enabled: false
+  initialDelaySeconds: 5
+  periodSeconds: 20
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 5
+
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: ~

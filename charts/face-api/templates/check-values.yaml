@@ -1,0 +1,42 @@
+{{/* The purpose of this yaml file is it to check the values file is consistent for some complexe combinations. */}}
+
+{{- /* HTTPS checks */ -}}
+{{- if .Values.https.enabled }}
+    {{- if not .Values.https.certificatesSecretName }}
+        {{ required "When 'HTTPS' mode is enabled, .Values.https.certificatesSecretName value should be set." nil }}
+    {{- end }}
+{{- end }}
+
+{{- /* Identification related checks */ -}}
+
+{{- /* Ensure Identification is enabled if Milvus is enabled */ -}}
+{{- if and (not .Values.identification.enabled) .Values.milvus.enabled }}
+    {{ required "'Identification' module should be enabled before 'milvus.enabled' value is set." nil }}
+{{- end }}
+
+{{- /* Ensure Identification is enabled if PostgreSQL is enabled */ -}}
+{{- if and (not .Values.identification.enabled) (or .Values.postgresql.enabled .Values.identification.externalPostgreSQL .Values.identification.externalPostgreSQLSecret) }}
+    {{ required "'Identification' module should be enabled before 'postgresql.enabled' OR 'identification.externalPostgreSQL' OR 'identification.externalPostgreSQLSecret' value is set." nil }}
+{{- end }}
+
+{{- /* Ensure Identification related values are properly set */ -}}
+{{- if .Values.identification.enabled }}
+    {{- if not (or .Values.postgresql.enabled .Values.identification.externalPostgreSQL .Values.identification.externalPostgreSQLSecret) }}
+        {{ required "When 'Identification' module is enabled, 'postgresql.enabled' OR 'identification.externalPostgreSQL' OR 'identification.externalPostgreSQLSecret' value should be set." nil }}
+    {{- end }}
+    {{- if and .Values.identification.externalPostgreSQL .Values.identification.externalPostgreSQLSecret }}
+        {{ required "You must set one of the values identification.externalPostgreSQL OR identification.externalPostgreSQLSecret when using external postgreSQL." nil }}
+    {{- end }}
+    {{- if and .Values.postgresql.enabled (or .Values.identification.externalPostgreSQL .Values.identification.externalPostgreSQLSecret) }}
+        {{ required "You must enable only 'postgresql.enabled' or use externalPostgreSQL/externalPostgreSQLSecret at a time." nil }}
+    {{- end }}
+    {{- if (not .Values.milvus.enabled) }}
+        {{ required "When 'Identification' module is enabled, 'milvus.enabled' value should be set." nil }}
+    {{- end }}
+    {{- if .Values.milvus.enabled }}
+        {{- if and .Values.milvus.cluster.enabled (or (eq .Values.milvus.minio.mode "standalone") (not .Values.milvus.pulsar.enabled))  }}
+            {{ required "When 'milvus.cluster.enabled' is set, ensure 'milvus.minio.mode' value is set to 'distributed' and 'milvus.pulsar.enabled' is set." nil }}
+        {{- end }}
+    {{- end }}
+{{- end }}
+

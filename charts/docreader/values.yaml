@@ -42,6 +42,8 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1001
 
+# priorityClassName: ""
+
 nodeSelector: {}
 tolerations: []
 affinity: {}

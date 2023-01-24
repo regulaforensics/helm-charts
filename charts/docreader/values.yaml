@@ -43,8 +43,18 @@ securityContext: {}
   # runAsUser: 1001
 
 nodeSelector: {}
-tolerations: []
+priorityClassName: ~
 affinity: {}
+tolerations: []
+topologySpreadConstraints: []
+
+# Docreader pod disruption budget
+podDisruptionBudget:
+  enabled: false
+
+  # PDB configuration
+  config:
+    maxUnavailable: 1
 
 
 general:

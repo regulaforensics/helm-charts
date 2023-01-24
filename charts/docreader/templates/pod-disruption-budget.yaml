@@ -1,0 +1,21 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+kind: PodDisruptionBudget
+{{- if semverCompare ">= 1.21.x" .Capabilities.KubeVersion.GitVersion }}
+apiVersion: policy/v1
+{{- else }}
+apiVersion: policy/v1beta1
+{{- end }}
+metadata:
+  name: {{ include "docreader.fullname" . }}
+  labels:
+    {{- include "docreader.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "docreader.selectorLabels" . | nindent 6 }}
+{{ toYaml .Values.podDisruptionBudget.config | indent 2 }}
+{{- end }}

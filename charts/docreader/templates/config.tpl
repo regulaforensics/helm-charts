@@ -11,7 +11,7 @@ DOCREADER_ENABLE_DEMO_WEB_APP="{{ .Values.general.demoSite }}"
 DOCREADER_LIC_URL="{{ .Values.general.licenseUrl }}"
 {{- end }}
 {{- if .Values.general.httpsProxy }}
-DOCREADER_HTTPS_PROXY="{{ .Values.general.httpsProxy }}"
+HTTPS_PROXY="{{ .Values.general.httpsProxy }}"
 {{- end }}
 
 # HTTPS

@@ -42,7 +42,7 @@ The command removes all the Kubernetes components associated with the chart and 
 |-------------------------------------------|-----------------------------------------------|---------------------------------------------------------|
 | `replicas`                                | Number of nodes                               | `1`                                                     |
 | `image.repository`                        | Image repository                              | `regulaforensics/docreader`                             |
-| `image.tag`                               | Overrides the Docreader image tag whose defaultis the chart appVersion    | ``                              |
+| `image.tag`                               | Overrides the Docreader image tag whose defaultis the chart appVersion    | ``                          |
 | `image.pullPolicy`                        | Image pull policy                             | `IfNotPresent`                                          |
 | `imagePullSecrets`                        | Image pull secrets                            | `[]`                                                    |
 | `resources`                               | CPU/Memory resource requests/limits           | `{}`                                                    |
@@ -53,11 +53,13 @@ The command removes all the Kubernetes components associated with the chart and 
 | `general.demoSite`                        | Serve a demo web app                          | `true`                                                  |
 | `general.licenseUrl`                      | URL to regula.license file for further download   | ``                                                  |
 | `general.httpsProxy`                      | HTTP proxy, used to connect to the license service    | ``                                              |
+| `general.returnSystemInfo`                | Return system information in the /api/ping & /api/process response    | `true`                          |
+| `general.config`                          | Docreader application config                  | ``                                                      |
 | `licenseSecretName`                       | The name of an existing secret containing the regula.license file | ``                                  |
 | `https.enabled`                           | Enables https server mode                     | `[]`                                                    |
 | `https.certificatesSecretName`            | The name of an existing secret containing the cert/key files reuired for https | `` mandatory if **https.enabled**  is set    |
 | `cors.origins`                            | Origin, allowed to use API                    | no default, that means the web browser will allow requests to the web server from the same domain only    |
-| `cors.methods`                            | Methods, allowed to invoke on the API         | `"GET, HEAD, POST, OPTIONS, PUT, PATCH, DELETE"` |
+| `cors.methods`                            | Methods, allowed to invoke on the API         | `"GET, HEAD, POST, OPTIONS, PUT, PATCH, DELETE"`        |
 | `cors.headers`                            | Headers, allowed to read from the API         | `*` Specify comma-separated values as a single string (ex. "content-type,date")   |
 | `logs.level`                              | Specify application logs level                | `info` Possible values: "error", "warn", "info", "debug"|
 | `logs.type.accessLog`                     | Whether to save access logs to a file         | `true`                                                  |

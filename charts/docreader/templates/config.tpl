@@ -13,6 +13,9 @@ DOCREADER_LIC_URL="{{ .Values.general.licenseUrl }}"
 {{- if .Values.general.httpsProxy }}
 HTTPS_PROXY="{{ .Values.general.httpsProxy }}"
 {{- end }}
+{{- if .Values.general.returnSystemInfo }}
+REGULA_RETURN_SYSTEMINFO="{{ .Values.general.returnSystemInfo }}"
+{{- end }}
 
 # HTTPS
 DOCREADER_HTTPS="{{ .Values.https.enabled }}"

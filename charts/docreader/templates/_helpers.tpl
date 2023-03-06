@@ -61,9 +61,14 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 
-{{/* Config map name */}}
+{{/* Config configmap name */}}
 {{- define "config" -}}
 {{ (printf "%s-config" .Release.Name) }}
+{{- end }}
+
+{{/* Dodcreader config configmap name */}}
+{{- define "docreader-config" -}}
+{{ (printf "%s-docreader-config" .Release.Name) }}
 {{- end }}
 
 {{/* Minio endpoint */}}

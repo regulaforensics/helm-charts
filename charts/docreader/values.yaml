@@ -71,7 +71,17 @@ general:
   # Use host:port without protocol specification
   # If you use your own TLS certs, place them in /etc/ssl/certs folder
   httpsProxy: ~
-
+  # Return system information in the /api/ping response and in the /api/process response.
+  returnSystemInfo: true
+  # Docreader application config content
+  config: ~
+  # config: |
+  #   sdk:
+  #     rfid:
+  #       paSensitive:
+  #         - 1
+  #         - 2
+  #         - 3
 
 # Supply the name of existing secret with regula.license file.
 # You can load it to a k8s generic secret via the following options:

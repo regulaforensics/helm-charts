@@ -15,6 +15,7 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/docreader-config: {{ include (print $.Template.BasePath "/docreader-config-configmap.yaml") . | sha256sum }}
         {{- if .Values.podAnnotations }}
         {{- toYaml .Values.podAnnotations | nindent 8 }}
         {{- end }}
@@ -97,6 +98,12 @@ spec:
               mountPath: /app/.env
               subPath: .env
               readOnly: true
+            {{- if .Values.general.config }}
+            - name: docreader-config
+              mountPath: /app/extBin/unix_x64/config.yaml
+              subPath: config.yaml
+              readOnly: true
+            {{- end }}
             {{- if .Values.licenseSecretName }}
             - name: license
               mountPath: /app/extBin/unix_x64/regula.license
@@ -123,6 +130,11 @@ spec:
         - name: config
           configMap:
             name: {{ template "config" . }}
+        {{- if .Values.general.config }}
+        - name: docreader-config
+          configMap:
+            name: {{ template "docreader-config" . }}
+        {{- end }}
         {{- if .Values.licenseSecretName }}
         - name: license
           secret:

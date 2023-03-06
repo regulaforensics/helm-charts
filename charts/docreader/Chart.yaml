@@ -3,8 +3,8 @@
 apiVersion: v2
 name: docreader
 home: https://api.regulaforensics.com/
-version: 0.3.0
-appVersion: 6.6.195086.606
+version: 0.4.0
+appVersion: 6.7.201541.621
 description: Fast and accurate data extraction from identity documents. On-premise and cloud integration
 icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
 keywords:

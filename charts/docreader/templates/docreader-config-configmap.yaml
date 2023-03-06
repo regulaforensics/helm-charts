@@ -1,0 +1,9 @@
+{{- if .Values.general.config }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "docreader-config" . }}
+data:
+  config.yaml: |
+    {{- tpl .Values.general.config . | nindent 4 }}
+{{- end }}

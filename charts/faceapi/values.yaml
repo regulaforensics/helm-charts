@@ -103,7 +103,7 @@ https:
   enabled: false
   # If enabled, supply the name of existing secret with key/cert files.
   # You can load it to a k8s tls secret via:
-  # 1. `kubectl create secret tls certificates --key="tls.key" --cert="tls.crt"`
+  # 1. `kubectl create secret tls certificates -n namespace --key="tls.key" --cert="tls.crt"`
   # 2. manifest file:
   # apiVersion: v1
   # kind: Secret

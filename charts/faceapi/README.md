@@ -46,7 +46,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `image.pullPolicy`                        | Image pull policy                             | `IfNotPresent`                                            |
 | `imagePullSecrets`                        | Image pull secrets                            | `[]`                                                      |
 | `resources`                               | CPU/Memory resource requests/limits           | `{}`                                                      |
-| `general.bind`                            | IpAddress:port server binding                 | `0.0.0.0:8080`                                            |
+| `general.bind`                            | IpAddress:port server binding                 | `0.0.0.0:41101`                                            |
 | `general.workers`                         | Number of workers per pod                     | `1`                                                       |
 | `general.backlog`                         | Maximum number of requests in a queue awaiting processing | `15`                                          |
 | `general.timeout`                         | Number of seconds for the worker to process the request   | `120`                                         |

@@ -201,7 +201,7 @@ postgresql:
 
 # Configuration for milvus subchart
 # For advanced Milvus configuration please referer to the official documentation
-# ref: https://github.com/milvus-io/milvus-helm/tree/milvus-4.0.6/charts/milvus#milvus-helm-chart
+# ref: https://github.com/milvus-io/milvus-helm/tree/milvus-4.0.8/charts/milvus#milvus-helm-chart
 milvus:
   enabled: false
 

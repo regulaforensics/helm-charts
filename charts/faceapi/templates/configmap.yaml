@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "faceapi.config.name" . }}
+data:
+  .env: |
+    {{- include "faceapi.config" . | nindent 4 }}

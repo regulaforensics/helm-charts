@@ -1,0 +1,136 @@
+{{ $scheme := "http" }}
+{{- if .Values.https.enabled }}
+{{ $scheme = "https" }}
+{{ end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "faceapi.fullname" . }}
+  labels:
+    {{- include "faceapi.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicas }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "faceapi.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- if .Values.podAnnotations }}
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "faceapi.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}-{{ template "version" . }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: faceapi
+              containerPort: 41101
+              protocol: TCP
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /api/ping
+              port: faceapi
+              scheme: {{ $scheme }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: /api/ping
+              port: faceapi
+              scheme: {{ $scheme }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            {{- include "faceapi.postgresql.secret" . | indent 10 }}
+            {{- include "faceapi.envs" . | indent 10 }}
+          volumeMounts:
+            - name: faceapi-config
+              mountPath: /app/.env
+              subPath: .env
+              readOnly: true
+            {{- if .Values.licenseSecretName }}
+            - name: license
+              mountPath: /app/extBin/unix_x64/{{ template "version" . }}/regula.license
+              subPath: regula.license
+              readOnly: true
+            {{- end }}
+            {{- if .Values.https.certificatesSecretName }}
+            - name: certificates
+              mountPath: /app/certs
+              readOnly: true
+            {{- end }}
+            {{- if .Values.logs.persistence.enabled }}
+            - name: logs
+              mountPath: /app/logs
+            {{- end }}
+{{- if .Values.extraVolumeMounts }}
+{{ toYaml .Values.extraVolumeMounts | indent 12 }}
+{{- end }}
+      volumes:
+        - name: faceapi-config
+          configMap:
+            name: {{ template "faceapi.config.name" . }}
+        {{- if .Values.licenseSecretName }}
+        - name: license
+          secret:
+            secretName: {{ template "faceapi.license.secret" . }}
+        {{- end }}
+        {{- if .Values.https.certificatesSecretName }}
+        - name: certificates
+          secret:
+            secretName: {{ template "faceapi.certificate.secret" . }}
+        {{- end }}
+        {{- if .Values.logs.persistence.enabled }}
+        - name: logs
+          persistentVolumeClaim:
+            claimName: {{ template "faceapi.logs.pvc" . }}
+        {{- end }}
+{{- if .Values.extraVolumes }}
+{{ toYaml .Values.extraVolumes | indent 8 }}
+{{- end }}

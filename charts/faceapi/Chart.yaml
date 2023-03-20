@@ -1,0 +1,28 @@
+# apiVersion v2 is Helm 3
+---
+apiVersion: v2
+name: faceapi
+home: https://faceapi.regulaforensics.com/
+version: 0.1.0
+appVersion: 5.1.195.472
+description: Face Recognition Service. On-premise and cloud integration
+icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
+keywords:
+  - regula
+  - faceapi
+  - face-api
+  - regulaforensics
+dependencies:
+  - name: postgresql
+    version: 11.9.13
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+  - name: milvus
+    version: 4.0.8
+    repository: "https://milvus-io.github.io/milvus-helm"
+    condition: milvus.enabled
+maintainers:
+  - email: support@regulaforensics.com
+    name: Regula Forensics Support
+    url: https://support.regulaforensics.com
+type: application

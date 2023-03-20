@@ -126,4 +126,35 @@ entries:
     urls:
     - https://github.com/regulaforensics/helm-charts/releases/download/docreader-0.1.1/docreader-0.1.1.tgz
     version: 0.1.1
-generated: "2023-03-06T20:07:25.699258874Z"
+  faceapi:
+  - apiVersion: v2
+    appVersion: 5.1.195.472
+    created: "2023-03-20T13:40:48.571556047Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 11.9.13
+    - condition: milvus.enabled
+      name: milvus
+      repository: https://milvus-io.github.io/milvus-helm
+      version: 4.0.8
+    description: Face Recognition Service. On-premise and cloud integration
+    digest: dc5a56cae5976bfd3e53a4aa7785823859ce451de777150c5a32d26a7811a71e
+    home: https://faceapi.regulaforensics.com/
+    icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
+    keywords:
+    - regula
+    - faceapi
+    - face-api
+    - regulaforensics
+    maintainers:
+    - email: support@regulaforensics.com
+      name: Regula Forensics Support
+      url: https://support.regulaforensics.com
+    name: faceapi
+    type: application
+    urls:
+    - https://github.com/regulaforensics/helm-charts/releases/download/faceapi-0.1.0/faceapi-0.1.0.tgz
+    version: 0.1.0
+generated: "2023-03-20T13:40:48.571724746Z"

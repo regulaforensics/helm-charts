@@ -155,7 +155,7 @@ liveness:
 
 
 storage:
-  # s3 compaitable storage endpoint. Possible values: https://s3.amazonaws.com or http://host:port1
+  # s3 compaitable storage endpoint. Possible values: https://s3.amazonaws.com or http://host:port
   endpoint: ~
   # e.g. AWS Access Key ID
   accessKey: ~

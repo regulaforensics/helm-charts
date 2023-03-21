@@ -84,7 +84,6 @@ FACEAPI_STORAGE_ENDPOINT="{{ template "faceapi.storage.endpoint" . }}"
 FACEAPI_STORAGE_ACCESS_KEY="{{ default "minioadmin" .Values.storage.accessKey }}"
 FACEAPI_STORAGE_SECRET_KEY="{{ default "minioadmin" .Values.storage.secretKey }}"
 FACEAPI_STORAGE_REGION="{{ default "us-east-1" .Values.storage.region }}"
-FACEAPI_STORAGE_PERSON_BUCKET_NAME="{{ default "faceapi-person" .Values.storage.personBucketName }}"
 FACEAPI_STORAGE_SESSION_BUCKET_NAME="{{ default "faceapi-session" .Values.storage.sessionBucketName }}"
 {{- end }}
 

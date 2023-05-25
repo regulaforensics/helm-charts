@@ -76,7 +76,7 @@ spec:
           {{- if .Values.readinessProbe.enabled }}
           readinessProbe:
             httpGet:
-              path: /api/ping
+              path: /api/readiness
               port: docreader
               {{- if .Values.https.enabled }}
               scheme: HTTPS

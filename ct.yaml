@@ -8,4 +8,4 @@ chart-repos:
   - milvus=https://milvus-io.github.io/milvus-helm
 check-version-increment: false
 helm-extra-set-args: >-
-  --set=readinessProbe.enabled=false
+  --set readinessProbe.enabled=false

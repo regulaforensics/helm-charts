@@ -18,7 +18,10 @@ REGULA_RETURN_SYSTEMINFO="{{ .Values.general.returnSystemInfo }}"
 {{- end }}
 
 # HTTPS
+{{- if .Values.https.enabled }}
 DOCREADER_HTTPS="{{ .Values.https.enabled }}"
+DOCREADER_TLS_VERSION="{{ default "1.2" .Values.https.tlsVersion }}"
+{{- end }}
 
 # CORS
 {{- if .Values.cors.origins }}

@@ -119,6 +119,9 @@ https:
 
   # certificatesSecretName: certificates
   certificatesSecretName: ~
+  # Specifies the version of the TLS (Transport Layer Security) protocol to use for secure connections within the application.
+  # String type, accepts the following available versions of TLS: 1.0, 1.1, 1.2, 1.3
+  tlsVersion: ~
 
 
 rfidpkd:

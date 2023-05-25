@@ -7,5 +7,5 @@ chart-repos:
   - minio=https://charts.min.io/
   - milvus=https://milvus-io.github.io/milvus-helm
 check-version-increment: false
-helm-extra-args: >-
-  --set readinessProbe.enabled=false
+helm-extra-set-args: >-
+  --set=readinessProbe.enabled=false

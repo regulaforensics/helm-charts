@@ -2,6 +2,32 @@ apiVersion: v1
 entries:
   docreader:
   - apiVersion: v2
+    appVersion: 6.8.214700.665
+    created: "2023-05-25T18:24:57.770226235Z"
+    dependencies:
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.min.io/
+      version: 4.0.7
+    description: Fast and accurate data extraction from identity documents. On-premise
+      and cloud integration
+    digest: f9af60239b711d2551c55a7021aa68e5f035a3b3deb4c507086a715fa155e094
+    home: https://api.regulaforensics.com/
+    icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
+    keywords:
+    - regula
+    - docreader
+    - regulaforensics
+    maintainers:
+    - email: support@regulaforensics.com
+      name: Regula Forensics Support
+      url: https://support.regulaforensics.com
+    name: docreader
+    type: application
+    urls:
+    - https://github.com/regulaforensics/helm-charts/releases/download/docreader-0.5.0/docreader-0.5.0.tgz
+    version: 0.5.0
+  - apiVersion: v2
     appVersion: 6.7.201541.621
     created: "2023-03-06T20:07:25.699239374Z"
     dependencies:
@@ -187,4 +213,4 @@ entries:
     urls:
     - https://github.com/regulaforensics/helm-charts/releases/download/faceapi-0.1.0/faceapi-0.1.0.tgz
     version: 0.1.0
-generated: "2023-03-21T15:05:11.279915819Z"
+generated: "2023-05-25T18:24:57.770249534Z"

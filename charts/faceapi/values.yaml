@@ -26,12 +26,9 @@ resources: {}
   # Note, the "requests" section specifies the minimum resources required to run 1 pod with 1 worker on board
   # Thus setting more workers would require to multiply resources respectively
   # Also, the resources (both requests and limits) section is mandatory for autoscaling
-  # limits:
-  #   cpu: 2000m
-  #   memory: 2Gi
   # requests:
   #   cpu: 1000m
-  #   memory: 2Gi
+  #   memory: 3Gi
 
 podAnnotations: {}
 podSecurityContext:

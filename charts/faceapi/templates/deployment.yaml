@@ -1,7 +1,3 @@
-{{ $scheme := "http" }}
-{{- if .Values.https.enabled }}
-{{ $scheme = "https" }}
-{{ end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -65,7 +61,11 @@ spec:
             httpGet:
               path: /api/ping
               port: faceapi
-              scheme: {{ $scheme }}
+              {{- if .Values.https.enabled }}
+              scheme: HTTPS
+              {{- else }}
+              scheme: HTTP
+              {{- end }}
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
@@ -75,9 +75,13 @@ spec:
           {{- if .Values.readinessProbe.enabled }}
           readinessProbe:
             httpGet:
-              path: /api/ping
+              path: /api/readiness
               port: faceapi
-              scheme: {{ $scheme }}
+              {{- if .Values.https.enabled }}
+              scheme: HTTPS
+              {{- else }}
+              scheme: HTTP
+              {{- end }}
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}

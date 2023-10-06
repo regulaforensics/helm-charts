@@ -5,5 +5,5 @@ chart-dirs:
 chart-repos:
   - bitnami=https://charts.bitnami.com/bitnami
   - minio=https://charts.min.io/
-  - milvus=https://milvus-io.github.io/milvus-helm
+  - milvus=https://zilliztech.github.io/milvus-helm
 check-version-increment: false

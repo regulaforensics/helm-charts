@@ -3,7 +3,7 @@ dependencies:
   repository: https://charts.bitnami.com/bitnami
   version: 11.9.13
 - name: milvus
-  repository: https://milvus-io.github.io/milvus-helm
+  repository: https://zilliztech.github.io/milvus-helm
   version: 4.0.8
-digest: sha256:b2ebbf0c4b986b22af74fe72f97b98422ae397d6ed684e9b6934cd909d4a96bf
-generated: "2023-03-07T13:05:47.703494171+03:00"
+digest: sha256:41ad54854aeba3672b81066ec404d0586b3d9b33b9201690e184906a042b6e58
+generated: "2023-10-06T10:01:03.748477156+03:00"

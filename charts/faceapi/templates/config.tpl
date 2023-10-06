@@ -20,14 +20,16 @@ REGULA_RETURN_SYSTEMINFO="{{ .Values.general.returnSystemInfo }}"
 # HTTPS
 FACEAPI_HTTPS="{{ .Values.https.enabled }}"
 
-# CORS
 {{- if .Values.cors.origins }}
+# CORS ORIGINS
 FACEAPI_CORS_ORIGINS="{{ .Values.cors.origins }}"
 {{- end }}
 {{- if .Values.cors.methods }}
+# CORS METHODS
 FACEAPI_CORS_METHODS="{{ .Values.cors.methods }}"
 {{- end }}
 {{- if .Values.cors.headers }}
+# CORS HEADERS
 FACEAPI_CORS_HEADERS="{{ .Values.cors.headers }}"
 {{- end }}
 
@@ -38,6 +40,9 @@ FACEAPI_PROCESS_RESULTS_LOG_FILE="{{ .Values.logs.type.processLog.enabled }}"
 FACEAPI_LOGS_PROCESS_SAVE_RESULT="{{ .Values.logs.type.processLog.saveResult }}"
 FACEAPI_LOGS_LEVEL="{{ .Values.logs.level }}"
 FACEAPI_LOGS_FORMATTER="{{ .Values.logs.format }}"
+
+# Prometheus
+FACEAPI_ENABLE_PROMETHEUS_METRICS="{{ .Values.metrics.enabled }}"
 
 {{- if .Values.identification.enabled }}
 # Identification
@@ -87,8 +92,9 @@ FACEAPI_STORAGE_REGION="{{ default "us-east-1" .Values.storage.region }}"
 FACEAPI_STORAGE_SESSION_BUCKET_NAME="{{ default "faceapi-session" .Values.storage.sessionBucketName }}"
 {{- end }}
 
-# PostgreSQL
+
 {{- if and .Values.externalPostgreSQL (not .Values.postgresql.enabled) }}
+# PostgreSQL
 ## Please mind if externalPostgreSQLSecret value is set, it overrides any other PostgreSQL related values
 FACEAPI_SQL_URL="{{ .Values.externalPostgreSQL }}"
 {{- else if .Values.postgresql.enabled }}

@@ -1,0 +1,30 @@
+{{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "faceapi.fullname" . }}
+  labels:
+{{ include "faceapi.labels" . | indent 4 }}
+    {{- if .Values.metrics.serviceMonitor.additionalLabels }}
+{{ toYaml .Values.metrics.serviceMonitor.additionalLabels | indent 4 }}
+    {{- end }}
+    component: "faceapi"
+spec:
+  endpoints:
+    - honorLabels: true
+      interval: {{ .Values.metrics.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout }}
+      path: /metrics
+      port: faceapi
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+{{ include "faceapi.matchLabels" . | indent 6 }}
+      component: faceapi
+  targetLabels:
+    - app.kubernetes.io/name
+    - app.kubernetes.io/instance
+    - component
+{{- end }}

@@ -122,6 +122,16 @@ cors:
   # Default "*"
   headers: ~
 
+metrics:
+  enabled: true
+
+  serviceMonitor:
+    # Set this to `true` to create ServiceMonitor for Prometheus operator
+    enabled: false
+    interval: "30s"
+    scrapeTimeout: "10s"
+    # Additional labels that can be used so ServiceMonitor will be discovered by Prometheus
+    additionalLabels: {}
 
 # Enable Identification module
 # Requires:

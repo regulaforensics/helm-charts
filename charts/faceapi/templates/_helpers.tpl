@@ -40,11 +40,19 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 
+{{/* matchLabels */}}
+{{- define "faceapi.matchLabels" -}}
+app.kubernetes.io/name: {{ include "faceapi.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end -}}
+
+
 {{/* Selector labels */}}
 {{- define "faceapi.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "faceapi.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
 
 {{/* Version name */}}
 {{- define "version" -}}

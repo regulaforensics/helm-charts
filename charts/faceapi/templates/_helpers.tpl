@@ -84,10 +84,10 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 
 {{/* User defined faceapi environment variables */}}
 {{- define "faceapi.envs" -}}
-  {{- range $i, $config := .Values.env }}
-  - name: {{ $config.name }}
-    value: {{ $config.value | quote }}
-  {{- end }}
+{{- range $i, $config := .Values.env }}
+- name: {{ $config.name }}
+  value: {{ $config.value | quote }}
+{{- end }}
 {{- end }}
 
 

@@ -13,14 +13,3 @@
         {{ required "When 'rfidpkd' mode is enabled, https.existingClaim value should be set." nil }}
     {{- end }}
 {{- end }}
-
-{{- /* Chip Verification checks */ -}}
-{{- if .Values.chipVerification.enabled }}
-    {{- if not .Values.minio.enabled }}
-        {{ required "When 'chipVerification' mode is enabled, minio.enabled value should be set." nil }}
-    {{- end }}
-{{- else -}}
-    {{- if .Values.minio.enabled }}
-        {{ required "When 'chipVerification' mode is not enabled, minio.enabled value should not be set." nil }}
-    {{- end }}
-{{- end }}

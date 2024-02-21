@@ -1,0 +1,20 @@
+{{- if and (eq .Values.config.service.storage.type "fs") .Values.config.service.sessionApi.enabled .Values.config.service.sessionApi.transactions.persistence.enabled (not .Values.config.service.sessionApi.transactions.persistence.existingClaim) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ template "docreader.sessionApi.transactions.pvc" . }}
+  labels: {{- include "docreader.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.config.service.sessionApi.transactions.persistence.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.config.service.sessionApi.transactions.persistence.size | quote }}
+  {{- if .Values.config.service.sessionApi.transactions.storageClassName }}
+  {{- if (eq "-" .Values.config.service.sessionApi.transactions.storageClassName) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: "{{ .Values.config.service.sessionApi.transactions.storageClassName }}"
+  {{- end }}
+  {{- end }}
+{{- end }}

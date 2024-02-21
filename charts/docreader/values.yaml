@@ -5,20 +5,23 @@
 replicas: 1
 
 image:
-  # Image is also available at registry.connect.redhat.com/regulaforensics/docreader repository
+  # Image is also available at the registry.connect.redhat.com/regulaforensics/docreader repository
   repository: regulaforensics/docreader
   # Overrides the image tag whose default is the chart appVersion.
   tag: ~
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # Note, the "requests" section specifies the minimum resources required to run 1 pod with 1 worker on board
-  # Thus setting more workers would require to multiply resources respectively
+  # Note, the "requests" section specifies the minimum resources required to run 1 pod with 1 worker on board.
+  # Thus setting more workers would require to multiply resources respectively.
   # Also, the resources (both requests and limits) section is mandatory for autoscaling
   # limits:
   #   cpu: 2000m
@@ -26,13 +29,6 @@ resources: {}
   # requests:
   #   cpu: 1000m
   #   memory: 2Gi
-
-podAnnotations: {}
-podSecurityContext:
-  fsGroup: 0
-
-nameOverride: ""
-fullnameOverride: ""
 
 securityContext: {}
   # capabilities:
@@ -42,150 +38,187 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1001
 
-nodeSelector: {}
+podSecurityContext:
+  fsGroup: 0
+
 priorityClassName: ~
+
+terminationGracePeriodSeconds: ~
+
+lifecycle: {}
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "sleep 45"]
+
+nodeSelector: {}
+
 affinity: {}
+
 tolerations: []
+
 topologySpreadConstraints: []
+
+podAnnotations: {}
 
 # Docreader pod disruption budget
 podDisruptionBudget:
   enabled: false
-
   # PDB configuration
   config:
+    # minAvailable and maxUnavailable cannot be both set
     maxUnavailable: 1
+    minAvailable: ~
 
-
-general:
-  bind: "0.0.0.0:8080"
-  workers: 1
-  backlog: 15
-  timeout: 120
-  demoSite: true
-  # URL to regula.license file for further download, if the mount option is not available.
-  # The recommended way is to use Kubernetes generic secret
-  licenseUrl: ~
-  # Useful in closed perimeters
-  # HTTP proxy, used to connect to the license service. Do not specify protocol prefix in proxy URL.
-  # Use host:port without protocol specification
-  # If you use your own TLS certs, place them in /etc/ssl/certs folder
-  httpsProxy: ~
-  # Return system information in the /api/ping response and in the /api/process response.
-  returnSystemInfo: true
-  # Docreader application config content
-  config: ~
-  # config: |
-  #   sdk:
-  #     rfid:
-  #       paSensitive:
-  #         - 1
-  #         - 2
-  #         - 3
-
-# Supply the name of existing secret with regula.license file.
-# You can load it to a k8s generic secret via the following options:
-# 1. `kubectl create secret generic docreader-license -n namespace --from-file=regula.license`
-# 2. manifest file:
-# apiVersion: v1
-# kind: Secret
-# metadata:
-#   name: docreader-license
-# data:
-#   regula.license: <base64_encoded regula.license file content>
-# type: Opaque
-
-# licenseSecretName: docreader-license
+# Supply the name of existing secret with the regula.license file.
+# You can load it to a k8s generic secret via the following command:
+# `kubectl create secret generic docreader-license -n <namespace> --from-file=regula.license`
 #
+# licenseSecretName: docreader-license
 licenseSecretName: ~
 
+config:
+  sdk:
+    systemInfo:
+      # Returns system information in the /api/ping response and in the /api/process response.
+      returnSystemInfo: true
 
-# HTTPS mode
-# We recommend to expose service to public via Ingress
-https:
-  enabled: false
-  # If enabled, supply the name of existing secret with key/cert files.
-  # You can load it to a k8s tls secret via:
-  # 1. `kubectl create secret tls certificates --key="tls.key" --cert="tls.crt"`
-  # 2. manifest file:
-  # apiVersion: v1
-  # kind: Secret
-  # metadata:
-  #   name: certificates
-  # data:
-  #   tls.crt: <base64_encoded tls.crt file content>
-  #   tls.key: <base64_encoded tls.key file content>
-  # type: kubernetes.io/tls
-
-  # certificatesSecretName: certificates
-  certificatesSecretName: ~
-  # Specifies the version of the TLS (Transport Layer Security) protocol to use for secure connections within the application.
-  # String type, accepts the following available versions of TLS: 1.0, 1.1, 1.2, 1.3
-  tlsVersion: ~
+    rfid:
+      enabled: false
+      chipVerification:
+        enabled: false
+      pkdPaPath: "/app/pkdPa"
+      paSensitiveCodes: []
+      persistence:
+        # Enable persistent volume for storing PKD masterlists files
+        enabled: false
+        accessMode: ReadWriteMany
+        storageClassName: ~
+        existingClaim: ~
 
 
-rfidpkd:
-  enabled: false
-  # If enabled, Supply the name of an existing PVC with prepopulated PKD masterlists files.
-  existingClaim: ~
+  service:
+    webServer:
+      port: 8080
+      workers: 1
+      timeout: 30
 
+      demoApp:
+        enabled: true
 
-chipVerification:
-  enabled: false
+      cors:
+        origins: "*"
+        headers: "*"
+        methods: "POST,PUT,GET,DELETE,PATCH,HEAD,OPTIONS"
 
-minio:
-  enabled: false
-  mode: standalone
-  rootUser: regula
-  rootPassword: Regulapasswd#1
-  buckets:
-  - name: chip-verification-data
-    policy: none
-  persistence:
-    size: 10Gi
+      logging:
+        level: "INFO"
+        formatter: text
 
+        access:
+          console: true
+          path: "logs/access/docreader-access.log"
+        app:
+          console: true
+          path: "logs/app/docreader-app.log"
 
-cors:
-  # No default, that means the web browser will allow requests to the web server from the same domain only
-  origins: ~
-  # Default "GET, HEAD, POST, OPTIONS, PUT, PATCH, DELETE"
-  methods: ~
-  # Default "*"
-  headers: ~
+      metrics:
+        enabled: false
 
+      # We recommend to expose service to public via Ingress
+      ssl:
+        enabled: false
+        # If enabled, supply the name of existing secret with key/cert files.
+        # You can load it to a k8s tls secret via the following command:
+        # `kubectl create secret tls certificates --key="tls.key" --cert="tls.crt"`
+        # certificatesSecretName: certificates
+        certificatesSecretName: ~
+        # Specifies the version of the TLS (Transport Layer Security) protocol to use for secure connections within the application.
+        # String type, accepts the following available versions of TLS: 1.0, 1.1, 1.2, 1.3
+        tlsVersion: 1.2
 
-logs:
-  level: "info"
-  type:
-    accessLog: true
-    appLog: true
-    processLog:
+    storage:
+      type: fs
+      # s3:
+      #   accessKey: <AWS_ACCESS_KEY_ID>
+      #   accessSecret: <AWS_SECRET_ACCESS_KEY>
+      #   region: "us-east-1"
+      #   secure: true
+      #   endpointUrl: "https://s3.amazonaws.com"
+      #   #  awsCredentialsSecretName overrides storage.s3.accessKey/s3.accessSecret values
+      #   #  Supply the name of existing secret with AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY keys.
+      #   #  You can load it to a k8s generic secret via the following command:
+      #   #  `kubectl create secret generic aws-credentials -n <namespace> --from-literal=AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID> --from-literal=AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>`
+      #   awsCredentialsSecretName: ~
+      # gcs:
+      #   #  Supply the name of existing secret with service account key gcs.json file.
+      #   # You can load it to a k8s generic secret via the following command:
+      #   #  `kubectl create secret generic gcs-credentials -n <namespace> --from-file=gcs_key.json=<path_to_key>`
+      #   gcsKeyJsonSecretName: ~
+      # az:
+      #   connectionString: "<AZURE_STORAGE_CONNECTION_STRING>"
+      #   #  connectionStringSecretName overrides storage.az.connectionString value
+      #   #  Supply the name of existing secret with AZURE_STORAGE_CONNECTION_STRING key.
+      #   #  You can load it to a k8s generic secret via the following command:
+      #   #  `kubectl create secret generic az-credentials -n <namespace> --from-literal=AZURE_STORAGE_CONNECTION_STRING="<AZURE_STORAGE_CONNECTION_STRING>"`
+      #   connectionStringSecretName: ~
+
+    database:
+      connectionString: ~
+      # #  connectionStringSecretName overrides database.connectionString value
+      # #  Supply the name of existing secret with SQL_CONNECTION_STRING key.
+      # #  You can load it to a k8s generic secret via the following command:
+      # #  `kubectl create secret generic database-credentials -n <namespace> --from-literal=SQL_CONNECTION_STRING=<SQL_CONNECTION_STRING>`
+      # connectionStringSecretName: ~
+      # connectionString examples:
+      # connectionString: postgresql://<username>:<password>@127.0.0.1:5432/regula_docreader_db
+      # connectionString: mysql://username>:<password>@127.0.0.1:5432/regula_docreader_db
+      # connectionString: mariadb+pymysql:/username>:<password>@127.0.0.1:3306/regula_docreader_db
+      # connectionString: mysql+pymysql://username>:<password>@127.0.0.1:3306/regula_docreader_db
+      # connectionString: sqlite:///opt/regula/docreader/regula_docreader.db
+
+    processing:
       enabled: true
-      saveResult: true
-  format: "text"
+      ecdhSchema: "default"
+      results:
+        saveResult: false
+        location:
+          folder: "/app/docreader-processing/results"
+          # bucket: docreader-processing # storage type s3/gcs
+          # container: docreader-processing # storage type az
+          prefix: "results"
+        # Persistece is only applicable for the fs storage type
+        persistence:
+          # Enable persistent volume for storing processing results
+          enabled: false
+          accessMode: ReadWriteMany
+          size: 10Gi
+          storageClassName: ~
+          existingClaim: ~
 
-  persistence:
-    # Enable persistent volume for storing logs (Access/App/Process)
-    enabled: false
-    # https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes
-    accessMode: ReadWriteMany
-    # Volume size for logs
-    size: 10Gi
-    # If using a custom storageClass, pass name here
-    storageClassName:
-    # If defined, PVC must be created manually before volume will be bound
-    existingClaim:
-
+    sessionApi:
+      enabled: false
+      transactions:
+        location:
+          folder: "/app/docreader-session-api/transactions"
+          # bucket: docreader-session-api # storage type s3/gcs
+          # container: docreader-session-api # storage type az
+          prefix: "transactions"
+        # Persistence is only applicable for the fs storage type
+        persistence:
+          # Enable persistent volume for storing transactions data
+          enabled: false
+          accessMode: ReadWriteMany
+          size: 10Gi
+          storageClassName: ~
+          existingClaim: ~
 
 env: []
 # - name: ""
 #   value: ""
 
-
 # Mount additional volumes into docreader pod.
 extraVolumes: []
 extraVolumeMounts: []
-
 
 service:
   type: ClusterIP
@@ -200,45 +233,58 @@ service:
   #   - "10.123.0.0/16"
   loadBalancerSourceRanges: []
 
-
 ingress:
-  # Enable ingress resource
   enabled: false
   # The Ingress Class for the web Ingress (used only with Kubernetes v1.19 and above)
-  className: ""
-  # Annotations for the web Ingress
+  # className: ""
+
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+
   # The hostnames or hosts configuration for the web Ingress
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  # Enable TLS termination for the web Ingress
+  hosts: []
+    # - docreader.domain.com
+  paths: []
+    # - path: /
+  pathType: Prefix
+
+  # TLS configuration for the Docreader Ingress
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
 
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # The name of the service account to use.
+  name: ~
+  # Annotations to add to the service account
+  annotations: {}
+
+serviceMonitor:
+  # Set this to `true` to create ServiceMonitor for Prometheus operator
+  enabled: false
+  namespace: ~
+  interval: "30s"
+  scrapeTimeout: "10s"
+  # Additional labels that can be used so ServiceMonitor will be discovered by Prometheus
+  additionalLabels: {}
 
 livenessProbe:
   enabled: true
-  initialDelaySeconds: 5
-  periodSeconds: 30
+  initialDelaySeconds: 30
+  periodSeconds: 20
   timeoutSeconds: 5
   successThreshold: 1
   failureThreshold: 5
 
 readinessProbe:
   enabled: true
-  initialDelaySeconds: 5
-  periodSeconds: 20
+  initialDelaySeconds: 30
+  periodSeconds: 10
   timeoutSeconds: 5
   successThreshold: 1
   failureThreshold: 5
-
 
 autoscaling:
   enabled: false
@@ -246,3 +292,21 @@ autoscaling:
   maxReplicas: 10
   targetCPUUtilizationPercentage: 80
   targetMemoryUtilizationPercentage: ~
+
+###################################
+# Subcharts
+###################################
+
+# NOTE
+# The subcharts are used for the demonstration and Dev/Test purposes.
+# We strongly recommend to deploy separate installations of the DB in Production.
+
+# Configuration for postgresql subchart
+# For the advanced PostgreSQL configuration please referer to the official documentation.
+# ref: https://github.com/bitnami/charts/tree/main/bitnami/postgresql
+postgresql:
+  enabled: false
+  auth:
+    username: "regula"
+    password: "Regulapasswd#1"
+    database: "regula"

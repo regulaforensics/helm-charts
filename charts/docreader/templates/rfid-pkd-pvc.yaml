@@ -1,0 +1,18 @@
+{{- if and .Values.config.sdk.rfid.enabled .Values.config.sdk.rfid.persistence.enabled (not .Values.config.sdk.rfid.persistence.existingClaim) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ template "docreader.rfid.pkd.pvc" . }}
+  labels: {{- include "docreader.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.config.sdk.rfid.persistence.accessMode }}
+  resources:
+    requests:
+      storage: 1Gi
+  {{- if (eq "-" .Values.config.sdk.rfid.persistence.storageClassName) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: "{{ .Values.config.sdk.rfid.persistence.storageClassName }}"
+  {{- end }}
+{{- end }}

@@ -14,8 +14,8 @@ helm repo update
 
 You can then run `helm search repo regulaforensics` to see the charts.
 
-- [Docreader](charts/docreader/)
-- [FaceAPI](charts/faceapi/)
+- [Docreader](https://github.com/regulaforensics/helm-charts/tree/main/charts/docreader)
+- [FaceAPI](https://github.com/regulaforensics/helm-charts/tree/main/charts/faceapi)
 
 <!-- Keep full URL links to repo files because this README syncs from main to gh-pages.  -->
 Chart documentation is available at [docs.regulaforensics.com](https://docs.regulaforensics.com).

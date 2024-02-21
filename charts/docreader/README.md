@@ -65,6 +65,16 @@ export POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=docreader,app.kube
 kubectl cp <PKD_PA_CERTIFICATES_PATH> ${POD_NAME}:/app/pkdPa/
 ```
 
+An alternative to PVCs with ReadWriteMany access mode is to create a custom image based on regulaforensics/docreader. This image will include RFID PKD masterlists onboard at the default path `/app/pkdPa/`, thereby eliminating the need for PVCs with ReadWriteMany for container creation.
+
+```console
+helm install my-release regulaforensics/docreader \
+    --set image.repository=<your own repository> \
+    --set image.tag=<your image tag> \
+    --set licenseSecretName=docreader-license \
+    --set config.sdk.rfid.enabled=true
+```
+
 ### Chip Verification
 
 To install the chart with the release name `my-release` and Chip Verification capabilities:

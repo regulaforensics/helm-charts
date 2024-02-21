@@ -2,55 +2,48 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "docreader.fullname" . }}
-  labels:
-    {{- include "docreader.labels" . | nindent 4 }}
+  labels: {{- include "docreader.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicas }}
   {{- end }}
   selector:
-    matchLabels:
-      {{- include "docreader.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "docreader.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        checksum/docreader-config: {{ include (print $.Template.BasePath "/docreader-config-configmap.yaml") . | sha256sum }}
         {{- if .Values.podAnnotations }}
         {{- toYaml .Values.podAnnotations | nindent 8 }}
         {{- end }}
-      labels:
-        {{- include "docreader.selectorLabels" . | nindent 8 }}
+      labels: {{- include "docreader.selectorLabels" . | nindent 8 }}
     spec:
+      serviceAccountName: {{ include "docreader.serviceAccount" . }}
       {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName }}
       {{- end }}
+      {{- with .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . }}
+      {{- end }}
       {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
+      affinity: {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
+      tolerations: {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.topologySpreadConstraints }}
-      topologySpreadConstraints:
-        {{- toYaml . | nindent 8 }}
+      topologySpreadConstraints: {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
       {{- end }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
@@ -62,7 +55,7 @@ spec:
             httpGet:
               path: /api/ping
               port: docreader
-              {{- if .Values.https.enabled }}
+              {{- if .Values.config.service.webServer.ssl.enabled }}
               scheme: HTTPS
               {{- else }}
               scheme: HTTP
@@ -78,7 +71,7 @@ spec:
             httpGet:
               path: /api/readiness
               port: docreader
-              {{- if .Values.https.enabled }}
+              {{- if .Values.config.service.webServer.ssl.enabled }}
               scheme: HTTPS
               {{- else }}
               scheme: HTTP
@@ -89,71 +82,108 @@ spec:
             successThreshold: {{ .Values.readinessProbe.successThreshold }}
             failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
           {{- end }}
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.lifecycle }}
+          lifecycle: {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
           env:
-            {{- include "docreader_envs" . | indent 10 }}
+            {{- include "docreader.envs" . | indent 10 }}
+            {{- if and (eq .Values.config.service.storage.type "s3") .Values.config.service.storage.s3.awsCredentialsSecretName }}
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "docreader.aws.credentials.secret" . }}
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "docreader.aws.credentials.secret" . }}
+                  key: AWS_SECRET_ACCESS_KEY
+            {{- end }}
+            {{- if and (eq .Values.config.service.storage.type "az") .Values.config.service.storage.az.connectionStringSecretName }}
+            - name: AZURE_STORAGE_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "docreader.az.credentials.secret" . }}
+                  key: AZURE_STORAGE_CONNECTION_STRING
+            {{- end }}
+            {{- if and (not .Values.postgresql.enabled) .Values.config.service.database.connectionStringSecretName }}
+            - name: SQL_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "docreader.db.credentials.secret" . }}
+                  key: SQL_CONNECTION_STRING
+            {{- end }}
           volumeMounts:
-            - name: config
-              mountPath: /app/.env
-              subPath: .env
-              readOnly: true
-            {{- if .Values.general.config }}
             - name: docreader-config
-              mountPath: /app/extBin/unix_x64/config.yaml
+              mountPath: /app/config.yaml
               subPath: config.yaml
               readOnly: true
-            {{- end }}
             {{- if .Values.licenseSecretName }}
             - name: license
-              mountPath: /app/extBin/unix_x64/regula.license
+              mountPath: /app/extBin/unix/regula.license
               subPath: regula.license
               readOnly: true
             {{- end }}
-            {{- if .Values.https.certificatesSecretName }}
+            {{- if .Values.config.service.webServer.ssl.certificatesSecretName }}
             - name: certificates
               mountPath: /app/certs
               readOnly: true
             {{- end }}
-            {{- if .Values.logs.persistence.enabled }}
-            - name: logs
-              mountPath: /app/logs
+            {{- if and (eq .Values.config.service.storage.type "fs") .Values.config.service.processing.results.enabled .Values.config.service.processing.results.persistence.enabled }}
+            - name: processing-results
+              mountPath: {{ quote .Values.config.service.processing.results.location.folder }}
             {{- end }}
-            {{- if .Values.rfidpkd.existingClaim }}
-            - name: rfidpkd
-              mountPath: /app/rfid_pkd
+            {{- if and (eq .Values.config.service.storage.type "fs") .Values.config.service.sessionApi.enabled .Values.config.service.sessionApi.transactions.persistence.enabled }}
+            - name: session-api-transactions
+              mountPath: {{ quote .Values.config.service.sessionApi.transactions.location.folder }}
+            {{- end }}
+            {{- if and .Values.config.sdk.rfid.enabled .Values.config.sdk.rfid.persistence.enabled }}
+            - name: rfid-pkd
+              mountPath: {{ quote .Values.config.sdk.rfid.pkdPaPath }}
+            {{- end }}
+            {{- if and (eq .Values.config.service.storage.type "gcs") .Values.config.service.storage.gcs.gcsKeyJsonSecretName }}
+            - name: gcs-credentials
+              mountPath: /etc/credentials/gcs_key.json
+              subPath: gcs_key.json
+              readOnly: true
             {{- end }}
 {{- if .Values.extraVolumeMounts }}
 {{ toYaml .Values.extraVolumeMounts | indent 12 }}
 {{- end }}
       volumes:
-        - name: config
-          configMap:
-            name: {{ template "config" . }}
-        {{- if .Values.general.config }}
         - name: docreader-config
           configMap:
-            name: {{ template "docreader-config" . }}
-        {{- end }}
+            name: {{ include "docreader.config.name" . }}
         {{- if .Values.licenseSecretName }}
         - name: license
           secret:
-            secretName: {{ template "license_secret" . }}
+            secretName: {{ template "docreader.license.secret" . }}
         {{- end }}
-        {{- if .Values.https.certificatesSecretName }}
+        {{- if .Values.config.service.webServer.ssl.certificatesSecretName }}
         - name: certificates
           secret:
-            secretName: {{ template "certificate_secret" . }}
+            secretName: {{ template "docreader.certificates.secret" . }}
         {{- end }}
-        {{- if .Values.logs.persistence.enabled }}
-        - name: logs
+        {{- if and (eq .Values.config.service.storage.type "fs") .Values.config.service.processing.results.enabled .Values.config.service.processing.results.persistence.enabled }}
+        - name: processing-results
           persistentVolumeClaim:
-            claimName: {{ template "logs_volume_claim" . }}
+            claimName: {{ template "docreader.processing.results.pvc" . }}
         {{- end }}
-        {{- if .Values.rfidpkd.existingClaim }}
-        - name: rfidpkd
+        {{- if and (eq .Values.config.service.storage.type "fs") .Values.config.service.sessionApi.enabled .Values.config.service.sessionApi.transactions.persistence.enabled }}
+        - name: session-api-transactions
           persistentVolumeClaim:
-            claimName: {{ template "rfidpkd_volume_claim" . }}
+            claimName: {{ template "docreader.sessionApi.transactions.pvc" . }}
+        {{- end }}
+        {{- if and .Values.config.sdk.rfid.enabled .Values.config.sdk.rfid.persistence.enabled }}
+        - name: rfid-pkd
+          persistentVolumeClaim:
+            claimName: {{ template "docreader.rfid.pkd.pvc" . }}
+        {{- end }}
+        {{- if and (eq .Values.config.service.storage.type "gcs") .Values.config.service.storage.gcs.gcsKeyJsonSecretName }}
+        - name: gcs-credentials
+          secret:
+            secretName: {{ template "docreader.gcs.credentials.secret" . }}
         {{- end }}
 {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | indent 8 }}

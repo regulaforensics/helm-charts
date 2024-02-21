@@ -3,31 +3,28 @@
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
-
 {{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "docreader.fullname" -}}
-{{- if .Values.fullnameOverride }}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else }}
-{{- $name := default .Chart.Name .Values.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end }}
 {{- end }}
 {{- end }}
-
 
 {{/* Create chart name and version as used by the chart label. */}}
 {{- define "docreader.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
-
 
 {{/* Common labels */}}
 {{- define "docreader.labels" -}}
@@ -39,73 +36,100 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
-
 {{/* Selector labels */}}
 {{- define "docreader.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "docreader.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
+{{/* Create the name of the service account to use */}}
+{{- define "docreader.serviceAccount" -}}
+{{- if .Values.serviceAccount.create -}}
+    {{ default "docreader" .Values.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
 
-{{/* Docreader license secret name */}}
-{{- define "license_secret" -}}
-{{ default (printf "%s-license" .Release.Name) .Values.licenseSecretName }}
-{{- end }}
-
-
-{{/* Docreader certificates secret name */}}
-{{- define "certificate_secret" -}}
-{{- if .Values.https.certificatesSecretName -}}
-  {{ default (printf "%s-certificates" .Release.Name) .Values.https.certificatesSecretName }}
-{{- end }}
-{{- end }}
-
-
-{{/* Config configmap name */}}
-{{- define "config" -}}
-{{ (printf "%s-config" .Release.Name) }}
-{{- end }}
-
-{{/* Dodcreader config configmap name */}}
-{{- define "docreader-config" -}}
+{{/* Config map name */}}
+{{- define "docreader.config.name" -}}
 {{ (printf "%s-docreader-config" .Release.Name) }}
 {{- end }}
 
-{{/* Minio endpoint */}}
-{{- define "chipVerification.storage_endpoint" -}}
-{{ default (printf "%s-minio:9000" .Release.Name) }}
+{{/* Docreader license secret name */}}
+{{- define "docreader.license.secret" -}}
+{{ default (printf "%s-license" .Release.Name) .Values.licenseSecretName }}
 {{- end }}
 
-{{/* Minio bucket name */}}
-{{- define "minio.bucket_name" -}}
-{{- range .Values.minio.buckets -}}
-{{ .name }}
+{{/* Docreader certificates secret name */}}
+{{- define "docreader.certificates.secret" -}}
+{{ default (printf "%s-certificates" .Release.Name) .Values.config.service.webServer.ssl.certificatesSecretName }}
+{{- end }}
+
+{{/* Docreader AWS Credentials secret name */}}
+{{- define "docreader.aws.credentials.secret" -}}
+{{- if and (eq .Values.config.service.storage.type "s3") .Values.config.service.storage.s3.awsCredentialsSecretName -}}
+{{ default (printf "%s-aws-credentials" .Release.Name) .Values.config.service.storage.s3.awsCredentialsSecretName }}
 {{- end }}
 {{- end }}
 
+{{/* Docreader GCS Credentials secret name */}}
+{{- define "docreader.gcs.credentials.secret" -}}
+{{- if and (eq .Values.config.service.storage.type "gcs") .Values.config.service.storage.gcs.gcsKeyJsonSecretName -}}
+{{ default (printf "%s-gcs-credentials" .Release.Name) .Values.config.service.storage.gcs.gcsKeyJsonSecretName }}
+{{- end }}
+{{- end }}
+
+{{/* Docreader Azure Storage Connection String secret name */}}
+{{- define "docreader.az.credentials.secret" -}}
+{{- if and (eq .Values.config.service.storage.type "az") .Values.config.service.storage.az.connectionStringSecretName -}}
+{{ default (printf "%s-az-credentials" .Release.Name) .Values.config.service.storage.az.connectionStringSecretName }}
+{{- end }}
+{{- end }}
+
+{{/* Docreader Database Connection String secret name */}}
+{{- define "docreader.db.credentials.secret" -}}
+{{- if .Values.config.service.database.connectionStringSecretName -}}
+{{ default (printf "%s-db-credentials" .Release.Name) .Values.config.service.database.connectionStringSecretName }}
+{{- end }}
+{{- end }}
+
+{{/* PostgreSQL host */}}
+{{- define "docreader.postgresql" -}}
+{{ default (printf "%s-postgresql" .Release.Name) }}
+{{- end }}
 
 {{/* User defined docreader environment variables */}}
-{{- define "docreader_envs" -}}
+{{- define "docreader.envs" -}}
   {{- range $i, $config := .Values.env }}
   - name: {{ $config.name }}
     value: {{ $config.value | quote }}
   {{- end }}
 {{- end }}
 
-
-{{/* Docreader logs existing volume claim */}}
-{{- define "logs_volume_claim" -}}
-{{- if .Values.logs.persistence.existingClaim -}}
-{{ .Values.logs.persistence.existingClaim }}
+{{/* Docreader processing results volume claim */}}
+{{- define "docreader.processing.results.pvc" -}}
+{{- if .Values.processing.results.persistence.existingClaim -}}
+{{ .Values.processing.results.persistence.existingClaim }}
 {{- else -}}
-{{ .Release.Name }}-logs
+{{ .Release.Name }}-processing-results
 {{- end -}}
 {{- end -}}
 
+{{/* Docreader Session API transactions volume claim */}}
+{{- define "docreader.sessionApi.transactions.pvc" -}}
+{{- if .Values.config.service.sessionApi.transactions.persistence.existingClaim -}}
+{{ .Values.config.service.sessionApi.transactions.persistence.existingClaim }}
+{{- else -}}
+{{ .Release.Name }}-session-api-transactions
+{{- end -}}
+{{- end -}}
 
-{{/* Docreader rfidpkd existing volume claim */}}
-{{- define "rfidpkd_volume_claim" -}}
-{{- if .Values.rfidpkd.existingClaim -}}
-{{ .Values.rfidpkd.existingClaim }}
+{{/* Docreader RFID PKD PA volume claim */}}
+{{- define "docreader.rfid.pkd.pvc" -}}
+{{- if .Values.config.sdk.rfid.persistence.existingClaim -}}
+{{ .Values.config.sdk.rfid.persistence.existingClaim }}
+{{- else -}}
+{{ .Release.Name }}-rfid-pkd-pa
 {{- end -}}
 {{- end -}}

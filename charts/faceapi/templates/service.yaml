@@ -2,11 +2,9 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "faceapi.fullname" . }}
-  labels:
-    {{- include "faceapi.labels" . | nindent 4 }}
+  labels: {{- include "faceapi.labels" . | nindent 4 }}
   {{- with .Values.service.annotations }}
-  annotations:
-  {{- toYaml . | nindent 4 }}
+  annotations: {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   type: {{ .Values.service.type }}
@@ -19,8 +17,6 @@ spec:
   loadBalancerIP: {{ .Values.service.loadBalancerIP }}
   {{- end }}
   {{- if .Values.service.loadBalancerSourceRanges }}
-  loadBalancerSourceRanges:
-  {{- toYaml .Values.service.loadBalancerSourceRanges | nindent 4 }}
+  loadBalancerSourceRanges: {{- toYaml .Values.service.loadBalancerSourceRanges | nindent 4 }}
   {{- end }}
-  selector:
-    {{- include "faceapi.selectorLabels" . | nindent 4 }}
+  selector: {{- include "faceapi.selectorLabels" . | nindent 4 }}

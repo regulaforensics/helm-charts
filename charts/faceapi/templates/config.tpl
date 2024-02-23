@@ -1,104 +1,180 @@
 {{- define "faceapi.config" -}}
-# General
-{{- if .Values.general.bind }}
-FACEAPI_BIND="{{ .Values.general.bind }}"
-{{- end }}
-FACEAPI_WORKERS="{{ .Values.general.workers }}"
-FACEAPI_BACKLOG="{{ .Values.general.backlog }}"
-FACEAPI_TIMEOUT="{{ .Values.general.timeout }}"
-FACEAPI_ENABLE_DEMO_WEB_APP="{{ .Values.general.demoSite }}"
-{{- if .Values.general.licenseUrl }}
-FACEAPI_LIC_URL="{{ .Values.general.licenseUrl }}"
-{{- end }}
-{{- if .Values.general.httpsProxy }}
-FACEAPI_HTTPS_PROXY="{{ .Values.general.httpsProxy }}"
-{{- end }}
-{{- if .Values.general.returnSystemInfo }}
-REGULA_RETURN_SYSTEMINFO="{{ .Values.general.returnSystemInfo }}"
-{{- end }}
+sdk:
+  compare:
+    limitPerImageTypes: {{ .Values.config.sdk.compare.limitPerImageTypes }}
+  logging:
+    level: {{ quote .Values.config.sdk.logging.level }}
 
-# HTTPS
-FACEAPI_HTTPS="{{ .Values.https.enabled }}"
+  {{- if .Values.config.sdk.detect }}
+  detect: {{- toYaml .Values.config.sdk.detect | nindent 4 }}
+  {{- end }}
 
-{{- if .Values.cors.origins }}
-# CORS ORIGINS
-FACEAPI_CORS_ORIGINS="{{ .Values.cors.origins }}"
-{{- end }}
-{{- if .Values.cors.methods }}
-# CORS METHODS
-FACEAPI_CORS_METHODS="{{ .Values.cors.methods }}"
-{{- end }}
-{{- if .Values.cors.headers }}
-# CORS HEADERS
-FACEAPI_CORS_HEADERS="{{ .Values.cors.headers }}"
-{{- end }}
+  {{- if and .Values.config.service.liveness.enabled .Values.config.sdk.liveness  }}
+  liveness: {{- toYaml .Values.config.sdk.liveness | nindent 4 }}
+  {{- end }}
 
-# Logs
-FACEAPI_LOGS_ACCESS_FILE="{{ .Values.logs.type.accessLog }}"
-FACEAPI_LOGS_APP_FILE="{{ .Values.logs.type.appLog }}"
-FACEAPI_PROCESS_RESULTS_LOG_FILE="{{ .Values.logs.type.processLog.enabled }}"
-FACEAPI_LOGS_PROCESS_SAVE_RESULT="{{ .Values.logs.type.processLog.saveResult }}"
-FACEAPI_LOGS_LEVEL="{{ .Values.logs.level }}"
-FACEAPI_LOGS_FORMATTER="{{ .Values.logs.format }}"
+service:
+  webServer:
+    port: {{ .Values.config.service.webServer.port }}
+    workers: {{ .Values.config.service.webServer.workers }}
+    timeout: {{ .Values.config.service.webServer.timeout }}
+    demoApp:
+      enabled: {{ .Values.config.service.webServer.demoApp.enabled }}
+    cors:
+      origins: {{ quote .Values.config.service.webServer.cors.origins }}
+      headers: {{ quote .Values.config.service.webServer.cors.headers }}
+      methods: {{ quote .Values.config.service.webServer.cors.methods }}
+    ssl:
+      enabled: {{ .Values.config.service.webServer.ssl.enabled }}
+      {{- if .Values.config.service.webServer.ssl.enabled }}
+      cert: "certs/tls.crt"
+      key: "certs/tls.key"
+      tlsVersion: {{ .Values.config.service.webServer.ssl.tlsVersion }}
+      {{- else }}
+      {{- end }}
+    logging:
+      level: {{ quote .Values.config.service.webServer.logging.level }}
+      formatter: {{ quote .Values.config.service.webServer.logging.formatter }}
+      access:
+        console: {{ .Values.config.service.webServer.logging.access.console }}
+        path: {{ quote .Values.config.service.webServer.logging.access.path }}
+      app:
+        console: {{ .Values.config.service.webServer.logging.app.console }}
+        path: {{ quote .Values.config.service.webServer.logging.app.path }}
+    metrics:
+      enabled: {{ .Values.config.service.webServer.metrics.enabled }}
 
-# Prometheus
-FACEAPI_ENABLE_PROMETHEUS_METRICS="{{ .Values.metrics.enabled }}"
+  storage:
+    {{- if eq .Values.config.service.storage.type "fs" }}
+    type: fs
+    {{- end }}
+    {{- if eq .Values.config.service.storage.type "s3" }}
+    type: s3
+    s3:
+      {{- if .Values.config.service.storage.s3.awsCredentialsSecretName }}
+      ## `config.service.storage.s3.accessKey/config.service.storage.s3.accessSecret` values have been overridden by `config.service.storage.s3.awsCredentialsSecretName` value
+      {{- else }}
+      accessKey: {{ .Values.config.service.storage.s3.accessKey }}
+      accessSecret: {{ .Values.config.service.storage.s3.accessSecret }}
+      {{- end }}
+      region: {{ default "us-east-1" .Values.config.service.storage.s3.region | quote }}
+      secure: {{ ne .Values.config.service.storage.s3.secure false }}
+      endpointUrl: {{ default "https://s3.amazonaws.com" .Values.config.service.storage.s3.endpointUrl | quote }}
+    {{- end }}
+    {{- if eq .Values.config.service.storage.type "gcs" }}
+    type: gcs
+    gcs:
+      gcsKeyJson: "/etc/credentials/gcs_key.json"
+    {{- end }}
+    {{- if eq .Values.config.service.storage.type "az" }}
+    type: az
+    {{- if .Values.config.service.storage.az.connectionStringSecretName }}
+    ## `config.service.storage.az.connectionString` value has been overridden by `config.service.storage.az.connectionStringSecretName` value
+    {{- else }}
+    az:
+      connectionString: {{ quote .Values.config.service.storage.az.connectionString }}
+    {{- end }}
+    {{- end }}
+  {{- if or .Values.config.service.liveness.enabled .Values.config.service.search.enabled }}
+  {{ if .Values.postgresql.enabled }}
+  ## `database` configuration has been overridden by `postgresql.enabled=true` value
+  database:
+    connectionString: "postgresql://{{ .Values.postgresql.auth.username }}:{{ .Values.postgresql.auth.password }}@{{ template "faceapi.postgresql" . }}:5432/{{ .Values.postgresql.auth.database }}"
+  {{- else }}
+  {{- if .Values.config.service.database.connectionStringSecretName }}
+  ## `database` configuration has been overridden by `database.connectionStringSecretName` value
+  {{- else }}
+  database:
+    connectionString: {{ quote .Values.config.service.database.connectionString }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
 
-{{- if .Values.identification.enabled }}
-# Identification
-FACEAPI_ENABLE_IDENTIFICATION="true"
-{{- if .Values.liveness.enabled }}
+  detectMatch:
+    enabled: {{ .Values.config.service.detectMatch.enabled }}
+    {{- if .Values.config.service.detectMatch.enabled }}
+    results:
+      location:
+        {{- if or (eq .Values.config.service.storage.type "s3") (eq .Values.config.service.storage.type "gcs") }}
+        bucket: {{ quote .Values.config.service.detectMatch.results.location.bucket }}
+        prefix: {{ quote .Values.config.service.detectMatch.results.location.prefix }}
+        {{- end }}
+        {{- if eq .Values.config.service.storage.type "az" }}
+        container: {{ quote .Values.config.service.detectMatch.results.location.container }}
+        prefix: {{ quote .Values.config.service.detectMatch.results.location.prefix }}
+        {{- end }}
+        {{- if eq .Values.config.service.storage.type "fs" }}
+        folder: {{ quote .Values.config.service.detectMatch.results.location.folder }}
+        {{- end }}
+    {{- else }}
+    {{- end }}
 
-# Liveness
-FACEAPI_LIVENESS_GEN_2="true"
-FACEAPI_LIVENESS_HIDE_METADATA="{{ .Values.liveness.hideMetadata }}"
-{{- end }}
+  liveness:
+    enabled: {{ .Values.config.service.liveness.enabled }}
+    {{- if .Values.config.service.liveness.enabled }}
+    ecdhSchema: {{ quote .Values.config.service.liveness.ecdhSchema }}
+    hideMetadata: {{ .Values.config.service.liveness.hideMetadata }}
+    protectPersonalInfo: {{ .Values.config.service.liveness.protectPersonalInfo }}
+    sessions:
+      location:
+        {{- if or (eq .Values.config.service.storage.type "s3") (eq .Values.config.service.storage.type "gcs") }}
+        bucket: {{ quote .Values.config.service.liveness.sessions.location.bucket }}
+        prefix: {{ quote .Values.config.service.liveness.sessions.location.prefix }}
+        {{- end }}
+        {{- if eq .Values.config.service.storage.type "az" }}
+        container: {{ quote .Values.config.service.liveness.sessions.location.container }}
+        prefix: {{ quote .Values.config.service.liveness.sessions.location.prefix }}
+        {{- end }}
+        {{- if eq .Values.config.service.storage.type "fs" }}
+        folder: {{ quote .Values.config.service.liveness.sessions.location.folder }}
+        {{- end }}
+    {{- else }}
+    {{- end }}
 
-# Milvus
-FACEAPI_MILVUS_HOST="{{ template "faceapi.identification.milvus_host" . }}"
-FACEAPI_MILVUS_PORT="{{ default 19530 .Values.identification.milvusPort }}"
+  search:
+    enabled: {{ .Values.config.service.search.enabled }}
+    {{- if .Values.config.service.search.enabled }}
+    persons:
+      location:
+        {{- if or (eq .Values.config.service.storage.type "s3") (eq .Values.config.service.storage.type "gcs") }}
+        bucket: {{ quote .Values.config.service.search.persons.location.bucket }}
+        prefix: {{ quote .Values.config.service.search.persons.location.prefix }}
+        {{- end }}
+        {{- if eq .Values.config.service.storage.type "az" }}
+        container: {{ quote .Values.config.service.search.persons.location.container }}
+        prefix: {{ quote .Values.config.service.search.persons.location.prefix }}
+        {{- end }}
+        {{- if eq .Values.config.service.storage.type "fs" }}
+        folder: {{ quote .Values.config.service.search.persons.location.folder }}
+        {{- end }}
 
-{{- if .Values.milvus.externalS3.enabled }}
-# Milvus. External Storage
-{{- if .Values.milvus.externalS3.useSSL }}
-FACEAPI_STORAGE_ENDPOINT="https://{{ .Values.milvus.externalS3.host }}:{{ .Values.milvus.externalS3.port }}"
-{{- else }}
-FACEAPI_STORAGE_ENDPOINT="http://{{ .Values.milvus.externalS3.host }}:{{ .Values.milvus.externalS3.port }}"
-{{- end }}
-FACEAPI_STORAGE_ACCESS_KEY="{{ default .Values.milvus.externalS3.accessKey .Values.storage.accessKey }}"
-FACEAPI_STORAGE_SECRET_KEY="{{ default .Values.milvus.externalS3.secretKey .Values.storage.secretKey }}"
-{{- else }}
+    threshold: {{ .Values.config.service.search.threshold }}
 
-# Storage
-FACEAPI_STORAGE_ENDPOINT="{{ template "faceapi.storage.endpoint" . }}"
-FACEAPI_STORAGE_ACCESS_KEY="{{ default "minioadmin" .Values.storage.accessKey }}"
-FACEAPI_STORAGE_SECRET_KEY="{{ default "minioadmin" .Values.storage.secretKey }}"
-{{- end }}
-FACEAPI_STORAGE_REGION="{{ default "us-east-1" .Values.storage.region }}"
-FACEAPI_STORAGE_PERSON_BUCKET_NAME="{{ default "faceapi-person" .Values.storage.personBucketName }}"
-FACEAPI_STORAGE_SESSION_BUCKET_NAME="{{ default "faceapi-session" .Values.storage.sessionBucketName }}"
-{{- end }}
-
-{{- if and .Values.liveness.enabled (not .Values.identification.enabled) }}
-# Liveness
-FACEAPI_LIVENESS_GEN_2="true"
-FACEAPI_LIVENESS_HIDE_METADATA="{{ .Values.liveness.hideMetadata }}"
-
-# Storage
-FACEAPI_STORAGE_ENDPOINT="{{ template "faceapi.storage.endpoint" . }}"
-FACEAPI_STORAGE_ACCESS_KEY="{{ default "minioadmin" .Values.storage.accessKey }}"
-FACEAPI_STORAGE_SECRET_KEY="{{ default "minioadmin" .Values.storage.secretKey }}"
-FACEAPI_STORAGE_REGION="{{ default "us-east-1" .Values.storage.region }}"
-FACEAPI_STORAGE_SESSION_BUCKET_NAME="{{ default "faceapi-session" .Values.storage.sessionBucketName }}"
-{{- end }}
-
-
-{{- if and .Values.externalPostgreSQL (not .Values.postgresql.enabled) }}
-# PostgreSQL
-## Please mind if externalPostgreSQLSecret value is set, it overrides any other PostgreSQL related values
-FACEAPI_SQL_URL="{{ .Values.externalPostgreSQL }}"
-{{- else if .Values.postgresql.enabled }}
-FACEAPI_SQL_URL="postgresql://{{ .Values.postgresql.global.postgresql.auth.username }}:{{ .Values.postgresql.global.postgresql.auth.password }}@{{ template "faceapi.postgresql" . }}:5432/{{ .Values.postgresql.global.postgresql.auth.database }}"
-{{- end }}
-
+    vectorDatabase:
+      type: {{ quote .Values.config.service.search.vectorDatabase.type }}
+      {{- if eq .Values.config.service.search.vectorDatabase.type "milvus" }}
+      milvus:
+        user: {{ quote .Values.config.service.search.vectorDatabase.milvus.user }}
+        password: {{ quote .Values.config.service.search.vectorDatabase.milvus.password }}
+        token: {{ quote .Values.config.service.search.vectorDatabase.milvus.token }}
+        {{- if .Values.milvus.enabled }}
+        ## `config.service.search.vectorDatabase.milvus.endpoint` value has been overridden by `milvus.enabled=true` value
+        endpoint: "http://{{ template "faceapi.milvus" . }}"
+        {{- else }}
+        endpoint: {{ quote .Values.config.service.search.vectorDatabase.milvus.endpoint }}
+        {{- end }}
+        consistency: {{ quote .Values.config.service.search.vectorDatabase.milvus.consistency }}
+        reload: {{ .Values.config.service.search.vectorDatabase.milvus.reload }}
+        index:
+          type: {{ quote .Values.config.service.search.vectorDatabase.milvus.index.type }}
+          params:
+            nlist: {{ .Values.config.service.search.vectorDatabase.milvus.index.params.nlist }}
+        search:
+          type: {{ quote .Values.config.service.search.vectorDatabase.milvus.search.type }}
+          params:
+            nprobe: {{ .Values.config.service.search.vectorDatabase.milvus.search.params.nprobe }}
+      {{- else }}
+      {{- end }}
+    {{- else }}
+    {{- end }}
 {{- end }}

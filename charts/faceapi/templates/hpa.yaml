@@ -1,14 +1,9 @@
 {{- if .Values.autoscaling.enabled }}
-{{- if (semverCompare ">=1.23-0" .Capabilities.KubeVersion.GitVersion)}}
 apiVersion: autoscaling/v2
-{{- else }}
-apiVersion: autoscaling/v2beta2
-{{- end }}
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "faceapi.fullname" . }}
-  labels:
-    {{- include "faceapi.labels" . | nindent 4 }}
+  labels: {{- include "faceapi.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -21,24 +16,16 @@ spec:
     - type: Resource
       resource:
         name: cpu
-        {{- if (semverCompare "<1.23-0" .Capabilities.KubeVersion.GitVersion)}}
-        targetAverageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
-        {{- else }}
         target:
           type: Utilization
           averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
-        {{- end }}
     {{- end }}
     {{- if .Values.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:
         name: memory
-        {{- if semverCompare "<1.23-0" (include "common.capabilities.kubeVersion" .) }}
-        targetAverageUtilization: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
-        {{- else }}
         target:
           type: Utilization
           averageUtilization: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
-        {{- end }}
     {{- end }}
 {{- end }}

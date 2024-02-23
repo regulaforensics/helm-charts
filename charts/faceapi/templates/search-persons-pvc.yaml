@@ -1,0 +1,20 @@
+{{- if and (eq .Values.config.service.storage.type "fs") .Values.config.service.search.enabled .Values.config.service.search.persons.persistence.enabled (not .Values.config.service.search.persons.persistence.existingClaim) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ template "faceapi.search.persons.pvc" . }}
+  labels: {{- include "faceapi.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.config.service.search.persons.persistence.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.config.service.search.persons.persistence.size | quote }}
+  {{- if .Values.config.service.search.persons.persistence.storageClassName }}
+  {{- if (eq "-" .Values.config.service.search.persons.persistence.storageClassName) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: "{{ .Values.config.service.search.persons.persistence.storageClassName }}"
+  {{- end }}
+  {{- end }}
+{{- end }}

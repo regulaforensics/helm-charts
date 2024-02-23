@@ -5,11 +5,16 @@
 *                                                                     *
 ***********************************************************************
 
+Chart version: {{ .Chart.Version }}
+FaceAPI version compatibility: >= 6.1
+Kubernetes version compatibility: >= 1.23.0
+
 1. Get the application URL by running these commands:
 {{- if .Values.ingress.enabled }}
+{{- $paths := .Values.ingress.paths -}}
 {{- range $host := .Values.ingress.hosts }}
-  {{- range .paths }}
-  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- range $p := $paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ tpl $host $ }}{{ tpl $p $ }}
   {{- end }}
 {{- end }}
 {{- else if contains "NodePort" .Values.service.type }}

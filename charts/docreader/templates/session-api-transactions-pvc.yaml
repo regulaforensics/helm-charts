@@ -10,11 +10,11 @@ spec:
   resources:
     requests:
       storage: {{ .Values.config.service.sessionApi.transactions.persistence.size | quote }}
-  {{- if .Values.config.service.sessionApi.transactions.storageClassName }}
-  {{- if (eq "-" .Values.config.service.sessionApi.transactions.storageClassName) }}
+  {{- if .Values.config.service.sessionApi.transactions.persistence.storageClassName }}
+  {{- if (eq "-" .Values.config.service.sessionApi.transactions.persistence.storageClassName) }}
   storageClassName: ""
   {{- else }}
-  storageClassName: "{{ .Values.config.service.sessionApi.transactions.storageClassName }}"
+  storageClassName: "{{ .Values.config.service.sessionApi.transactions.persistence.storageClassName }}"
   {{- end }}
   {{- end }}
 {{- end }}

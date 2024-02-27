@@ -95,7 +95,6 @@ service:
   processing:
     enabled: {{ .Values.config.service.processing.enabled }}
     {{- if .Values.config.service.processing.enabled }}
-    ecdhSchema: {{ quote .Values.config.service.processing.ecdhSchema }}
     results:
       saveResult: {{ .Values.config.service.processing.results.saveResult }}
       location:

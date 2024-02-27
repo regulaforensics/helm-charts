@@ -213,7 +213,6 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 
 | Parameter                                                         | Description                                                                                   | Default                               |
 |-------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|---------------------------------------|
-| `config.service.processing.ecdhSchema`                            | ECDH schema to use                                                                            | `default`                             |
 | `config.service.processing.results.enabled`                       | Whether to enable processing                                                                  | `false`                               |
 | `config.service.processing.results.location.bucket`               | The processing results bucket name in case of `s3`/`gcs` storage type                         | `""`                                  |
 | `config.service.processing.results.location.container`            | The processing results storage container name in case of `az` storage type                    | `""`                                  |

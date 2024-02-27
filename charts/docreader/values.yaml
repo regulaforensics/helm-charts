@@ -178,7 +178,6 @@ config:
 
     processing:
       enabled: true
-      ecdhSchema: "default"
       results:
         saveResult: false
         location:

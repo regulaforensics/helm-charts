@@ -14,11 +14,11 @@ helm repo update
 See the [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation.
 
 ## Prerequisites
-
-- At least 2 GB of RAM available on your cluster per pod's worker
-- Helm 3
-- PV provisioner support in the underlying infrastructure (essential for storing logs)
-- Kubernetes version >=1.23-0
+> [!NOTE]
+> - At least 2 GB of RAM available on your cluster per pod's worker
+> - Helm >=3.10
+> - PV provisioner support in the underlying infrastructure (essential for storing logs)
+> - Kubernetes version >=1.23-0
 
 ## Installing the Chart
 
@@ -166,47 +166,48 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 
 ## Application parameters
 
-| Parameter                                             | Description                                                                       | Default                                   |
-|-------------------------------------------------------|-----------------------------------------------------------------------------------|-------------------------------------------|
-| `licenseSecretName`                                   | The name of an existing secret containing the regula.license file                 | `""`                                      |
-| `config.sdk.systemInfo.returnSystemInfo`              | Whether to hide system info (/api/ping response)                                  | `true`                                    |
-| `config.sdk.rfid.enabled`                             | Whether to enable RFID PKD PA mode                                                | `false`                                   |
-| `config.sdk.rfid.pkdPaPath`                           | RFID PKD PA certificates path                                                     | `"/app/pkdPa"`                            |
-| `config.sdk.rfid.pkdPaExistingClaim`                  | Name of the existing Persistent Volume Claim containing RFID PKD PA certificates  | `""`                                      |
-| `config.sdk.rfid.chipVerification.enabled`            | Whether to enable Chip Verification mode                                          | `false`                                   |
-| `config.sdk.rfid.paSensitiveCodes`                    | RFID PKD PA Sensitive Codes to use                                                | `[]`                                      |
-|                                                                                                                                                                                       |
-| `config.service.webServer.port`                       | Port server binding                                                               | `8080`                                    |
-| `config.service.webServer.workers`                    | Number of workers per pod                                                         | `1`                                       |
-| `config.service.webServer.timeout`                    | Number of seconds for the worker to process the request                           | `30`                                      |
-| `config.service.webServer.demoApp.enabled`            | Serve a demo web app                                                              | `true`                                    |
-| `config.service.webServer.cors.origins`               | Origin, allowed to use API                                                        | `*`                                       |
-| `config.service.webServer.cors.headers`               | Headers, allowed to read from the API                                             | `*`                                       |
-| `config.service.webServer.cors.methods`               | Methods, allowed to invoke on the API                                             | `"POST,PUT,GET,DELETE,PATCH,HEAD,OPTIONS` |
-| `config.service.webServer.logging.level`              | Specify application logs level. Possible values: `ERROR`, `WARN`, `INFO`, `DEBUG` | `INFO`                                    |
-| `config.service.webServer.logging.formatter`          | Specify application logs format. Possible values: `text`, `json`                  | `text`                                    |
-| `config.service.webServer.logging.access.console`     | Whether to print access logs to a console                                         | `true`                                    |
-| `config.service.webServer.logging.access.path`        | Access logs file path                                                             | `logs/access/docreader-access.log`        |
-| `config.service.webServer.logging.app.console`        | Whether to print application logs to a console                                    | `true`                                    |
-| `config.service.webServer.logging.app.path`           | Application logs file path                                                        | `logs/app/docreader-app.log`              |
-| `config.service.webServer.metrics.enabled`            | Whether to enable prometheus metrics endpoint                                     | `false`                                   |
-| `config.service.webServer.ssl.enabled`                | Whether to enable SSL mode                                                        | `false`                                   |
-| `config.service.webServer.ssl.certificatesSecretName` | The name of an existing secret containing the cert/key files reuired for HTTPS    | `""`                                      |
-| `config.service.webServer.ssl.tlsVersion`             | Specifies the version of the TLS protocol. Possible values: `1.1`, `1.2`, `1.3`   | `1.2`                                     |
-|                                                                                                                                                                                       |
-| `config.service.storage.type`                         | Global storage type. Possible values: `fs`, `s3`, `gcs`, `az`                     | `fs`                                      |
-| `config.service.storage.s3.accessKey`                 | S3 Access Key                                                                     | `""`                                      |
-| `config.service.storage.s3.accessSecret`              | S3 Secret Access Key                                                              | `""`                                      |
-| `config.service.storage.s3.region`                    | S3 region                                                                         | `"us-east-1"`                             |
-| `config.service.storage.s3.secure`                    | Secure connection                                                                 | `"true"`                                  |
-| `config.service.storage.s3.endpointUrl`               | Endpoint URL to the S3 compatible storage                                         | `"https://s3.amazonaws.com"`              |
-| `config.service.storage.s3.awsCredentialsSecretName`  | Secret name containing AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY credentials        | `""`                                      |
-| `config.service.storage.gcs.gcsKeyJsonSecretName`     | Secret name containing Google Service Account key (json file)                     | `""`                                      |
-| `config.service.storage.az.connectionString`          | Azure storage Account connection string                                           | `""`                                      |
-| `config.service.storage.az.connectionStringSecretName`| Secret name containing Azure storage Account connection string                    | `""`                                      |
-|                                                                                                                                                                                       |
-| `config.service.database.connectionString`            | Database connection string                                                        | `""`                                      |
-| `config.service.database.connectionStringSecretName`  | Secret name containing database connection string                                 | `""`                                      |
+| Parameter                                                 | Description                                                                       | Default                                   |
+|-----------------------------------------------------------|-----------------------------------------------------------------------------------|-------------------------------------------|
+| `licenseSecretName`                                       | The name of an existing secret containing the regula.license file                 | `""`                                      |
+| `config.sdk.systemInfo.returnSystemInfo`                  | Whether to hide system info (/api/ping response)                                  | `true`                                    |
+| `config.sdk.rfid.enabled`                                 | Whether to enable RFID PKD PA mode                                                | `false`                                   |
+| `config.sdk.rfid.pkdPaPath`                               | RFID PKD PA certificates path                                                     | `"/app/pkdPa"`                            |
+| `config.sdk.rfid.pkdPaExistingClaim`                      | Name of the existing Persistent Volume Claim containing RFID PKD PA certificates  | `""`                                      |
+| `config.sdk.rfid.chipVerification.enabled`                | Whether to enable Chip Verification mode                                          | `false`                                   |
+| `config.sdk.rfid.paSensitiveCodes`                        | RFID PKD PA Sensitive Codes to use                                                | `[]`                                      |
+|                                                                                                                                                                                           |
+| `config.service.webServer.port`                           | Port server binding                                                               | `8080`                                    |
+| `config.service.webServer.workers`                        | Number of workers per pod                                                         | `1`                                       |
+| `config.service.webServer.timeout`                        | Number of seconds for the worker to process the request                           | `30`                                      |
+| `config.service.webServer.demoApp.enabled`                | Serve a demo web app                                                              | `true`                                    |
+| `config.service.webServer.demoApp.webComponent.enabled`   | Whether to enable Web Component                                                   | `false`                                   |
+| `config.service.webServer.cors.origins`                   | Origin, allowed to use API                                                        | `*`                                       |
+| `config.service.webServer.cors.headers`                   | Headers, allowed to read from the API                                             | `*`                                       |
+| `config.service.webServer.cors.methods`                   | Methods, allowed to invoke on the API                                             | `"POST,PUT,GET,DELETE,PATCH,HEAD,OPTIONS` |
+| `config.service.webServer.logging.level`                  | Specify application logs level. Possible values: `ERROR`, `WARN`, `INFO`, `DEBUG` | `INFO`                                    |
+| `config.service.webServer.logging.formatter`              | Specify application logs format. Possible values: `text`, `json`                  | `text`                                    |
+| `config.service.webServer.logging.access.console`         | Whether to print access logs to a console                                         | `true`                                    |
+| `config.service.webServer.logging.access.path`            | Access logs file path                                                             | `logs/access/docreader-access.log`        |
+| `config.service.webServer.logging.app.console`            | Whether to print application logs to a console                                    | `true`                                    |
+| `config.service.webServer.logging.app.path`               | Application logs file path                                                        | `logs/app/docreader-app.log`              |
+| `config.service.webServer.metrics.enabled`                | Whether to enable prometheus metrics endpoint                                     | `false`                                   |
+| `config.service.webServer.ssl.enabled`                    | Whether to enable SSL mode                                                        | `false`                                   |
+| `config.service.webServer.ssl.certificatesSecretName`     | The name of an existing secret containing the cert/key files reuired for HTTPS    | `""`                                      |
+| `config.service.webServer.ssl.tlsVersion`                 | Specifies the version of the TLS protocol. Possible values: `1.1`, `1.2`, `1.3`   | `1.2`                                     |
+|                                                                                                                                                                                           |
+| `config.service.storage.type`                             | Global storage type. Possible values: `fs`, `s3`, `gcs`, `az`                     | `fs`                                      |
+| `config.service.storage.s3.accessKey`                     | S3 Access Key                                                                     | `""`                                      |
+| `config.service.storage.s3.accessSecret`                  | S3 Secret Access Key                                                              | `""`                                      |
+| `config.service.storage.s3.region`                        | S3 region                                                                         | `"us-east-1"`                             |
+| `config.service.storage.s3.secure`                        | Secure connection                                                                 | `"true"`                                  |
+| `config.service.storage.s3.endpointUrl`                   | Endpoint URL to the S3 compatible storage                                         | `"https://s3.amazonaws.com"`              |
+| `config.service.storage.s3.awsCredentialsSecretName`      | Secret name containing AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY credentials        | `""`                                      |
+| `config.service.storage.gcs.gcsKeyJsonSecretName`         | Secret name containing Google Service Account key (json file)                     | `""`                                      |
+| `config.service.storage.az.connectionString`              | Azure storage Account connection string                                           | `""`                                      |
+| `config.service.storage.az.connectionStringSecretName`    | Secret name containing Azure storage Account connection string                    | `""`                                      |
+|                                                                                                                                                                                           |
+| `config.service.database.connectionString`                | Database connection string                                                        | `""`                                      |
+| `config.service.database.connectionStringSecretName`      | Secret name containing database connection string                                 | `""`                                      |
 
 
 ## config.service.processing parameters

@@ -22,6 +22,10 @@ service:
     timeout: {{ .Values.config.service.webServer.timeout }}
     demoApp:
       enabled: {{ .Values.config.service.webServer.demoApp.enabled }}
+      {{- if .Values.config.service.webServer.demoApp.enabled }}
+      webComponent:
+        enabled: {{ .Values.config.service.webServer.demoApp.webComponent.enabled }}
+      {{- end }}
     cors:
       origins: {{ quote .Values.config.service.webServer.cors.origins }}
       headers: {{ quote .Values.config.service.webServer.cors.headers }}

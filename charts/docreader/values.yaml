@@ -104,6 +104,8 @@ config:
 
       demoApp:
         enabled: true
+        webComponent:
+          enabled: false
 
       cors:
         origins: "*"

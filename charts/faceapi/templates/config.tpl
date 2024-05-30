@@ -102,9 +102,12 @@ service:
 
   detectMatch:
     enabled: {{ .Values.config.service.detectMatch.enabled }}
-    audit: {{ .Values.config.service.detectMatch.audit }}
     {{- if .Values.config.service.detectMatch.enabled }}
+    {{- with .Values.config.service.detectMatch.selfOrigins }}
+    selfOrigins: {{- toYaml . | nindent 6 }}
+    {{- end }}
     results:
+      audit: {{ .Values.config.service.detectMatch.results.audit }}
       location:
         {{- if or (eq .Values.config.service.storage.type "s3") (eq .Values.config.service.storage.type "gcs") }}
         bucket: {{ quote .Values.config.service.detectMatch.results.location.bucket }}
@@ -125,7 +128,10 @@ service:
     {{- if .Values.config.service.liveness.enabled }}
     ecdhSchema: {{ quote .Values.config.service.liveness.ecdhSchema }}
     hideMetadata: {{ .Values.config.service.liveness.hideMetadata }}
+    consistency: {{ quote .Values.config.service.liveness.consistency }}
     protectPersonalInfo: {{ .Values.config.service.liveness.protectPersonalInfo }}
+    config:
+      recalculateLandmarks: {{ .Values.config.service.liveness.config.recalculateLandmarks }}
     sessions:
       location:
         {{- if or (eq .Values.config.service.storage.type "s3") (eq .Values.config.service.storage.type "gcs") }}

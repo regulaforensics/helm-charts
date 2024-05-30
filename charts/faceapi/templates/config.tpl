@@ -38,6 +38,7 @@ service:
       access:
         console: {{ .Values.config.service.webServer.logging.access.console }}
         path: {{ quote .Values.config.service.webServer.logging.access.path }}
+        format: {{ quote .Values.config.service.webServer.logging.access.format }}
       app:
         console: {{ .Values.config.service.webServer.logging.app.console }}
         path: {{ quote .Values.config.service.webServer.logging.app.path }}
@@ -86,12 +87,22 @@ service:
   {{- else }}
   database:
     connectionString: {{ quote .Values.config.service.database.connectionString }}
+    {{- if .Values.config.service.database.passwordlessAuth.enabled }}
+    passwordlessAuth:
+      enabled: true
+      {{- if eq .Values.config.service.database.passwordlessAuth.type "az" }}
+      type: "az"
+      az:
+        scope: {{ quote .Values.config.service.database.passwordlessAuth.az.scope }}
+      {{- end }}
+    {{- end }}
   {{- end }}
   {{- end }}
   {{- end }}
 
   detectMatch:
     enabled: {{ .Values.config.service.detectMatch.enabled }}
+    audit: {{ .Values.config.service.detectMatch.audit }}
     {{- if .Values.config.service.detectMatch.enabled }}
     results:
       location:

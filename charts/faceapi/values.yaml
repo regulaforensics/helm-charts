@@ -139,6 +139,7 @@ config:
         access:
           console: true
           path: "logs/access/facesdk-reader-access.log"
+          format: '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
         app:
           console: true
@@ -193,15 +194,24 @@ config:
       # #  You can load it to a k8s generic secret via the following command:
       # #  `kubectl create secret generic database-credentials -n <namespace> --from-literal=SQL_CONNECTION_STRING=<SQL_CONNECTION_STRING>`
       # connectionStringSecretName: ~
-      # connectionString examples:
-      # connectionString: postgresql://<username>:<password>@127.0.0.1:5432/regula_faceapi_db
-      # connectionString: mysql://username>:<password>@127.0.0.1:5432/regula_faceapi_db
-      # connectionString: mariadb+pymysql:/username>:<password>@127.0.0.1:3306/regula_faceapi_db
-      # connectionString: mysql+pymysql://username>:<password>@127.0.0.1:3306/regula_faceapi_db
-      # connectionString: sqlite:///opt/regula/faceapi/regula_faceapi.db
+      # connectionString: "sqlite:///opt/regula/face-reg-service/regula.db"
+      # connectionString: "postgresql://<username>:<password>@127.0.0.1:5432/regula_db"
+      # connectionString: "mysql://username>:<password>@127.0.0.1:5432/regula_db"
+      # connectionString: "mariadb+pymysql:/username>:<password>@127.0.0.1:3306/regula_db"
+      # connectionString: "mysql+pymysql://username>:<password>@127.0.0.1:3306/regula_db"
+      # connectionString: "mssql+pymssql://username>:<password>@127.0.0.1:1433/regula_db"
+      # connectionString: "oracle+oracledb://system:admin@127.0.0.1:1521/FREE"
+      # connectionString: "mongodb://regula:Regulapasswd#1@127.0.0.1:27017/regula_db?authSource=admin"
+      # connectionString: "mssql+pyodbc://@regula-test.database.windows.net/regual-test?driver=ODBC+Driver+18+for+SQL+Server"
+      # passwordlessAuth:
+      #   enabled: true
+      #   type: "az"
+      #   az:
+      #     scope: https://database.windows.net/.default
 
     detectMatch:
       enabled: true
+      audit: false
       results:
         location:
           folder: "/app/faceapi-detect-match/results"

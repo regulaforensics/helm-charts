@@ -7,11 +7,10 @@ replicas: 1
 image:
   # Image is also available at the registry.connect.redhat.com/regulaforensics/face-api repository
   repository: regulaforensics/face-api
-  # Overrides the image tag whose default is the chart appVersion.
   # '-gpu' tag requires nvidia gpu nodes
   # https://github.com/NVIDIA/k8s-device-plugin
   # Please mind, setting a '-gpu' tag also requires adding 'nvidia.com/gpu: 1' at the 'resources' section.
-  tag: ~
+  tag: 6.1-cpu
   pullPolicy: Always
 imagePullSecrets: []
 

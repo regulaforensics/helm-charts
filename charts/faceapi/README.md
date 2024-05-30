@@ -93,7 +93,7 @@ The command removes all the Kubernetes components associated with the chart and 
 |---------------------------------------|-----------------------------------------------------------------------------------------------|-------------------------------|
 | `replicas`                            | Number of nodes                                                                               | `1`                           |
 | `image.repository`                    | Image repository                                                                              | `regulaforensics/face-api`    |
-| `image.tag`                           | Overrides the Face-API image tag, whose default is the chart appVersion                       | `""`                          |
+| `image.tag`                           | Overrides the Face-API image tag                                                              | `"6.1-cpu"`                   |
 | `image.pullPolicy`                    | Image pull policy                                                                             | `IfNotPresent`                |
 | `imagePullSecrets`                    | Image pull secrets                                                                            | `[]`                          |
 | `nameOverride`                        | String to partially override common.names.fullname template (will maintain the release name)  | `""`                          |

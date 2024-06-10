@@ -18,7 +18,7 @@ See the [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentat
 - At least 3 GB of RAM available on your cluster per pod's worker
 - Helm 3
 - PV provisioner support in the underlying infrastructure (essential for storing logs)
-- - Kubernetes version >=1.23-0
+- Kubernetes version >=1.23-0
 
 ## Installing the Chart
 
@@ -93,7 +93,7 @@ The command removes all the Kubernetes components associated with the chart and 
 |---------------------------------------|-----------------------------------------------------------------------------------------------|-------------------------------|
 | `replicas`                            | Number of nodes                                                                               | `1`                           |
 | `image.repository`                    | Image repository                                                                              | `regulaforensics/face-api`    |
-| `image.tag`                           | Overrides the Face-API image tag                                                              | `"6.1-cpu"`                   |
+| `image.tag`                           | Overrides the Face-API image tag                                                              | `"6.2-cpu"`                   |
 | `image.pullPolicy`                    | Image pull policy                                                                             | `IfNotPresent`                |
 | `imagePullSecrets`                    | Image pull secrets                                                                            | `[]`                          |
 | `nameOverride`                        | String to partially override common.names.fullname template (will maintain the release name)  | `""`                          |

@@ -7,11 +7,10 @@ replicas: 1
 image:
   # Image is also available at the registry.connect.redhat.com/regulaforensics/face-api repository
   repository: regulaforensics/face-api
-  # Overrides the image tag whose default is the chart appVersion.
   # '-gpu' tag requires nvidia gpu nodes
   # https://github.com/NVIDIA/k8s-device-plugin
   # Please mind, setting a '-gpu' tag also requires adding 'nvidia.com/gpu: 1' at the 'resources' section.
-  tag: ~
+  tag: 6.2-cpu
   pullPolicy: Always
 imagePullSecrets: []
 
@@ -140,6 +139,7 @@ config:
         access:
           console: true
           path: "logs/access/facesdk-reader-access.log"
+          format: '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
         app:
           console: true
@@ -194,16 +194,26 @@ config:
       # #  You can load it to a k8s generic secret via the following command:
       # #  `kubectl create secret generic database-credentials -n <namespace> --from-literal=SQL_CONNECTION_STRING=<SQL_CONNECTION_STRING>`
       # connectionStringSecretName: ~
-      # connectionString examples:
-      # connectionString: postgresql://<username>:<password>@127.0.0.1:5432/regula_faceapi_db
-      # connectionString: mysql://username>:<password>@127.0.0.1:5432/regula_faceapi_db
-      # connectionString: mariadb+pymysql:/username>:<password>@127.0.0.1:3306/regula_faceapi_db
-      # connectionString: mysql+pymysql://username>:<password>@127.0.0.1:3306/regula_faceapi_db
-      # connectionString: sqlite:///opt/regula/faceapi/regula_faceapi.db
+      # connectionString: "sqlite:///opt/regula/face-reg-service/regula.db"
+      # connectionString: "postgresql://<username>:<password>@127.0.0.1:5432/regula_db"
+      # connectionString: "mysql://username>:<password>@127.0.0.1:5432/regula_db"
+      # connectionString: "mariadb+pymysql:/username>:<password>@127.0.0.1:3306/regula_db"
+      # connectionString: "mysql+pymysql://username>:<password>@127.0.0.1:3306/regula_db"
+      # connectionString: "mssql+pymssql://username>:<password>@127.0.0.1:1433/regula_db"
+      # connectionString: "oracle+oracledb://system:admin@127.0.0.1:1521/FREE"
+      # connectionString: "mongodb://regula:Regulapasswd#1@127.0.0.1:27017/regula_db?authSource=admin"
+      # connectionString: "mssql+pyodbc://@regula-test.database.windows.net/regual-test?driver=ODBC+Driver+18+for+SQL+Server"
+      passwordlessAuth:
+        enabled: false
+        type: "az"
+        az:
+          scope: https://database.windows.net/.default
 
     detectMatch:
       enabled: true
+      selfOrigins: []
       results:
+        audit: false
         location:
           folder: "/app/faceapi-detect-match/results"
           # bucket: "faceapi-detect-match" # storage type s3/gcs
@@ -226,7 +236,10 @@ config:
       enabled: false
       ecdhSchema: "default"
       hideMetadata: false
+      consistency: "eventual"
       protectPersonalInfo: false
+      config:
+        recalculateLandmarks: false
       sessions:
         location:
           folder: "/app/faceapi-liveness/sessions"

@@ -38,6 +38,7 @@ service:
       access:
         console: {{ .Values.config.service.webServer.logging.access.console }}
         path: {{ quote .Values.config.service.webServer.logging.access.path }}
+        format: {{ quote .Values.config.service.webServer.logging.access.format }}
       app:
         console: {{ .Values.config.service.webServer.logging.app.console }}
         path: {{ quote .Values.config.service.webServer.logging.app.path }}
@@ -86,6 +87,15 @@ service:
   {{- else }}
   database:
     connectionString: {{ quote .Values.config.service.database.connectionString }}
+    {{- if .Values.config.service.database.passwordlessAuth.enabled }}
+    passwordlessAuth:
+      enabled: true
+      {{- if eq .Values.config.service.database.passwordlessAuth.type "az" }}
+      type: "az"
+      az:
+        scope: {{ quote .Values.config.service.database.passwordlessAuth.az.scope }}
+      {{- end }}
+    {{- end }}
   {{- end }}
   {{- end }}
   {{- end }}
@@ -93,7 +103,11 @@ service:
   detectMatch:
     enabled: {{ .Values.config.service.detectMatch.enabled }}
     {{- if .Values.config.service.detectMatch.enabled }}
+    {{- with .Values.config.service.detectMatch.selfOrigins }}
+    selfOrigins: {{- toYaml . | nindent 6 }}
+    {{- end }}
     results:
+      audit: {{ .Values.config.service.detectMatch.results.audit }}
       location:
         {{- if or (eq .Values.config.service.storage.type "s3") (eq .Values.config.service.storage.type "gcs") }}
         bucket: {{ quote .Values.config.service.detectMatch.results.location.bucket }}
@@ -114,7 +128,10 @@ service:
     {{- if .Values.config.service.liveness.enabled }}
     ecdhSchema: {{ quote .Values.config.service.liveness.ecdhSchema }}
     hideMetadata: {{ .Values.config.service.liveness.hideMetadata }}
+    consistency: {{ quote .Values.config.service.liveness.consistency }}
     protectPersonalInfo: {{ .Values.config.service.liveness.protectPersonalInfo }}
+    config:
+      recalculateLandmarks: {{ .Values.config.service.liveness.config.recalculateLandmarks }}
     sessions:
       location:
         {{- if or (eq .Values.config.service.storage.type "s3") (eq .Values.config.service.storage.type "gcs") }}

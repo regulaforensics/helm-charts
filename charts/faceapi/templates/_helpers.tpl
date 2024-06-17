@@ -45,7 +45,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{/* Create the name of the service account to use */}}
 {{- define "faceapi.serviceAccount" -}}
 {{- if .Values.serviceAccount.create -}}
-    {{ default "faceapi" .Values.serviceAccount.name }}
+    {{ default (include "faceapi.fullname" .) .Values.serviceAccount.name }}
 {{- else -}}
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}

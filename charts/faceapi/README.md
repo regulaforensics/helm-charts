@@ -136,7 +136,14 @@ The command removes all the Kubernetes components associated with the chart and 
 | `livenessProbe.enabled`               | Enable livenessProbe                                                                          | `true`                        |
 | `readinessProbe.enabled`              | Enable readinessProbe                                                                         | `true`                        |
 | `autoscaling.enabled`                 | Enable autoscaling                                                                            | `false`                       |
-
+| `networkPolicy.enabled`               | Enable NetworkPolicy                                                                          | `false`                       |
+| `networkPolicy.annotations`           | NetworkPolicy annotations                                                                     | `{}`                          |
+| `networkPolicy.ingress`               | Set NetworkPolicy Ingress rules                                                               | `{}`                          |
+| `networkPolicy.egress`                | Set NetworkPolicy Egress rules                                                                | `{}`                          |
+| `rbac.create`                         | Create Role and RoleBinding                                                                   | `false`                       |
+| `rbac.annotations`                    | Role and RoleBinding annotations                                                              | `{}`                          |
+| `rbac.useExistingRole`                | Existing Role name to use                                                                     | `""`                          |
+| `rbac.extraRoleRules`                 | Extra rules for Role                                                                          | `[]`                          |
 
 ## Application parameters
 

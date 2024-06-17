@@ -341,13 +341,54 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
+networkPolicy:
+  enabled: false
+  annotations: {}
+  ingress: {}
+    # # allow ingress traffic from local namespace only
+    # - from:
+    #   - namespaceSelector:
+    #       matchLabels:
+    #         kubernetes.io/metadata.name: put-your-namespace-here
+  egress: {}
+    # # allow egress traffic to local namespace only
+    # - to:
+    #   - namespaceSelector:
+    #       matchLabels:
+    #         kubernetes.io/metadata.name: put-your-namespace-here
+    # # allow DNS resolution
+    # - ports:
+    #   - protocol: UDP
+    #     port: 53
+    # # allow traffic to lic.regulaforensics.com and lic2.regulaforensics.com
+    # - ports:
+    #   - protocol: TCP
+    #     port: 443
+    #   to:
+    #     - ipBlock:
+    #         cidr: 3.33.212.24/32
+    #     - ipBlock:
+    #         cidr: 15.197.254.180/32
+    #     - ipBlock:
+    #         cidr: 34.96.77.73/32
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: false
-  # The name of the service account to use.
+  # The name of service account to create.
   name: ~
   # Annotations to add to the service account
   annotations: {}
+
+rbac:
+  create: false
+  annotations: {}
+  # Use an existing Role
+  # useExistingRole: name-of-some-role
+  extraRoleRules: []
+  # - apiGroups: []
+  #   resources: []
+  #   verbs: []
 
 serviceMonitor:
   # Set this to `true` to create ServiceMonitor for Prometheus operator

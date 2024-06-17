@@ -162,7 +162,14 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | `livenessProbe.enabled`                   | Enable livenessProbe                                                                          | `true`                        |
 | `readinessProbe.enabled`                  | Enable readinessProbe                                                                         | `true`                        |
 | `autoscaling.enabled`                     | Enable autoscaling                                                                            | `false`                       |
-
+| `networkPolicy.enabled`                   | Enable NetworkPolicy                                                                          | `false`                       |
+| `networkPolicy.annotations`               | NetworkPolicy annotations                                                                     | `{}`                          |
+| `networkPolicy.ingress`                   | Set NetworkPolicy Ingress rules                                                               | `{}`                          |
+| `networkPolicy.egress`                    | Set NetworkPolicy Egress rules                                                                | `{}`                          |
+| `rbac.create`                             | Create Role and RoleBinding                                                                   | `false`                       |
+| `rbac.annotations`                        | Role and RoleBinding annotations                                                              | `{}`                          |
+| `rbac.useExistingRole`                    | Existing Role name to use                                                                     | `""`                          |
+| `rbac.extraRoleRules`                     | Extra rules for Role                                                                          | `[]`                          |
 
 ## Application parameters
 

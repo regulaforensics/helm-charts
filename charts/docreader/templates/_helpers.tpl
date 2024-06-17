@@ -45,7 +45,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{/* Create the name of the service account to use */}}
 {{- define "docreader.serviceAccount" -}}
 {{- if .Values.serviceAccount.create -}}
-    {{ default "docreader" .Values.serviceAccount.name }}
+    {{ default (include "docreader.fullname" .) .Values.serviceAccount.name }}
 {{- else -}}
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}

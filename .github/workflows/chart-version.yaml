@@ -1,0 +1,98 @@
+name: Chart Version Test
+
+on:
+  workflow_call:
+
+jobs:
+  # JOB to run change detection
+  changes:
+    runs-on: ubuntu-latest
+    # Required permissions
+    permissions:
+      pull-requests: read
+    outputs:
+      # Expose matched filters as job 'charts' output variable
+      charts: ${{ steps.filter.outputs.changes }}
+    steps:
+    # For pull requests it's not necessary to checkout the code
+    - uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          docreader: charts/docreader/*
+          faceapi: charts/faceapi/*
+
+  chart-version:
+    needs: changes
+    strategy:
+      fail-fast: false
+      matrix:
+        chart: ${{ fromJSON(needs.changes.outputs.charts) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Get old chart version
+        id: old_version
+        shell: bash
+        run: |
+          old_version=$(grep -m1 version\: charts/${{ matrix.chart }}/Chart.yaml | awk -F ' ' '{print $2}')
+          echo "old_version=$old_version" >> $GITHUB_OUTPUT
+
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+
+      - name: Get new chart version and compare
+        id: new_version
+        shell: bash
+        run: |
+          new_version=$(grep -m1 version\: charts/${{ matrix.chart }}/Chart.yaml | awk -F ' ' '{print $2}')
+          old_version=${{ steps.old_version.outputs.old_version }}
+          echo "new_version = $new_version"
+          echo "old_version = $old_version"
+
+          if [[ "$new_version" == "$old_version" ]]; then
+            echo "New and old Chart versions are equal. Please increase the Chart version"
+            exit 1
+          fi
+          
+          new_version=(${new_version//./ })
+          old_version=(${old_version//./ })
+
+          if [[ "${#new_version[@]}" -ne "${#old_version[@]}" ]]; then
+            echo "Version formats do not match"
+            exit 1
+          fi
+          
+          for i in $(seq 0 ${#new_version[@]}); do
+            case "$i" in
+              0)
+              version="Major"
+              ;;
+          
+              1)
+              version="Minor"
+              ;;
+          
+              *)
+              version="Patch"
+              ;;
+            esac
+          
+            if [[ "${new_version[$i]}" -gt "${old_version[$i]}" ]]; then
+              echo "$version version is greater than previous one"
+              echo "Version is OK"
+              break
+            elif [[ "${new_version[$i]}" -eq "${old_version[$i]}" ]]; then
+              echo "$version version is equal to previous one. Keep checking..."
+            else
+              echo "$version version is lower than previous one"
+              echo "Version is NOT OK. Please increase the Chart version"
+              exit 1
+            fi
+          done
+          
+          exit 0

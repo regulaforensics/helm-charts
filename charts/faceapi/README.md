@@ -135,6 +135,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `serviceMonitor.additionalLabels`     | Additional labels that can be used so ServiceMonitor will be discovered by Prometheus         | `{}`                          |
 | `livenessProbe.enabled`               | Enable livenessProbe                                                                          | `true`                        |
 | `readinessProbe.enabled`              | Enable readinessProbe                                                                         | `true`                        |
+| `startupProbe.enabled`                | Enable startupProbe                                                                           | `true`                        |
 | `autoscaling.enabled`                 | Enable autoscaling                                                                            | `false`                       |
 | `networkPolicy.enabled`               | Enable NetworkPolicy                                                                          | `false`                       |
 | `networkPolicy.annotations`           | NetworkPolicy annotations                                                                     | `{}`                          |

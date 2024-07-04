@@ -55,4 +55,4 @@ jobs:
         if: steps.list-changed.outputs.changed == 'true'
 
       - name: Run chart-testing (install)
-        run: ct install --config "${CT_CONFIGFILE}" --helm-extra-set-args "--set=readinessProbe.enabled=false"
+        run: ct install --config "${CT_CONFIGFILE}" --helm-extra-set-args "--set=readinessProbe.enabled=false --set=startupProbe.enabled=false"

@@ -328,6 +328,14 @@ readinessProbe:
   successThreshold: 1
   failureThreshold: 5
 
+startupProbe:
+  enabled: true
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 30
+
 autoscaling:
   enabled: false
   minReplicas: 1

@@ -161,6 +161,7 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | `serviceMonitor.additionalLabels`         | Additional labels that can be used so ServiceMonitor will be discovered by Prometheus         | `{}`                          |
 | `livenessProbe.enabled`                   | Enable livenessProbe                                                                          | `true`                        |
 | `readinessProbe.enabled`                  | Enable readinessProbe                                                                         | `true`                        |
+| `startupProbe.enabled`                    | Enable startupProbe                                                                           | `true`                        |
 | `autoscaling.enabled`                     | Enable autoscaling                                                                            | `false`                       |
 | `networkPolicy.enabled`                   | Enable NetworkPolicy                                                                          | `false`                       |
 | `networkPolicy.annotations`               | NetworkPolicy annotations                                                                     | `{}`                          |
@@ -222,6 +223,7 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | Parameter                                                         | Description                                                                                   | Default                               |
 |-------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|---------------------------------------|
 | `config.service.processing.results.enabled`                       | Whether to enable processing                                                                  | `false`                               |
+| `config.service.processing.results.ecdhSchema`                    | ECDH schema to use                                                                            | `prime256v1`                          |
 | `config.service.processing.results.location.bucket`               | The processing results bucket name in case of `s3`/`gcs` storage type                         | `""`                                  |
 | `config.service.processing.results.location.container`            | The processing results storage container name in case of `az` storage type                    | `""`                                  |
 | `config.service.processing.results.location.folder`               | The processing results folder name in case of `fs` storage type                               | `"/app/docreader-processing/results"` |

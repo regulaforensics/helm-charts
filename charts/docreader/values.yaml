@@ -180,6 +180,7 @@ config:
 
     processing:
       enabled: true
+      ecdhSchema: "prime256v1"
       results:
         saveResult: false
         location:
@@ -327,6 +328,14 @@ readinessProbe:
   timeoutSeconds: 5
   successThreshold: 1
   failureThreshold: 5
+
+startupProbe:
+  enabled: true
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 30
 
 autoscaling:
   enabled: false

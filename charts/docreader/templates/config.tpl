@@ -44,6 +44,7 @@ service:
       access:
         console: {{ .Values.config.service.webServer.logging.access.console }}
         path: {{ quote .Values.config.service.webServer.logging.access.path }}
+        format: {{ quote .Values.config.service.webServer.logging.access.format }}
       app:
         console: {{ .Values.config.service.webServer.logging.app.console }}
         path: {{ quote .Values.config.service.webServer.logging.app.path }}

@@ -9,7 +9,7 @@ image:
   repository: regulaforensics/docreader
   # Overrides the image tag whose default is the chart appVersion.
   tag: ~
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 imagePullSecrets: []
 
 nameOverride: ""
@@ -119,6 +119,7 @@ config:
         access:
           console: true
           path: "logs/access/docreader-access.log"
+          format: '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
         app:
           console: true
           path: "logs/app/docreader-app.log"

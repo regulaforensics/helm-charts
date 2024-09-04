@@ -3,7 +3,7 @@
 apiVersion: v2
 name: faceapi
 home: https://faceapi.regulaforensics.com/
-version: 1.2.1
+version: 1.2.2
 appVersion: 6.2.435.1130
 description: Face Recognition Service. On-premise and cloud integration
 icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg

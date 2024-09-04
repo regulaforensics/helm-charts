@@ -19,8 +19,8 @@ jobs:
       id: filter
       with:
         filters: |
-          docreader: charts/docreader/*
-          faceapi: charts/faceapi/*
+          docreader: charts/docreader/**
+          faceapi: charts/faceapi/**
 
   chart-version:
     needs: changes

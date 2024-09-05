@@ -19,5 +19,9 @@ roleRef:
   {{- end }}
 subjects:
 - kind: ServiceAccount
+  {{- if .Values.serviceAccount.create }}
   name: {{ include "docreader.serviceAccount" . }}
+  {{- else }}
+  name: default
+  {{- end }}
 {{- end }}

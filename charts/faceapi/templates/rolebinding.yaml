@@ -19,5 +19,9 @@ roleRef:
   {{- end }}
 subjects:
 - kind: ServiceAccount
+  {{- if .Values.serviceAccount.create }}
   name: {{ include "faceapi.serviceAccount" . }}
+  {{- else }}
+  name: default
+  {{- end }}
 {{- end }}

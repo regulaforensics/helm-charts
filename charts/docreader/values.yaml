@@ -79,7 +79,7 @@ licenseSecretName: ~
 config:
   sdk:
     systemInfo:
-      # Returns system information in the /api/ping response and in the /api/process response.
+      # Returns system information in the /api/healthz response and in the /api/process response.
       returnSystemInfo: true
 
     rfid:

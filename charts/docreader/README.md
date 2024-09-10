@@ -178,7 +178,7 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | Parameter                                                 | Description                                                                       | Default                                                       |
 |-----------------------------------------------------------|-----------------------------------------------------------------------------------|---------------------------------------------------------------|
 | `licenseSecretName`                                       | The name of an existing secret containing the regula.license file                 | `""`                                                          |
-| `config.sdk.systemInfo.returnSystemInfo`                  | Whether to hide system info (/api/ping response)                                  | `true`                                                        |
+| `config.sdk.systemInfo.returnSystemInfo`                  | Whether to hide system info (/api/healthz response)                               | `true`                                                        |
 | `config.sdk.rfid.enabled`                                 | Whether to enable RFID PKD PA mode                                                | `false`                                                       |
 | `config.sdk.rfid.pkdPaPath`                               | RFID PKD PA certificates path                                                     | `"/app/pkdPa"`                                                |
 | `config.sdk.rfid.pkdPaExistingClaim`                      | Name of the existing Persistent Volume Claim containing RFID PKD PA certificates  | `""`                                                          |

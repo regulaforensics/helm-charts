@@ -259,6 +259,20 @@ config:
           # If defined, PVC must be created manually before volume will be bound
           existingClaim: ~
 
+    # Housekeeper configuration, for the cases when needs to have automatic cleanup of the data
+    # The housekeeper is responsible for cleaning up the data in the storage and database
+    # By default housekeeper is enabled, but clearing data for search and liveness is disabled
+    houseKeeper:
+      enabled: true
+      beatCadence: 10
+      keepFor: 14400  # 4 hours, time for keeping houseKeeper statistics in the database
+      liveness:
+        enabled: false
+        keepFor: 31536000  # 1 year
+      search:
+        enabled: false
+        keepFor: 31536000  # 1 year
+
     search:
       enabled: false
       persons:

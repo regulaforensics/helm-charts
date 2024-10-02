@@ -93,7 +93,7 @@ The command removes all the Kubernetes components associated with the chart and 
 |---------------------------------------|-----------------------------------------------------------------------------------------------|-------------------------------|
 | `replicas`                            | Number of nodes                                                                               | `1`                           |
 | `image.repository`                    | Image repository                                                                              | `regulaforensics/face-api`    |
-| `image.tag`                           | Overrides the Face-API image tag                                                              | `"6.2-cpu"`                   |
+| `image.tag`                           | Overrides the Face-API image tag                                                              | `"6.3-cpu"`                   |
 | `image.pullPolicy`                    | Image pull policy                                                                             | `IfNotPresent`                |
 | `imagePullSecrets`                    | Image pull secrets                                                                            | `[]`                          |
 | `nameOverride`                        | String to partially override common.names.fullname template (will maintain the release name)  | `""`                          |
@@ -229,6 +229,19 @@ The command removes all the Kubernetes components associated with the chart and 
 | `config.service.liveness.sessions.persistence.size`                | The size of Liveness sessions data Persistent Volume Storage Class                            | `10Gi`                                |
 | `config.service.liveness.sessions.persistence.storageClassName`    | The Liveness sessions data Persistent Volume Storage Class                                    | `""`                                  |
 | `config.service.liveness.sessions.persistence.existingClaim`       | Name of the existing Persistent Volume Claim                                                  | `""`                                  |
+
+
+## HouseKeeper parameters
+
+| Parameter                                     | Description                                                        | Default    |
+|-----------------------------------------------|--------------------------------------------------------------------|------------|
+| `config.service.houseKeeper.enabled`          | Whether to enable HouseKeeper                                      | `true`     |
+| `config.service.houseKeeper.beatCadence`      | HouseKeeper beat cadence in seconds                                | `10`       |
+| `config.service.houseKeeper.keepFor`          | Time for keeping houseKeeper statistics in the database in seconds | `14400`    |
+| `config.service.houseKeeper.liveness.enabled` | Whether to enable clearing data for liveness                       | `false`    |
+| `config.service.houseKeeper.liveness.keepFor` | Time for keeping data for liveness in seconds                      | `31536000` |
+| `config.service.houseKeeper.search.enabled`   | Whether to enable clearing data for search                         | `false`    |
+| `config.service.houseKeeper.search.keepFor`   | Time for keeping data for search in seconds                        | `31536000` |
 
 
 ## Search parameters

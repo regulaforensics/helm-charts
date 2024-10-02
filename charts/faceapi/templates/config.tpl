@@ -132,6 +132,8 @@ service:
     protectPersonalInfo: {{ .Values.config.service.liveness.protectPersonalInfo }}
     config:
       recalculateLandmarks: {{ .Values.config.service.liveness.config.recalculateLandmarks }}
+      firstImgFormat: {{ .Values.config.service.liveness.config.firstImgFormat }}
+      pngCompression: {{ .Values.config.service.liveness.config.pngCompression }}
     sessions:
       location:
         {{- if or (eq .Values.config.service.storage.type "s3") (eq .Values.config.service.storage.type "gcs") }}
@@ -146,6 +148,19 @@ service:
         folder: {{ quote .Values.config.service.liveness.sessions.location.folder }}
         {{- end }}
     {{- else }}
+    {{- end }}
+
+  houseKeeper:
+    enabled: {{ .Values.config.service.houseKeeper.enabled }}
+    {{- if .Values.config.service.houseKeeper.enabled }}
+    beatCadence: {{ .Values.config.service.houseKeeper.beatCadence }}
+    keepFor: {{ .Values.config.service.houseKeeper.keepFor }}
+    liveness:
+      enabled: {{ .Values.config.service.houseKeeper.liveness.enabled }}
+      keepFor: {{ .Values.config.service.houseKeeper.liveness.keepFor | int64 }}
+    search:
+      enabled: {{ .Values.config.service.houseKeeper.search.enabled }}
+      keepFor: {{ .Values.config.service.houseKeeper.search.keepFor | int64 }}
     {{- end }}
 
   search:

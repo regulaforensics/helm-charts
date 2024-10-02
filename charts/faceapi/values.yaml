@@ -10,7 +10,7 @@ image:
   # '-gpu' tag requires nvidia gpu nodes
   # https://github.com/NVIDIA/k8s-device-plugin
   # Please mind, setting a '-gpu' tag also requires adding 'nvidia.com/gpu: 1' at the 'resources' section.
-  tag: 6.2-cpu
+  tag: 6.3-cpu
   pullPolicy: Always
 imagePullSecrets: []
 
@@ -240,6 +240,8 @@ config:
       protectPersonalInfo: false
       config:
         recalculateLandmarks: false
+        firstImgFormat: ".jpg"
+        pngCompression: 3
       sessions:
         location:
           folder: "/app/faceapi-liveness/sessions"
@@ -258,6 +260,20 @@ config:
           storageClassName: ~
           # If defined, PVC must be created manually before volume will be bound
           existingClaim: ~
+
+    # Housekeeper configuration, for the cases when needs to have automatic cleanup of the data
+    # The housekeeper is responsible for cleaning up the data in the storage and database
+    # By default housekeeper is enabled, but clearing data for search and liveness is disabled
+    houseKeeper:
+      enabled: true
+      beatCadence: 10
+      keepFor: 14400  # 4 hours, time for keeping houseKeeper statistics in the database
+      liveness:
+        enabled: false
+        keepFor: 31536000  # 1 year
+      search:
+        enabled: false
+        keepFor: 31536000  # 1 year
 
     search:
       enabled: false

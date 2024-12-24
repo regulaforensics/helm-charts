@@ -125,6 +125,15 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 {{- end -}}
 
+{{/* SDK Error Log volume claim */}}
+{{- define "docreader.sdkErrorLog.pvc" -}}
+{{- if .Values.config.service.sdkErrorLog.persistence.existingClaim -}}
+{{ .Values.config.service.sdkErrorLog.persistence.existingClaim }}
+{{- else -}}
+{{ .Release.Name }}-sdk-error-log
+{{- end -}}
+{{- end -}}
+
 {{/* Docreader RFID PKD PA volume claim */}}
 {{- define "docreader.rfid.pkd.pvc" -}}
 {{- if .Values.config.sdk.rfid.persistence.existingClaim -}}

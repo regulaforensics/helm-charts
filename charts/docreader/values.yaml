@@ -101,6 +101,11 @@ config:
       port: 8080
       workers: 1
       timeout: 30
+      maxRequests: 0
+      maxRequestsJitter: 0
+      gracefulTimeout: 30
+      keepalive: 0
+      workerConnections: 1000
 
       demoApp:
         enabled: true
@@ -214,6 +219,22 @@ config:
           size: 10Gi
           storageClassName: ~
           existingClaim: ~
+
+    sdkErrorLog:
+      enabled: false
+      location:
+        folder: "/app/docreader-errors/sdk"
+        # bucket: "docreader-errors" # storage type s3/gcs
+        # container: "docreader-errors" # storage type az
+        prefix: "sdk"
+      # Persistence is only applicable for the fs storage type
+      persistence:
+        # Enable persistent volume for storing transactions data
+        enabled: false
+        accessMode: ReadWriteMany
+        size: 10Gi
+        storageClassName: ~
+        existingClaim: ~
 
 env: []
 # - name: ""

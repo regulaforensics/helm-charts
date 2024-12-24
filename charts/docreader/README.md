@@ -187,6 +187,11 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | `config.service.webServer.port`                           | Port server binding                                                               | `8080`                                                        |
 | `config.service.webServer.workers`                        | Number of workers per pod                                                         | `1`                                                           |
 | `config.service.webServer.timeout`                        | Number of seconds for the worker to process the request                           | `30`                                                          |
+| `config.service.webServer.maxRequests`                    | The maximum number of requests a worker will process before restarting            | `0`                                                           |
+| `config.service.webServer.maxRequestsJitter`              | The maximum jitter to add to the `maxRequests` setting                            | `0`                                                           |
+| `config.service.webServer.gracefulTimeout`                | Timeout for graceful workers restart                                              | `30`                                                          |
+| `config.service.webServer.keepalive`                      | The number of seconds to wait for requests on a Keep-Alive connection             | `0`                                                           |
+| `config.service.webServer.workerConnections`              | The maximum number of simultaneous clients                                        | `1000`                                                        |
 | `config.service.webServer.demoApp.enabled`                | Serve a demo web app                                                              | `true`                                                        |
 | `config.service.webServer.demoApp.webComponent.enabled`   | Whether to enable Web Component                                                   | `false`                                                       |
 | `config.service.webServer.cors.origins`                   | Origin, allowed to use API                                                        | `*`                                                           |
@@ -250,6 +255,21 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | `config.service.sessionApi.transactions.persistence.size`             | The size of Session API logs data Persistent Volume storage Class                                  | `10Gi`                                       |
 | `config.service.sessionApi.transactions.persistence.storageClassName` | The Session API logs data Persistent Volume storage Class                                          | `""`                                         |
 | `config.service.sessionApi.transactions.persistence.existingClaim`    | Name of the existing Persistent Volume Claim                                                       | `""`                                         |
+
+
+## SDK Error Logs parameters
+| Parameter                                                 | Description                                                                             | Default                         |
+|-----------------------------------------------------------|-----------------------------------------------------------------------------------------|---------------------------------|
+| `config.service.sdkErrorLog.enabled`                      | Whether to enable SDK Error Log                                                         | `false`                         |
+| `config.service.sdkErrorLog.location.folder`              | The SDK Error Log folder name in case of `fs` storage type                              | `/app/docreader-errors/sdk`     |
+| `config.service.sdkErrorLog.location.bucket`              | The SDK Error Log bucket name in case of `s3`/`gcs` storage type                        | `docreader-errors`              |
+| `config.service.sdkErrorLog.location.container`           | The SDK Error Log storage container name in case of `az` storage type                   | `docreader-errors`              |
+| `config.service.sdkErrorLog.location.prefix`              | The SDK Error Log prefix path in the `bucket/container`                                 | `sdk`                           |
+| `config.service.sdkErrorLog.persistence.enabled`          | Whether to enable SDK Error Log persistence (Applicable only for the `fs` storage type) | `false`                         |
+| `config.service.sdkErrorLog.persistence.accessMode`       | The SDK Error Log data Persistence access mode                                          | `ReadWriteMany`                 |
+| `config.service.sdkErrorLog.persistence.size`             | The size of SDK Error Log data Persistent Volume storage                                | `10Gi`                          |
+| `config.service.sdkErrorLog.persistence.storageClassName` | The SDK Error Log data Persistent Volume storage Class Name                             | `""`                            |
+| `config.service.sdkErrorLog.persistence.existingClaim`    | Name of the existing Persistent Volume Claim                                            | `""`                            |
 
 
 > [!NOTE]

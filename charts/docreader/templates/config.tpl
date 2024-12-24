@@ -20,6 +20,11 @@ service:
     port: {{ .Values.config.service.webServer.port }}
     workers: {{ .Values.config.service.webServer.workers }}
     timeout: {{ .Values.config.service.webServer.timeout }}
+    maxRequests: {{ .Values.config.service.webServer.maxRequests }}
+    maxRequestsJitter: {{ .Values.config.service.webServer.maxRequestsJitter }}
+    gracefulTimeout: {{ .Values.config.service.webServer.gracefulTimeout }}
+    keepalive: {{ .Values.config.service.webServer.keepalive }}
+    workerConnections: {{ .Values.config.service.webServer.workerConnections }}
     demoApp:
       enabled: {{ .Values.config.service.webServer.demoApp.enabled }}
       {{- if .Values.config.service.webServer.demoApp.enabled }}
@@ -133,5 +138,22 @@ service:
         {{- if eq .Values.config.service.storage.type "fs" }}
         folder: {{ quote .Values.config.service.sessionApi.transactions.location.folder }}
         {{- end }}
+    {{- end }}
+
+  sdkErrorLog:
+    enabled: {{ .Values.config.service.sdkErrorLog.enabled }}
+    {{- if .Values.config.service.sdkErrorLog.enabled }}
+    location:
+      {{- if or (eq .Values.config.service.storage.type "s3") (eq .Values.config.service.storage.type "gcs") }}
+      bucket: {{ quote .Values.config.service.sdkErrorLog.location.bucket }}
+      prefix: {{ quote .Values.config.service.sdkErrorLog.location.prefix }}
+      {{- end }}
+      {{- if eq .Values.config.service.storage.type "az" }}
+      container: {{ quote .Values.config.service.sdkErrorLog.location.container }}
+      prefix: {{ quote .Values.config.service.sdkErrorLog.location.prefix }}
+      {{- end }}
+      {{- if eq .Values.config.service.storage.type "fs" }}
+      folder: {{ quote .Values.config.service.sdkErrorLog.location.folder }}
+      {{- end }}
     {{- end }}
 {{- end }}

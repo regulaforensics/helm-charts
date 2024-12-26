@@ -1,0 +1,20 @@
+{{- if and (eq .Values.config.service.storage.type "fs") .Values.config.service.sdkErrorLog.enabled .Values.config.service.sdkErrorLog.persistence.enabled (not .Values.config.service.sdkErrorLog.persistence.existingClaim) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ template "docreader.sdkErrorLog.pvc" . }}
+  labels: {{- include "docreader.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.config.service.sdkErrorLog.persistence.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.config.service.sdkErrorLog.persistence.size | quote }}
+  {{- if .Values.config.service.sdkErrorLog.persistence.storageClassName }}
+  {{- if (eq "-" .Values.config.service.sdkErrorLog.persistence.storageClassName) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: {{ quote .Values.config.service.sdkErrorLog.persistence.storageClassName }}
+  {{- end }}
+  {{- end }}
+{{- end }}

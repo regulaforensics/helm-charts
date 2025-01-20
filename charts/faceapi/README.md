@@ -98,6 +98,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `imagePullSecrets`                    | Image pull secrets                                                                            | `[]`                          |
 | `nameOverride`                        | String to partially override common.names.fullname template (will maintain the release name)  | `""`                          |
 | `fullnameOverride`                    | String to fully override common.names.fullname template                                       | `""`                          |
+| `commonLabels`                        | Extra labels to apply to all resources                                                        | `{}`                          |
 | `resources`                           | CPU/Memory resource requests/limits                                                           | `{}`                          |
 | `securityContext`                     | Enable security context                                                                       | `{}`                          |
 | `podSecurityContext`                  | Enable pod security context                                                                   | `{}`                          |

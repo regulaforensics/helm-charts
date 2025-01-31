@@ -84,6 +84,7 @@ service:
     ## `storage.az.connectionString` value has been overridden by `storage.az.connectionStringSecretName` value
     {{- else }}
     az:
+      storageAccount: {{ quote .Values.config.service.storage.az.storageAccount }}
       connectionString: {{ quote .Values.config.service.storage.az.connectionString }}
     {{- end }}
     {{- end }}

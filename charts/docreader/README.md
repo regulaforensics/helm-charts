@@ -218,6 +218,7 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | `config.service.storage.s3.endpointUrl`                   | Endpoint URL to the S3 compatible storage                                         | `"https://s3.amazonaws.com"`                                  |
 | `config.service.storage.s3.awsCredentialsSecretName`      | Secret name containing AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY credentials        | `""`                                                          |
 | `config.service.storage.gcs.gcsKeyJsonSecretName`         | Secret name containing Google Service Account key (json file)                     | `""`                                                          |
+| `config.service.storage.az.storageAccount`                | Azure storage Account Name                                                        | `""`                                                          |
 | `config.service.storage.az.connectionString`              | Azure storage Account connection string                                           | `""`                                                          |
 | `config.service.storage.az.connectionStringSecretName`    | Secret name containing Azure storage Account connection string                    | `""`                                                          |
 |                                                                                                                                                                                                               |

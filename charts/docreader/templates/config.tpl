@@ -141,6 +141,16 @@ service:
         {{- end }}
     {{- end }}
 
+  houseKeeper:
+    enabled: {{ .Values.config.service.houseKeeper.enabled }}
+    {{- if .Values.config.service.houseKeeper.enabled }}
+    beatCadence: {{ .Values.config.service.houseKeeper.beatCadence }}
+    keepFor: {{ .Values.config.service.houseKeeper.keepFor }}
+    sessionApi:
+      enabled: {{ .Values.config.service.houseKeeper.sessionApi.enabled }}
+      keepFor: {{ .Values.config.service.houseKeeper.sessionApi.keepFor | int64 }}
+    {{- end }}
+
   sdkErrorLog:
     enabled: {{ .Values.config.service.sdkErrorLog.enabled }}
     {{- if .Values.config.service.sdkErrorLog.enabled }}

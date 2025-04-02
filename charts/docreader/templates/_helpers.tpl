@@ -102,6 +102,11 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{ default (printf "%s-postgresql" .Release.Name) }}
 {{- end }}
 
+{{/* DB Migrations Job Name */}}
+{{- define "docreader.migration" -}}
+{{ default (printf "%s-db-migration-job" .Release.Name) }}
+{{- end }}
+
 {{/* User defined docreader environment variables */}}
 {{- define "docreader.envs" -}}
   {{- range $i, $config := .Values.env }}

@@ -6,8 +6,12 @@
 ***********************************************************************
 
 Chart version: {{ .Chart.Version }}
-Docreader version compatibility: >= 7.1
+Docreader version compatibility: >= 7.6
 Kubernetes version compatibility: >= 1.23.0
+
+{{- if eq .Values.image.tag "latest" }}
+NOTE: Do not use "latest" mutable tag in production. Mutable tags can introduce multiple functional and security issues.
+{{- end }}
 
 1. Get the application URL by running these commands:
 {{- if .Values.ingress.enabled }}

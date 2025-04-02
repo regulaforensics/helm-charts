@@ -178,7 +178,7 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | Parameter                                                 | Description                                                                       | Default                                                       |
 |-----------------------------------------------------------|-----------------------------------------------------------------------------------|---------------------------------------------------------------|
 | `licenseSecretName`                                       | The name of an existing secret containing the regula.license file                 | `""`                                                          |
-| `config.sdk.systemInfo.returnSystemInfo`                  | Whether to hide system info (/api/ping response)                                  | `true`                                                        |
+| `config.sdk.systemInfo.returnSystemInfo`                  | Whether to hide system info (/api/healthz response)                               | `true`                                                        |
 | `config.sdk.rfid.enabled`                                 | Whether to enable RFID PKD PA mode                                                | `false`                                                       |
 | `config.sdk.rfid.pkdPaPath`                               | RFID PKD PA certificates path                                                     | `"/app/pkdPa"`                                                |
 | `config.sdk.rfid.pkdPaExistingClaim`                      | Name of the existing Persistent Volume Claim containing RFID PKD PA certificates  | `""`                                                          |
@@ -258,6 +258,15 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | `config.service.sessionApi.transactions.persistence.storageClassName` | The Session API logs data Persistent Volume storage Class                                          | `""`                                         |
 | `config.service.sessionApi.transactions.persistence.existingClaim`    | Name of the existing Persistent Volume Claim                                                       | `""`                                         |
 
+## HouseKeeper parameters
+
+| Parameter                                       | Description                                                        | Default    |
+|-------------------------------------------------|--------------------------------------------------------------------|------------|
+| `config.service.houseKeeper.enabled`            | Whether to enable HouseKeeper                                      | `false`    |
+| `config.service.houseKeeper.beatCadence`        | HouseKeeper beat cadence in seconds                                | `10`       |
+| `config.service.houseKeeper.keepFor`            | Time for keeping houseKeeper statistics in the database in seconds | `14400`    |
+| `config.service.houseKeeper.sessionApi.enabled` | Whether to enable clearing data for sessionApi                     | `false`    |
+| `config.service.houseKeeper.sessionApi.keepFor` | Time for keeping data for sessionApi in seconds                    | `31536000` |
 
 ## SDK Error Logs parameters
 | Parameter                                                 | Description                                                                             | Default                         |

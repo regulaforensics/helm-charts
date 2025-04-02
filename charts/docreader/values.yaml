@@ -82,7 +82,7 @@ licenseSecretName: ~
 config:
   sdk:
     systemInfo:
-      # Returns system information in the /api/ping response and in the /api/process response.
+      # Returns system information in the /api/healthz response and in the /api/process response.
       returnSystemInfo: true
 
     rfid:
@@ -223,6 +223,17 @@ config:
           size: 10Gi
           storageClassName: ~
           existingClaim: ~
+
+    # Housekeeper configuration, for the cases when needs to have automatic cleanup of the data
+    # The housekeeper is responsible for cleaning up the data in the storage and database
+    # By default housekeeper is disabled
+    houseKeeper:
+      enabled: false
+      beatCadence: 10
+      keepFor: 14400
+      sessionApi:
+        enabled: false
+        keepFor: 31536000
 
     sdkErrorLog:
       enabled: false

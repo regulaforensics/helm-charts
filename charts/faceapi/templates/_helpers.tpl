@@ -107,6 +107,11 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{ default (printf "%s-postgresql" .Release.Name) }}
 {{- end }}
 
+{{/* DB Migrations Job Name */}}
+{{- define "faceapi.migration" -}}
+{{ default (printf "%s-db-migration-job" .Release.Name) }}
+{{- end }}
+
 {{/* User defined faceapi environment variables */}}
 {{- define "faceapi.envs" -}}
   {{- range $i, $config := .Values.env }}

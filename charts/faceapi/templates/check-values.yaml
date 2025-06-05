@@ -1,5 +1,10 @@
 {{/* The purpose of this yaml file is it to check the values file is consistent for some complexe combinations. */}}
 
+{{- /* App Version check */ -}}
+{{- if lt (default .Chart.AppVersion .Values.image.tag) "7.1" }}
+    {{ required "Chart is not compatibile with FaceAPI version < 7.1\n Please upgrade to version 7.1 or higher" nil }}
+{{- end }}
+
 {{- /* SSL checks */ -}}
 {{- if .Values.config.service.webServer.ssl.enabled }}
     {{- if not .Values.config.service.webServer.ssl.certificatesSecretName }}

@@ -6,8 +6,12 @@
 ***********************************************************************
 
 Chart version: {{ .Chart.Version }}
-FaceAPI version compatibility: >= 6.1
+FaceAPI version compatibility: >= 7.1
 Kubernetes version compatibility: >= 1.23.0
+
+{{- if or (eq .Values.image.tag "latest") (eq .Values.image.tag "latest-gpu") }}
+NOTE: Do not use "latest" mutable tag in production. Mutable tags can introduce multiple functional and security issues.
+{{- end }}
 
 1. Get the application URL by running these commands:
 {{- if .Values.ingress.enabled }}

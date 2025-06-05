@@ -10,7 +10,7 @@ image:
   # '-gpu' tag requires nvidia gpu nodes
   # https://github.com/NVIDIA/k8s-device-plugin
   # Please mind, setting a '-gpu' tag also requires adding 'nvidia.com/gpu: 1' at the 'resources' section.
-  tag: 6.3-cpu
+  tag: 7.1-cpu
   pullPolicy: Always
 imagePullSecrets: []
 

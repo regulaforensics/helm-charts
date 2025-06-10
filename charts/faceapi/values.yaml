@@ -244,8 +244,8 @@ config:
       protectPersonalInfo: false
       config:
         recalculateLandmarks: false
-        firstImgFormat: ".jpg"
-        pngCompression: 3
+        firstImgFormat: ".png"
+        pngCompression: 1
       sessions:
         location:
           folder: "/app/faceapi-liveness/sessions"

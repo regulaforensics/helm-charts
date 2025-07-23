@@ -30,10 +30,10 @@ resources: {}
   # Also, the resources (both requests and limits) section is mandatory for autoscaling
   # limits:
   #   cpu: 2000m
-  #   memory: 3Gi
+  #   memory: 4Gi
   # requests:
   #   cpu: 1000m
-  #   memory: 3Gi
+  #   memory: 4Gi
 
 securityContext: {}
   # capabilities:
@@ -84,8 +84,12 @@ config:
   sdk:
     compare:
       limitPerImageTypes: 2
-    logging:
-      level: "INFO"
+
+    param:
+      # RegressionAge:
+      #   inferenceParams:
+      #     modelInfo:
+      #       halfInterval: 1
 
     detect:
       # scenarios:
@@ -241,11 +245,13 @@ config:
       ecdhSchema: "default"
       hideMetadata: false
       consistency: "eventual"
-      protectPersonalInfo: false
+      ## (Optional) Expose metadata
+      exposeData:
+        # portrait: false
+        # video: false
+      ## (Optional) Client configuration
       config:
-        recalculateLandmarks: false
-        firstImgFormat: ".jpg"
-        pngCompression: 3
+        # recalculateLandmarks: false
       sessions:
         location:
           folder: "/app/faceapi-liveness/sessions"
@@ -264,20 +270,6 @@ config:
           storageClassName: ~
           # If defined, PVC must be created manually before volume will be bound
           existingClaim: ~
-
-    # Housekeeper configuration, for the cases when needs to have automatic cleanup of the data
-    # The housekeeper is responsible for cleaning up the data in the storage and database
-    # By default housekeeper is enabled, but clearing data for search and liveness is disabled
-    houseKeeper:
-      enabled: true
-      beatCadence: 10
-      keepFor: 14400
-      liveness:
-        enabled: false
-        keepFor: 31536000
-      search:
-        enabled: false
-        keepFor: 31536000
 
     search:
       enabled: false
@@ -299,6 +291,14 @@ config:
           storageClassName: ~
           # If defined, PVC must be created manually before volume will be bound
           existingClaim: ~
+      ## (Optional) Search results section for debug purposes
+      results:
+        # audit: false
+        # location:
+        #   folder: "/app/faceapi-search/search-results"
+        #   # bucket: "faceapi-search" # storage type s3/gcs
+        #   # container: "faceapi-search" # storage type az
+        #   prefix: "search-results"
 
       threshold: 1.0
 
@@ -319,6 +319,20 @@ config:
             type: "L2"
             params:
               nprobe: 5
+
+    # Housekeeper configuration, for the cases when needs to have automatic cleanup of the data
+    # The housekeeper is responsible for cleaning up the data in the storage and database
+    # By default housekeeper is enabled, but clearing data for search and liveness is disabled
+    houseKeeper:
+      enabled: true
+      beatCadence: 10
+      keepFor: 14400
+      liveness:
+        enabled: false
+        keepFor: 31536000
+      search:
+        enabled: false
+        keepFor: 31536000
 
 env: []
 # - name: ""

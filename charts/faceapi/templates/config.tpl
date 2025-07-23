@@ -2,8 +2,10 @@
 sdk:
   compare:
     limitPerImageTypes: {{ .Values.config.sdk.compare.limitPerImageTypes }}
-  logging:
-    level: {{ quote .Values.config.sdk.logging.level }}
+
+  {{- if .Values.config.sdk.param }}
+  param: {{- toYaml .Values.config.sdk.param | nindent 4 }}
+  {{- end }}
 
   {{- if .Values.config.sdk.detect }}
   detect: {{- toYaml .Values.config.sdk.detect | nindent 4 }}
@@ -130,11 +132,12 @@ service:
     ecdhSchema: {{ quote .Values.config.service.liveness.ecdhSchema }}
     hideMetadata: {{ .Values.config.service.liveness.hideMetadata }}
     consistency: {{ quote .Values.config.service.liveness.consistency }}
-    protectPersonalInfo: {{ .Values.config.service.liveness.protectPersonalInfo }}
-    config:
-      recalculateLandmarks: {{ .Values.config.service.liveness.config.recalculateLandmarks }}
-      firstImgFormat: {{ .Values.config.service.liveness.config.firstImgFormat }}
-      pngCompression: {{ .Values.config.service.liveness.config.pngCompression }}
+    {{- if .Values.config.service.liveness.exposeData }}
+    exposeData: {{- toYaml .Values.config.service.liveness.exposeData | nindent 6 }}
+    {{- end }}
+    {{- if .Values.config.service.liveness.config }}
+    config: {{- toYaml .Values.config.service.liveness.config | nindent 6 }}
+    {{- end }}
     sessions:
       location:
         {{- if or (eq .Values.config.service.storage.type "s3") (eq .Values.config.service.storage.type "gcs") }}
@@ -149,19 +152,6 @@ service:
         folder: {{ quote .Values.config.service.liveness.sessions.location.folder }}
         {{- end }}
     {{- else }}
-    {{- end }}
-
-  houseKeeper:
-    enabled: {{ .Values.config.service.houseKeeper.enabled }}
-    {{- if .Values.config.service.houseKeeper.enabled }}
-    beatCadence: {{ .Values.config.service.houseKeeper.beatCadence }}
-    keepFor: {{ .Values.config.service.houseKeeper.keepFor }}
-    liveness:
-      enabled: {{ .Values.config.service.houseKeeper.liveness.enabled }}
-      keepFor: {{ .Values.config.service.houseKeeper.liveness.keepFor | int64 }}
-    search:
-      enabled: {{ .Values.config.service.houseKeeper.search.enabled }}
-      keepFor: {{ .Values.config.service.houseKeeper.search.keepFor | int64 }}
     {{- end }}
 
   search:
@@ -180,6 +170,22 @@ service:
         {{- if eq .Values.config.service.storage.type "fs" }}
         folder: {{ quote .Values.config.service.search.persons.location.folder }}
         {{- end }}
+    {{- if .Values.config.service.search.results }}
+    results:
+      audit: {{ .Values.config.service.search.results.audit }}
+      location:
+        {{- if or (eq .Values.config.service.storage.type "s3") (eq .Values.config.service.storage.type "gcs") }}
+        bucket: {{ quote .Values.config.service.search.results.location.bucket }}
+        prefix: {{ quote .Values.config.service.search.results.location.prefix }}
+        {{- end }}
+        {{- if eq .Values.config.service.storage.type "az" }}
+        container: {{ quote .Values.config.service.search.results.location.container }}
+        prefix: {{ quote .Values.config.service.search.results.location.prefix }}
+        {{- end }}
+        {{- if eq .Values.config.service.storage.type "fs" }}
+        folder: {{ quote .Values.config.service.search.results.location.folder }}
+        {{- end }}
+    {{- end }}
 
     threshold: {{ .Values.config.service.search.threshold }}
 
@@ -209,5 +215,18 @@ service:
       {{- else }}
       {{- end }}
     {{- else }}
+    {{- end }}
+
+  houseKeeper:
+    enabled: {{ .Values.config.service.houseKeeper.enabled }}
+    {{- if .Values.config.service.houseKeeper.enabled }}
+    beatCadence: {{ .Values.config.service.houseKeeper.beatCadence }}
+    keepFor: {{ .Values.config.service.houseKeeper.keepFor }}
+    liveness:
+      enabled: {{ .Values.config.service.houseKeeper.liveness.enabled }}
+      keepFor: {{ .Values.config.service.houseKeeper.liveness.keepFor | int64 }}
+    search:
+      enabled: {{ .Values.config.service.houseKeeper.search.enabled }}
+      keepFor: {{ .Values.config.service.houseKeeper.search.keepFor | int64 }}
     {{- end }}
 {{- end }}

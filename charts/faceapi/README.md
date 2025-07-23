@@ -93,7 +93,7 @@ The command removes all the Kubernetes components associated with the chart and 
 |---------------------------------------|-----------------------------------------------------------------------------------------------|-------------------------------|
 | `replicas`                            | Number of nodes                                                                               | `1`                           |
 | `image.repository`                    | Image repository                                                                              | `regulaforensics/face-api`    |
-| `image.tag`                           | Overrides the Face-API image tag                                                              | `"6.3-cpu"`                   |
+| `image.tag`                           | Overrides the Face-API image tag                                                              | `"7.1-cpu"`                   |
 | `image.pullPolicy`                    | Image pull policy                                                                             | `IfNotPresent`                |
 | `imagePullSecrets`                    | Image pull secrets                                                                            | `[]`                          |
 | `nameOverride`                        | String to partially override common.names.fullname template (will maintain the release name)  | `""`                          |
@@ -149,50 +149,50 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ## Application parameters
 
-| Parameter                                                 | Description                                                                       | Default                                                           |
-|-----------------------------------------------------------|-----------------------------------------------------------------------------------|-------------------------------------------------------------------|
-| `licenseSecretName`                                       | The name of an existing secret containing the regula.license file                 | `""`                                                              |
-| `config.sdk.compare.limitPerImageTypes`                   | Limit per Image Type                                                              | `2`                                                               |
-| `config.sdk.logging.level`                                | Specify application logs level. Possible values: `ERROR`, `WARN`, `INFO`, `DEBUG` | `INFO`                                                            |
-| `config.sdk.detect`                                       | Configuration of SDK `detect` capabilities                                        | `[]`                                                              |
-| `config.sdk.liveness`                                     | Configuration of SDK `liveness` capabilities                                      | `[]`                                                              |
-|                                                                                                                                                                                                                   |
-| `config.service.webServer.port`                           | Port server binding                                                               | `41101`                                                           |
-| `config.service.webServer.workers`                        | Number of workers per pod                                                         | `1`                                                               |
-| `config.service.webServer.timeout`                        | Number of seconds for the worker to process the request                           | `30`                                                              |
-| `config.service.webServer.demoApp.enabled`                | Serve a demo web app                                                              | `true`                                                            |
-| `config.service.webServer.cors.origins`                   | Origin, allowed to use API                                                        | `*`                                                               |
-| `config.service.webServer.cors.headers`                   | Headers, allowed to read from the API                                             | `*`                                                               |
-| `config.service.webServer.cors.methods`                   | Methods, allowed to invoke on the API                                             | `"POST,PUT,GET,DELETE,PATCH,HEAD,OPTIONS`                         |
-| `config.service.webServer.logging.level`                  | Specify application logs level. Possible values: `ERROR`, `WARN`, `INFO`, `DEBUG` | `INFO`                                                            |
-| `config.service.webServer.logging.formatter`              | Specify application logs format. Possible values: `text`, `json`                  | `text`                                                            |
-| `config.service.webServer.logging.access.console`         | Whether to print access logs to a console                                         | `true`                                                            |
-| `config.service.webServer.logging.access.path`            | Access logs file path                                                             | `logs/access/facesdk-reader-access.log`                           |
-| `config.service.webServer.logging.access.format`          | Access logs file format                                                           | `'%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'`   |
-| `config.service.webServer.logging.app.console`            | Whether to print application logs to a console                                    | `true`                                                            |
-| `config.service.webServer.logging.app.path`               | Application logs file path                                                        | `logs/app/facesdk-reader-app.log`                                 |
-| `config.service.webServer.metrics.enabled`                | Whether to enable Prometheus metrics endpoint                                     | `false`                                                           |
-| `config.service.webServer.ssl.enabled`                    | Whether to enable SSL mode                                                        | `false`                                                           |
-| `config.service.webServer.ssl.certificatesSecretName`     | The name of an existing secret containing the cert/key files required for HTTPS   | `""`                                                              |
-| `config.service.webServer.ssl.tlsVersion`                 | Specifies the version of the TLS protocol. Possible values: `1.1`, `1.2`, `1.3`   | `1.2`                                                             |
-|                                                                                                                                                                                                                   |
-| `config.service.storage.type`                             | Global storage type. Possible values: `fs`, `s3`, `gcs`, `az`                     | `fs`                                                              |
-| `config.service.storage.s3.accessKey`                     | S3 Access Key                                                                     | `""`                                                              |
-| `config.service.storage.s3.accessSecret`                  | S3 Secret Access Key                                                              | `""`                                                              |
-| `config.service.storage.s3.region`                        | S3 region                                                                         | `"us-east-1"`                                                     |
-| `config.service.storage.s3.secure`                        | Secure connection                                                                 | `"true"`                                                          |
-| `config.service.storage.s3.endpointUrl`                   | Endpoint URL to the S3 compatible storage                                         | `"https://s3.amazonaws.com"`                                      |
-| `config.service.storage.s3.awsCredentialsSecretName`      | Secret name containing AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY credentials        | `""`                                                              |
-| `config.service.storage.gcs.gcsKeyJsonSecretName`         | Secret name containing Google Service Account key (json file)                     | `""`                                                              |
-| `config.service.storage.az.storageAccount`                | Azure storage Account Name                                                        | `""`                                                              |
-| `config.service.storage.az.connectionString`              | Azure Storage Account connection string                                           | `""`                                                              |
-| `config.service.storage.az.connectionStringSecretName`    | Secret name containing Azure Storage Account connection string                    | `""`                                                              |
-|                                                                                                                                                                                                                   |
-| `config.service.database.connectionString`                | Database connection string                                                        | `""`                                                              |
-| `config.service.database.connectionStringSecretName`      | Secret name containing Database connection string                                 | `""`                                                              |
-| `config.service.database.passwordlessAuth.enabled`        | Whether to enable DB passwordless auth                                            | `false`                                                           |
-| `config.service.database.passwordlessAuth.type`           | Global DB passwordless auth type. Possible values: `az`                           | `az`                                                              |
-| `config.service.database.passwordlessAuth.az.scope`       | Azure SQL Auth Scope                                                              | `"https://database.windows.net/.default"`                         |
+| Parameter                                                 | Description                                                                       | Default                                                       |
+|-----------------------------------------------------------|-----------------------------------------------------------------------------------|---------------------------------------------------------------|
+| `licenseSecretName`                                       | The name of an existing secret containing the regula.license file                 | `""`                                                          |
+| `config.sdk.compare.limitPerImageTypes`                   | Limit per Image Type                                                              | `2`                                                           |
+| `config.sdk.param`                                        | Configuration of SDK `param` capabilities                                         | `[]`                                                          |
+| `config.sdk.detect`                                       | Configuration of SDK `detect` capabilities                                        | `[]`                                                          |
+| `config.sdk.liveness`                                     | Configuration of SDK `liveness` capabilities                                      | `[]`                                                          |
+|                                                                                                                                                                                                               |
+| `config.service.webServer.port`                           | Port server binding                                                               | `41101`                                                       |
+| `config.service.webServer.workers`                        | Number of workers per pod                                                         | `1`                                                           |
+| `config.service.webServer.timeout`                        | Number of seconds for the worker to process the request                           | `30`                                                          |
+| `config.service.webServer.demoApp.enabled`                | Serve a demo web app                                                              | `true`                                                        |
+| `config.service.webServer.cors.origins`                   | Origin, allowed to use API                                                        | `*`                                                           |
+| `config.service.webServer.cors.headers`                   | Headers, allowed to read from the API                                             | `*`                                                           |
+| `config.service.webServer.cors.methods`                   | Methods, allowed to invoke on the API                                             | `"POST,PUT,GET,DELETE,PATCH,HEAD,OPTIONS`                     |
+| `config.service.webServer.logging.level`                  | Specify application logs level. Possible values: `ERROR`, `WARN`, `INFO`, `DEBUG` | `INFO`                                                        |
+| `config.service.webServer.logging.formatter`              | Specify application logs format. Possible values: `text`, `json`                  | `text`                                                        |
+| `config.service.webServer.logging.access.console`         | Whether to print access logs to a console                                         | `true`                                                        |
+| `config.service.webServer.logging.access.path`            | Access logs file path                                                             | `logs/access/facesdk-reader-access.log`                       |
+| `config.service.webServer.logging.access.format`          | Access logs format                                                                | `%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"` |
+| `config.service.webServer.logging.app.console`            | Whether to print application logs to a console                                    | `true`                                                        |
+| `config.service.webServer.logging.app.path`               | Application logs file path                                                        | `logs/app/facesdk-reader-app.log`                             |
+| `config.service.webServer.metrics.enabled`                | Whether to enable Prometheus metrics endpoint                                     | `false`                                                       |
+| `config.service.webServer.ssl.enabled`                    | Whether to enable SSL mode                                                        | `false`                                                       |
+| `config.service.webServer.ssl.certificatesSecretName`     | The name of an existing secret containing the cert/key files required for HTTPS   | `""`                                                          |
+| `config.service.webServer.ssl.tlsVersion`                 | Specifies the version of the TLS protocol. Possible values: `1.1`, `1.2`, `1.3`   | `1.2`                                                         |
+|                                                                                                                                                                                                               |
+| `config.service.storage.type`                             | Global storage type. Possible values: `fs`, `s3`, `gcs`, `az`                     | `fs`                                                          |
+| `config.service.storage.s3.accessKey`                     | S3 Access Key                                                                     | `""`                                                          |
+| `config.service.storage.s3.accessSecret`                  | S3 Secret Access Key                                                              | `""`                                                          |
+| `config.service.storage.s3.region`                        | S3 region                                                                         | `"us-east-1"`                                                 |
+| `config.service.storage.s3.secure`                        | Secure connection                                                                 | `"true"`                                                      |
+| `config.service.storage.s3.endpointUrl`                   | Endpoint URL to the S3 compatible storage                                         | `"https://s3.amazonaws.com"`                                  |
+| `config.service.storage.s3.awsCredentialsSecretName`      | Secret name containing AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY credentials        | `""`                                                          |
+| `config.service.storage.gcs.gcsKeyJsonSecretName`         | Secret name containing Google Service Account key (json file)                     | `""`                                                          |
+| `config.service.storage.az.storageAccount`                | Azure storage Account Name                                                        | `""`                                                          |
+| `config.service.storage.az.connectionString`              | Azure Storage Account connection string                                           | `""`                                                          |
+| `config.service.storage.az.connectionStringSecretName`    | Secret name containing Azure Storage Account connection string                    | `""`                                                          |
+|                                                                                                                                                                                                               |
+| `config.service.database.connectionString`                | Database connection string                                                        | `""`                                                          |
+| `config.service.database.connectionStringSecretName`      | Secret name containing Database connection string                                 | `""`                                                          |
+| `config.service.database.passwordlessAuth.enabled`        | Whether to enable DB passwordless auth                                            | `false`                                                       |
+| `config.service.database.passwordlessAuth.type`           | Global DB passwordless auth type. Possible values: `az`                           | `az`                                                          |
+| `config.service.database.passwordlessAuth.az.scope`       | Azure SQL Auth Scope                                                              | `"https://database.windows.net/.default"`                     |
 
 
 ## Detect/Match parameters
@@ -219,9 +219,9 @@ The command removes all the Kubernetes components associated with the chart and 
 | `config.service.liveness.enabled`                                  | Whether to enable Liveness mode                                                               | `false`                               |
 | `config.service.liveness.ecdhSchema`                               | ECDH schema to use                                                                            | `default`                             |
 | `config.service.liveness.hideMetadata`                             | Whether to hide processing data's metadata                                                    | `false`                               |
-| `config.service.liveness.consistency`                              | The Liveness sessions storing consistency mode                                                | `eventual`                            |
-| `config.service.liveness.protectPersonalInfo`                      | Whether to hide Personal information metadata                                                 | `false`                               |
-| `config.service.liveness.config.recalculateLandmarks`              | Whether to recalculate landmarks                                                              | `false`                               |
+| `config.service.liveness.consistency`                              | The consistency model `eventual/strong`                                                       | `eventual`                            |
+| `config.service.liveness.exposeData`                               | (Optional) Whether to expose portrait/video metadata                                          | `[]`                                  |
+| `config.service.liveness.config`                                   | (Optional) Client configuration block                                                         | `[]`                                  |
 | `config.service.liveness.sessions.location.bucket`                 | The Liveness sessions bucket name in case of `s3`/`gcs` storage type                          | `""`                                  |
 | `config.service.liveness.sessions.location.container`              | The Liveness sessions storage container name in case of `az` storage type                     | `""`                                  |
 | `config.service.liveness.sessions.location.folder`                 | The Liveness sessions folder name in case of `fs` storage type                                | `"/app/faceapi-liveness/sessions"`    |
@@ -231,6 +231,38 @@ The command removes all the Kubernetes components associated with the chart and 
 | `config.service.liveness.sessions.persistence.size`                | The size of Liveness sessions data Persistent Volume Storage Class                            | `10Gi`                                |
 | `config.service.liveness.sessions.persistence.storageClassName`    | The Liveness sessions data Persistent Volume Storage Class                                    | `""`                                  |
 | `config.service.liveness.sessions.persistence.existingClaim`       | Name of the existing Persistent Volume Claim                                                  | `""`                                  |
+
+
+## Search parameters
+
+| Parameter                                                             | Description                                                                               | Default                               |
+|-----------------------------------------------------------------------|-------------------------------------------------------------------------------------------|---------------------------------------|
+| `config.service.search.enabled`                                       | Whether to enable Identification 1:N (aka Search) mode                                    | `false`                               |
+| `config.service.search.persons.location.bucket`                       | The Search persons bucket name in case of `s3`/`gcs` storage type                         | `""`                                  |
+| `config.service.search.persons.location.container`                    | The Search persons storage container name in case of `az` storage type                    | `""`                                  |
+| `config.service.search.persons.location.folder`                       | The Search persons folder name in case of `fs` storage type                               | `"/app/faceapi-search/persons"`       |
+| `config.service.search.persons.location.prefix`                       | The Search persons prefix path in the `bucket/container`                                  | `"persons"`                           |
+| `config.service.search.persons.persistence.enabled`                   | Whether to enable Search persons persistence (Applicable only for the `fs` storage type)  | `false`                               |
+| `config.service.search.persons.persistence.accessMode`                | The Search persons data Persistence access modes                                          | `ReadWriteMany`                       |
+| `config.service.search.persons.persistence.size`                      | The size of Search persons data Persistent Volume Storage Class                           | `10Gi`                                |
+| `config.service.search.persons.persistence.storageClassName`          | The Search persons data Persistent Volume Storage Class                                   | `""`                                  |
+| `config.service.search.persons.persistence.existingClaim`             | Name of the existing Persistent Volume Claim                                              | `""`                                  |
+| `config.service.search.results.location.bucket`                       | (Optional) The Search results bucket name in case of `s3`/`gcs` storage type              | `""`                                  |
+| `config.service.search.results.location.container`                    | (Optional) The Search results storage container name in case of `az` storage type         | `""`                                  |
+| `config.service.search.results.location.folder`                       | (Optional) The Search results folder name in case of `fs` storage type                    | `"/app/faceapi-search/search-results"`|
+| `config.service.search.results.location.prefix`                       | (Optional) The Search results prefix path in the `bucket/container`                       | `"search-results"`                    |
+| `config.service.search.threshold`                                     | Search similarity threshold                                                               | `1.0`                                 |
+| `config.service.search.vectorDatabase.type`                           | Search VectorDatabase type (supported types: `milvus`/`atlas`)                            | `milvus`                              |
+| `config.service.search.vectorDatabase.milvus.user`                    | Milvus user                                                                               | `""`                                  |
+| `config.service.search.vectorDatabase.milvus.password`                | Milvus password                                                                           | `""`                                  |
+| `config.service.search.vectorDatabase.milvus.token`                   | Milvus token                                                                              | `""`                                  |
+| `config.service.search.vectorDatabase.milvus.endpoint`                | Milvus endpoint                                                                           | `"http://localhost:19530"`            |
+| `config.service.search.vectorDatabase.milvus.consistency`             | Milvus [consistency level](https://milvus.io/docs/consistency.md)                         | `"Bounded"`                           |
+| `config.service.search.vectorDatabase.milvus.reload`                  | Milvus reload                                                                             | `false`                               |
+| `config.service.search.vectorDatabase.milvus.index.type`              | Milvus [index type](https://milvus.io/docs/index.md)                                      | `IVF_FLAT`                            |
+| `config.service.search.vectorDatabase.milvus.index.params.nlist`      | Milvus nlist cluster units                                                                | `128`                                 |
+| `config.service.search.vectorDatabase.milvus.search.type`             | Milvus search type. [Similarity metrics](https://milvus.io/docs/metric.md)                | `"L2"`                                |
+| `config.service.search.vectorDatabase.milvus.search.params.nprobe`    | Milvus search parameters. nprobe. The number of cluster units to search                   | `5`                                   |
 
 
 ## HouseKeeper parameters
@@ -244,34 +276,6 @@ The command removes all the Kubernetes components associated with the chart and 
 | `config.service.houseKeeper.liveness.keepFor` | Time for keeping data for liveness in seconds                      | `31536000` |
 | `config.service.houseKeeper.search.enabled`   | Whether to enable clearing data for search                         | `false`    |
 | `config.service.houseKeeper.search.keepFor`   | Time for keeping data for search in seconds                        | `31536000` |
-
-
-## Search parameters
-
-| Parameter                                                             | Description                                                                               | Default                            |
-|-----------------------------------------------------------------------|-------------------------------------------------------------------------------------------|------------------------------------|
-| `config.service.search.enabled`                                       | Whether to enable Identification 1:N (aka Search) mode                                    | `false`                            |
-| `config.service.search.persons.location.bucket`                       | The Search persons bucket name in case of `s3`/`gcs` storage type                         | `""`                               |
-| `config.service.search.persons.location.container`                    | The Search persons storage container name in case of `az` storage type                    | `""`                               |
-| `config.service.search.persons.location.folder`                       | The Search persons folder name in case of `fs` storage type                               | `"/app/faceapi-search/persons"`    |
-| `config.service.search.persons.location.prefix`                       | The Search persons prefix path in the `bucket/container`                                  | `"persons"`                        |
-| `config.service.search.persons.persistence.enabled`                   | Whether to enable Search persons persistence (Applicable only for the `fs` storage type)  | `false`                            |
-| `config.service.search.persons.persistence.accessMode`                | The Search persons data Persistence access modes                                          | `ReadWriteMany`                    |
-| `config.service.search.persons.persistence.size`                      | The size of Search persons data Persistent Volume Storage Class                           | `10Gi`                             |
-| `config.service.search.persons.persistence.storageClassName`          | The Search persons data Persistent Volume Storage Class                                   | `""`                               |
-| `config.service.search.persons.persistence.existingClaim`             | Name of the existing Persistent Volume Claim                                              | `""`                               |
-| `config.service.search.threshold`                                     | Search similarity threshold                                                               | `1.0`                              |
-| `config.service.search.vectorDatabase.type`                           | Search VectorDatabase type                                                                | `milvus`                           |
-| `config.service.search.vectorDatabase.milvus.user`                    | Milvus user                                                                               | `""`                               |
-| `config.service.search.vectorDatabase.milvus.password`                | Milvus password                                                                           | `""`                               |
-| `config.service.search.vectorDatabase.milvus.token`                   | Milvus token                                                                              | `""`                               |
-| `config.service.search.vectorDatabase.milvus.endpoint`                | Milvus endpoint                                                                           | `"http://localhost:19530"`         |
-| `config.service.search.vectorDatabase.milvus.consistency`             | Milvus [consistency level](https://milvus.io/docs/consistency.md)                         | `"Bounded"`                        |
-| `config.service.search.vectorDatabase.milvus.reload`                  | Milvus reload                                                                             | `false`                            |
-| `config.service.search.vectorDatabase.milvus.index.type`              | Milvus [index type](https://milvus.io/docs/index.md)                                      | `IVF_FLAT`                         |
-| `config.service.search.vectorDatabase.milvus.index.params.nlist`      | Milvus nlist cluster units                                                                | `128`                              |
-| `config.service.search.vectorDatabase.milvus.search.type`             | Milvus search type. [Similarity metrics](https://milvus.io/docs/metric.md)                | `"L2"`                             |
-| `config.service.search.vectorDatabase.milvus.search.params.nprobe`    | Milvus search parameters. nprobe. The number of cluster units to search                   | `5`                                |
 
 
 > [!NOTE]

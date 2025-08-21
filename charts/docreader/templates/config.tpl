@@ -15,6 +15,11 @@ sdk:
     {{- else }}
     {{- end }}
 
+  {{- if .Values.config.sdk.processParam }}
+  processParam:
+    {{- toYaml .Values.config.sdk.processParam | nindent 4 }}
+  {{- end }}
+
 service:
   webServer:
     port: {{ .Values.config.service.webServer.port }}

@@ -74,7 +74,7 @@ podDisruptionBudget:
 
 # Supply the name of existing secret with the regula.license file.
 # You can load it to a k8s generic secret via the following command:
-# `kubectl create secret generic docreader-license -n <namespace> --from-file=/path/to/regula.license`
+# `kubectl create secret generic docreader-license -n <namespace> --from-file=regula.license=/path/to/file`
 #
 # licenseSecretName: docreader-license
 licenseSecretName: ~

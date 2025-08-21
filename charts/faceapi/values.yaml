@@ -76,7 +76,7 @@ podDisruptionBudget:
 
 # Supply the name of existing secret with the regula.license file.
 # You can load it to a k8s generic secret via the following command:
-# `kubectl create secret generic faceapi-license -n <namespace> --from-file=regula.license`
+# `kubectl create secret generic faceapi-license -n <namespace> --from-file=/path/to/regula.license`
 #
 # licenseSecretName: faceapi-license
 licenseSecretName: ~

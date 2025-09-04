@@ -162,7 +162,7 @@ spec:
             - name: rfid-pkd
               mountPath: {{ quote .Values.config.sdk.rfid.pkdPaPath }}
             {{- end }}
-            {{- if and (eq .Values.config.service.storage.type "gcs") .Values.config.service.storage.gcs.gcsKeyJsonSecretName }}
+            {{- if and (hasKey .Values.config.service.storage "gcs") .Values.config.service.storage.gcs.gcsKeyJsonSecretName }}
             - name: gcs-credentials
               mountPath: /etc/credentials/gcs_key.json
               subPath: gcs_key.json
@@ -205,7 +205,7 @@ spec:
           persistentVolumeClaim:
             claimName: {{ template "docreader.rfid.pkd.pvc" . }}
         {{- end }}
-        {{- if and (eq .Values.config.service.storage.type "gcs") .Values.config.service.storage.gcs.gcsKeyJsonSecretName }}
+        {{- if and (hasKey .Values.config.service.storage "gcs") .Values.config.service.storage.gcs.gcsKeyJsonSecretName }}
         - name: gcs-credentials
           secret:
             secretName: {{ template "docreader.gcs.credentials.secret" . }}

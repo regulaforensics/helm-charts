@@ -66,8 +66,10 @@ service:
     {{- end }}
     {{- if eq .Values.config.service.storage.type "gcs" }}
     type: gcs
+    {{- if and (hasKey .Values.config.service.storage "gcs") .Values.config.service.storage.gcs.gcsKeyJsonSecretName }}
     gcs:
       gcsKeyJson: "/etc/credentials/gcs_key.json"
+    {{- end }}
     {{- end }}
     {{- if eq .Values.config.service.storage.type "az" }}
     type: az

@@ -55,6 +55,18 @@ lifecycle: {}
 
 nodeSelector: {}
 
+# Node selector specifically for database migration jobs in GKE Autopilot mode.
+# GKE Autopilot automatically manages node provisioning and scaling, but jobs may require
+# specific node characteristics (e.g., compute class, architecture) that differ from
+# regular application pods. This selector ensures migration jobs run on appropriate nodes
+# while allowing the main application pods to use the default nodeSelector.
+# Note: Kubernetes Jobs do not support "cloud.google.com/compute-class": "Accelerator" nodes.
+# Use "Balanced" or "Performance" compute classes for jobs.
+# Example: { "cloud.google.com/compute-class": "Performance" }
+# https://cloud.google.com/kubernetes-engine/docs/how-to/autopilot-gpus
+# https://cloud.google.com/kubernetes-engine/docs/how-to/performance-pods
+jobNodeSelector: {}
+
 affinity: {}
 
 tolerations: []

@@ -134,6 +134,7 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | `terminationGracePeriodSeconds`           | Termination grace period to use for each pod                                                  | `nil`                         |
 | `lifecycle`                               | `preStop` lifecycle hook to control the termination order                                     | `{}`                          |
 | `nodeSelector`                            | Node labels for pods assignment                                                               | `{}`                          |
+| `jobNodeSelector`                         | Node labels for database migration jobs in GKE Autopilot (excludes Accelerator nodes)       | `{}`                          |
 | `affinity`                                | Affinity for pods assignment                                                                  | `{}`                          |
 | `tolerations`                             | Tolerations for pods assignment                                                               | `[]`                          |
 | `topologySpreadConstraints`               | Topology Spread Constraints for pod assignment                                                | `[]`                          |

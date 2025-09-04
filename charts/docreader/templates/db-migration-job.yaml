@@ -17,8 +17,9 @@ spec:
       labels: {{- include "docreader.selectorLabels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "docreader.serviceAccount" . }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- $jobNodeSelector := .Values.jobNodeSelector | default .Values.nodeSelector }}
+      {{- if $jobNodeSelector }}
+      nodeSelector: {{- toYaml $jobNodeSelector | nindent 8 }}
       {{- end }}
       {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName }}

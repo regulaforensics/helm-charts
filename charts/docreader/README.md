@@ -165,6 +165,7 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | `readinessProbe.enabled`                  | Enable readinessProbe                                                                         | `true`                        |
 | `startupProbe.enabled`                    | Enable startupProbe                                                                           | `true`                        |
 | `autoscaling.enabled`                     | Enable autoscaling                                                                            | `false`                       |
+| `autoscaling.keda.enabled`                | Enable KEDA autoscaling                                                                       | `false`                       |
 | `networkPolicy.enabled`                   | Enable NetworkPolicy                                                                          | `false`                       |
 | `networkPolicy.annotations`               | NetworkPolicy annotations                                                                     | `{}`                          |
 | `networkPolicy.ingress`                   | Set NetworkPolicy Ingress rules                                                               | `{}`                          |
@@ -292,6 +293,25 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 > Configuration for postgresql subchart
 > For the advanced PostgreSQL configuration please refer to the official documentation.
 > ref: https://github.com/bitnami/charts/tree/main/bitnami/postgresql
+
+## KEDA Autoscaling
+
+KEDA (Kubernetes Event-driven Autoscaling) can be used to automatically scale the Docreader deployment based on external metrics or events.
+
+### Prerequisites
+
+- KEDA operator installed in your cluster
+- Authentication secret for your scaling trigger (if required)
+
+### Configuration
+
+To enable KEDA autoscaling:
+
+```console
+helm install my-release regulaforensics/docreader \
+    --set licenseSecretName=docreader-license \
+    --set autoscaling.keda.enabled=true
+```
 
 ## Subchart parameters
 

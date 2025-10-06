@@ -1,0 +1,22 @@
+{{- if and .Values.autoscaling.enabled .Values.autoscaling.keda.enabled }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "docreader.fullname" . }}-scaledobject
+  namespace: {{ .Release.Namespace }}
+spec:
+  scaleTargetRef:
+    name: {{ include "docreader.fullname" . }}
+    kind: Deployment
+    apiVersion: apps/v1
+  minReplicaCount: {{ .Values.autoscaling.keda.minReplicaCount | default 1 }}
+  maxReplicaCount: {{ .Values.autoscaling.keda.maxReplicaCount | default 10 }}
+  pollingInterval: {{ .Values.autoscaling.keda.pollingInterval | default 30 }} 
+  cooldownPeriod: {{ .Values.autoscaling.keda.cooldownPeriod | default 300 }}
+  triggers:
+{{- range .Values.autoscaling.keda.triggers }}
+  - type: {{ .type }}
+    metadata:
+      {{- toYaml .metadata | nindent 6 }}
+{{- end }}
+{{- end }}

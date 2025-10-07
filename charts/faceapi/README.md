@@ -139,6 +139,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `readinessProbe.enabled`              | Enable readinessProbe                                                                         | `true`                        |
 | `startupProbe.enabled`                | Enable startupProbe                                                                           | `true`                        |
 | `autoscaling.enabled`                 | Enable autoscaling                                                                            | `false`                       |
+| `autoscaling.keda.enabled`            | Enable KEDA autoscaling                                                                       | `false`                       |
 | `networkPolicy.enabled`               | Enable NetworkPolicy                                                                          | `false`                       |
 | `networkPolicy.annotations`           | NetworkPolicy annotations                                                                     | `{}`                          |
 | `networkPolicy.ingress`               | Set NetworkPolicy Ingress rules                                                               | `{}`                          |
@@ -147,6 +148,25 @@ The command removes all the Kubernetes components associated with the chart and 
 | `rbac.annotations`                    | Role and RoleBinding annotations                                                              | `{}`                          |
 | `rbac.useExistingRole`                | Existing Role name to use                                                                     | `""`                          |
 | `rbac.extraRoleRules`                 | Extra rules for Role                                                                          | `[]`                          |
+
+## KEDA Autoscaling
+
+KEDA (Kubernetes Event-driven Autoscaling) can be used to automatically scale the Face-API deployment based on external metrics or events.
+
+### Prerequisites
+
+- KEDA operator installed in your cluster
+- Authentication secret for your scaling trigger (if required)
+
+### Configuration
+
+To enable KEDA autoscaling:
+
+```console
+helm install my-release regulaforensics/faceapi \
+    --set licenseSecretName=face-api-license \
+    --set autoscaling.keda.enabled=true
+```
 
 ## Application parameters
 

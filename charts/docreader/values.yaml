@@ -395,6 +395,26 @@ autoscaling:
   maxReplicas: 10
   targetCPUUtilizationPercentage: 80
   targetMemoryUtilizationPercentage: ~
+  # KEDA-based autoscaling configuration
+  # For more information, see: https://keda.sh
+  keda:
+    enabled: false
+    minReplicaCount: 1
+    maxReplicaCount: 10
+    pollingInterval: 15
+    cooldownPeriod: 300
+    # List of triggers that determine scaling behavior
+    # See KEDA scalers: https://keda.sh/docs/scalers/
+    triggers: []
+    # example - https://keda.sh/docs/2.17/scalers/prometheus/
+    #   triggers:
+    #   - type: prometheus
+    #     metadata:
+    #       # Required fields:
+    #       serverAddress: http://<prometheus-host>:9090
+    #       metricName: "detect_requests"
+    #       query: sum(rate(http_requests_total{deployment="my-deployment"}[2m])) # Note: query must return a vector/scalar single element response
+    #       threshold: '100.50'
 
 ###################################
 # Subcharts

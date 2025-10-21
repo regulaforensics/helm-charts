@@ -517,6 +517,8 @@ milvus:
 # ref: https://github.com/bitnami/charts/tree/main/bitnami/postgresql
 postgresql:
   enabled: false
+  image:
+    repository: bitnamilegacy/postgresql
   auth:
     username: "regula"
     password: "Regulapasswd#1"

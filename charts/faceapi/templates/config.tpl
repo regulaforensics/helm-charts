@@ -11,7 +11,7 @@ sdk:
   detect: {{- toYaml .Values.config.sdk.detect | nindent 4 }}
   {{- end }}
 
-  {{- if and .Values.config.service.liveness.enabled .Values.config.sdk.liveness  }}
+  {{- if and .Values.config.service.liveness.enabled .Values.config.sdk.liveness }}
   liveness: {{- toYaml .Values.config.sdk.liveness | nindent 4 }}
   {{- end }}
 
@@ -32,7 +32,6 @@ service:
       cert: "certs/tls.crt"
       key: "certs/tls.key"
       tlsVersion: {{ .Values.config.service.webServer.ssl.tlsVersion }}
-      {{- else }}
       {{- end }}
     logging:
       level: {{ quote .Values.config.service.webServer.logging.level }}
@@ -125,7 +124,6 @@ service:
         {{- if eq .Values.config.service.storage.type "fs" }}
         folder: {{ quote .Values.config.service.detectMatch.results.location.folder }}
         {{- end }}
-    {{- else }}
     {{- end }}
 
   liveness:
@@ -153,7 +151,6 @@ service:
         {{- if eq .Values.config.service.storage.type "fs" }}
         folder: {{ quote .Values.config.service.liveness.sessions.location.folder }}
         {{- end }}
-    {{- else }}
     {{- end }}
 
   search:
@@ -191,32 +188,61 @@ service:
 
     threshold: {{ .Values.config.service.search.threshold }}
 
+    {{ $vd := .Values.config.service.search.vectorDatabase | default dict -}}
+    {{- $type := $vd.type | default "" -}}
     vectorDatabase:
-      type: {{ quote .Values.config.service.search.vectorDatabase.type }}
-      {{- if eq .Values.config.service.search.vectorDatabase.type "milvus" }}
+      type: {{ $type }}
+      {{ if eq $type "milvus" }}
+      {{- $mil := $vd.milvus | default dict -}}
       milvus:
-        user: {{ quote .Values.config.service.search.vectorDatabase.milvus.user }}
-        password: {{ quote .Values.config.service.search.vectorDatabase.milvus.password }}
-        token: {{ quote .Values.config.service.search.vectorDatabase.milvus.token }}
+        user: {{ default "" $mil.user | quote }}
+        password: {{ default "" $mil.password | quote }}
+        token: {{ default "" $mil.token | quote }}
         {{- if .Values.milvus.enabled }}
-        ## `config.service.search.vectorDatabase.milvus.endpoint` value has been overridden by `milvus.enabled=true` value
+        ## overridden by milvus.enabled=true
         endpoint: "http://{{ template "faceapi.milvus" . }}"
         {{- else }}
-        endpoint: {{ quote .Values.config.service.search.vectorDatabase.milvus.endpoint }}
+        endpoint: {{ default "http://milvus:19530" $mil.endpoint | quote }}
         {{- end }}
-        consistency: {{ quote .Values.config.service.search.vectorDatabase.milvus.consistency }}
-        reload: {{ .Values.config.service.search.vectorDatabase.milvus.reload }}
+        consistency: {{ default "Bounded" $mil.consistency | quote }}
+        reload: {{ default false $mil.reload }}
         index:
-          type: {{ quote .Values.config.service.search.vectorDatabase.milvus.index.type }}
+          {{ $ix := (default dict $mil.index) -}}
+          type: {{ default "IVF_FLAT" $ix.type | quote }}
           params:
-            nlist: {{ .Values.config.service.search.vectorDatabase.milvus.index.params.nlist }}
+            {{ $ixp := (default dict $ix.params) -}}
+            nlist: {{ default 128 $ixp.nlist }}
         search:
-          type: {{ quote .Values.config.service.search.vectorDatabase.milvus.search.type }}
+          {{ $srch := (default dict $mil.search) -}}
+          type: {{ default "L2" $srch.type | quote }}
           params:
-            nprobe: {{ .Values.config.service.search.vectorDatabase.milvus.search.params.nprobe }}
-      {{- else }}
+            {{ $sp := (default dict $srch.params) -}}
+            nprobe: {{ default 5 $sp.nprobe }}
       {{- end }}
-    {{- else }}
+      {{- if eq $type "opensearch" }}
+      {{- $os := $vd.opensearch | default dict -}}
+      opensearch:
+        host: {{ default "opensearch" $os.host | quote }}
+        port: {{ default 9200 $os.port }}
+        useSsl: {{ default false $os.useSsl }}
+        verifyCerts: {{ default false $os.verifyCerts }}
+        username: {{ default "admin" $os.username | quote }}
+        password: {{ default "admin" $os.password | quote }}
+        dimension: {{ default 512 $os.dimension }}
+        awsAuth:
+          {{ $aws := $os.awsAuth | default dict -}}
+          enabled: {{ default false $aws.enabled }}
+          {{- if (default false $aws.enabled) }}
+          region: {{ default nil $aws.region }}
+          accessKey: {{ default nil $aws.accessKey }}
+          secretKey: {{ default nil $aws.secretKey }}
+          {{- end }}
+      {{- end }}
+      {{- if eq $type "atlas" }}
+      {{- $at := $vd.atlas | default dict -}}
+      atlas:
+        connectionString: {{ default "" $at.connectionString | quote }}
+      {{- end }}
     {{- end }}
 
   houseKeeper:

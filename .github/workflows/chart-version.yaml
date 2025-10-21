@@ -14,13 +14,13 @@ jobs:
       # Expose matched filters as job 'charts' output variable
       charts: ${{ steps.filter.outputs.changes }}
     steps:
-    # For pull requests it's not necessary to checkout the code
-    - uses: dorny/paths-filter@v3
-      id: filter
-      with:
-        filters: |
-          docreader: charts/docreader/**
-          faceapi: charts/faceapi/**
+      # For pull requests it's not necessary to checkout the code
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            docreader: charts/docreader/**
+            faceapi: charts/faceapi/**
 
   chart-version:
     needs: changes
@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: main
 
@@ -43,7 +43,7 @@ jobs:
           echo "old_version=$old_version" >> $GITHUB_OUTPUT
 
       - name: Checkout current branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Get new chart version and compare
         id: new_version
@@ -58,7 +58,7 @@ jobs:
             echo "New and old Chart versions are equal. Please increase the Chart version"
             exit 1
           fi
-          
+
           new_version=(${new_version//./ })
           old_version=(${old_version//./ })
 
@@ -66,22 +66,22 @@ jobs:
             echo "Version formats do not match"
             exit 1
           fi
-          
+
           for i in $(seq 0 ${#new_version[@]}); do
             case "$i" in
               0)
               version="Major"
               ;;
-          
+
               1)
               version="Minor"
               ;;
-          
+
               *)
               version="Patch"
               ;;
             esac
-          
+
             if [[ "${new_version[$i]}" -gt "${old_version[$i]}" ]]; then
               echo "$version version is greater than previous one"
               echo "Version is OK"
@@ -94,5 +94,5 @@ jobs:
               exit 1
             fi
           done
-          
+
           exit 0

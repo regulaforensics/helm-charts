@@ -93,7 +93,7 @@ The command removes all the Kubernetes components associated with the chart and 
 |---------------------------------------|-----------------------------------------------------------------------------------------------|-------------------------------|
 | `replicas`                            | Number of nodes                                                                               | `1`                           |
 | `image.repository`                    | Image repository                                                                              | `regulaforensics/face-api`    |
-| `image.tag`                           | Overrides the Face-API image tag                                                              | `"7.1-cpu"`                   |
+| `image.tag`                           | Overrides the Face-API image tag                                                              | `"7.2-cpu"`                   |
 | `image.pullPolicy`                    | Image pull policy                                                                             | `IfNotPresent`                |
 | `imagePullSecrets`                    | Image pull secrets                                                                            | `[]`                          |
 | `nameOverride`                        | String to partially override common.names.fullname template (will maintain the release name)  | `""`                          |
@@ -108,7 +108,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `terminationGracePeriodSeconds`       | Termination grace period to use for each pod                                                  | `nil`                         |
 | `lifecycle`                           | `preStop` lifecycle hook to control the termination order                                     | `{}`                          |
 | `nodeSelector`                        | Node labels for pods assignment                                                               | `{}`                          |
-| `jobNodeSelector`                     | Node labels for database migration jobs in GKE Autopilot (excludes Accelerator nodes)       | `{}`                          |
+| `jobNodeSelector`                     | Node labels for database migration jobs in GKE Autopilot (excludes Accelerator nodes)         | `{}`                          |
 | `affinity`                            | Affinity for pods assignment                                                                  | `{}`                          |
 | `tolerations`                         | Tolerations for pods assignment                                                               | `[]`                          |
 | `topologySpreadConstraints`           | Topology Spread Constraints for pod assignment                                                | `[]`                          |
@@ -273,7 +273,7 @@ helm install my-release regulaforensics/faceapi \
 | `config.service.search.results.location.folder`                       | (Optional) The Search results folder name in case of `fs` storage type                    | `"/app/faceapi-search/search-results"`|
 | `config.service.search.results.location.prefix`                       | (Optional) The Search results prefix path in the `bucket/container`                       | `"search-results"`                    |
 | `config.service.search.threshold`                                     | Search similarity threshold                                                               | `1.0`                                 |
-| `config.service.search.vectorDatabase.type`                           | Search VectorDatabase type (supported types: `milvus`/`atlas`)                            | `milvus`                              |
+| `config.service.search.vectorDatabase.type`                           | Search VectorDatabase type (supported types: `milvus`/ `opensearch`/ `atlas`)             | `milvus`                              |
 | `config.service.search.vectorDatabase.milvus.user`                    | Milvus user                                                                               | `""`                                  |
 | `config.service.search.vectorDatabase.milvus.password`                | Milvus password                                                                           | `""`                                  |
 | `config.service.search.vectorDatabase.milvus.token`                   | Milvus token                                                                              | `""`                                  |
@@ -284,6 +284,18 @@ helm install my-release regulaforensics/faceapi \
 | `config.service.search.vectorDatabase.milvus.index.params.nlist`      | Milvus nlist cluster units                                                                | `128`                                 |
 | `config.service.search.vectorDatabase.milvus.search.type`             | Milvus search type. [Similarity metrics](https://milvus.io/docs/metric.md)                | `"L2"`                                |
 | `config.service.search.vectorDatabase.milvus.search.params.nprobe`    | Milvus search parameters. nprobe. The number of cluster units to search                   | `5`                                   |
+| `config.service.search.vectorDatabase.opensearch.host`                | OpenSearch host                                                                           | `"opensearch"`                        |
+| `config.service.search.vectorDatabase.opensearch.port`                | OpenSearch port                                                                           | `9200`                                |
+| `config.service.search.vectorDatabase.opensearch.useSsl`              | Use SSL                                                                                   | `false`                               |
+| `config.service.search.vectorDatabase.opensearch.verifyCerts`         | Verify Certificates                                                                       | `false`                               |
+| `config.service.search.vectorDatabase.opensearch.username`            | OpenSearch username                                                                       | `"admin"`                             |
+| `config.service.search.vectorDatabase.opensearch.password`            | OpenSearch password                                                                       | `"admin"`                             |
+| `config.service.search.vectorDatabase.opensearch.dimension`           | OpenSearch dimension                                                                      | `512`                                 |
+| `config.service.search.vectorDatabase.opensearch.awsAuth.enabled`     | OpenSearch Use AWS Authentication                                                         | `false`                               |
+| `config.service.search.vectorDatabase.opensearch.awsAuth.region`      | OpenSearch AWS region                                                                     | `null`                                |
+| `config.service.search.vectorDatabase.opensearch.awsAuth.accessKey`   | OpenSearch AWS Access Key                                                                 | `null`                                |
+| `config.service.search.vectorDatabase.opensearch.awsAuth.secretKey`   | OpenSearch AWS Secret Access Key                                                          | `null`                                |
+| `config.service.search.vectorDatabase.atlas.connectionString`         | Atlas Database connection string                                                          | `""`                                  |
 
 
 ## HouseKeeper parameters

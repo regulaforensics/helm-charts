@@ -53,24 +53,36 @@ helm install my-release regulaforensics/docreader \
 
 ### RFID PKD PA support
 
-To install the chart with the release name `my-release` and RFID PKD PA capabilities:
+To deploy the chart with release name `my-release` and enable RFID PKD PA, build a custom DocReader image that bundles the PKD master lists.
+1. Create a custom image (with PKD master lists).
 
-```console
-helm install my-release regulaforensics/docreader \
-    --set licenseSecretName=docreader-license \
-    --set config.sdk.rfid.enabled=true
+> [!NOTE]
+> Before building, make sure your local rfidpkd/ directory contains the required RFID PKD masterlists. They will be copied into the image at /app/pkdPa/
 
-export POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=docreader,app.kubernetes.io/instance=my-release" -o jsonpath="{.items[0].metadata.name}")
+An example `Dockerfile`:
+```dockerfile
+ARG DOCREADER_TAG=nightly
 
-kubectl cp <PKD_PA_CERTIFICATES_PATH> ${POD_NAME}:/app/pkdPa/
+FROM docker.io/regulaforensics/docreader:${DOCREADER_TAG}
+
+COPY rfidpkd/ /app/pkdPa/
+
+USER 1001
 ```
 
-An alternative to PVCs with ReadWriteMany access mode is to create a custom image based on regulaforensics/docreader. This image will include RFID PKD masterlists onboard at the default path `/app/pkdPa/`, thereby eliminating the need for PVCs with ReadWriteMany for container creation.
+2. Build and push custom container image:
+```console
+export DOCREADER_TAG=latest
+export COMPANY_REPOSITORY=mycompanyprivaterepository
+docker build --no-cache --push --build-arg DOCREADER_TAG=${DOCREADER_TAG} -t ${COMPANY_REPOSITORY}/docreader:${DOCREADER_TAG}-pkd .
+```
+
+3. Install chart
 
 ```console
 helm install my-release regulaforensics/docreader \
-    --set image.repository=<your own repository> \
-    --set image.tag=<your image tag> \
+    --set image.repository=${COMPANY_REPOSITORY}/docreader \
+    --set image.tag=${DOCREADER_TAG}-pkd \
     --set licenseSecretName=docreader-license \
     --set config.sdk.rfid.enabled=true
 ```
@@ -81,14 +93,12 @@ To install the chart with the release name `my-release` and Chip Verification ca
 
 ```console
 helm install my-release regulaforensics/docreader \
+    --set image.repository=${COMPANY_REPOSITORY}/docreader \
+    --set image.tag=${DOCREADER_TAG}-pkd \
     --set licenseSecretName=docreader-license \
     --set config.sdk.rfid.enabled=true \
     --set config.sdk.rfid.chipVerification.enabled=true \
     --set postgresql.enabled=true
-
-export POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=docreader,app.kubernetes.io/instance=my-release" -o jsonpath="{.items[0].metadata.name}")
-
-kubectl cp <PKD_PA_CERTIFICATES_PATH> ${POD_NAME}:/app/pkdPa/
 ```
 
 ## Uninstalling the Chart
@@ -134,7 +144,7 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | `terminationGracePeriodSeconds`           | Termination grace period to use for each pod                                                  | `nil`                         |
 | `lifecycle`                               | `preStop` lifecycle hook to control the termination order                                     | `{}`                          |
 | `nodeSelector`                            | Node labels for pods assignment                                                               | `{}`                          |
-| `jobNodeSelector`                         | Node labels for database migration jobs in GKE Autopilot (excludes Accelerator nodes)       | `{}`                          |
+| `jobNodeSelector`                         | Node labels for database migration jobs in GKE Autopilot (excludes Accelerator nodes)         | `{}`                          |
 | `affinity`                                | Affinity for pods assignment                                                                  | `{}`                          |
 | `tolerations`                             | Tolerations for pods assignment                                                               | `[]`                          |
 | `topologySpreadConstraints`               | Topology Spread Constraints for pod assignment                                                | `[]`                          |

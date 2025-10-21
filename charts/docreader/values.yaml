@@ -110,7 +110,6 @@ config:
         storageClassName: ~
         existingClaim: ~
 
-
   service:
     webServer:
       port: 8080
@@ -160,6 +159,7 @@ config:
         tlsVersion: 1.2
 
     storage:
+      # type: fs | s3 | gcs | az
       type: fs
       # s3:
       #   accessKey: <AWS_ACCESS_KEY_ID>
@@ -429,6 +429,8 @@ autoscaling:
 # ref: https://github.com/bitnami/charts/tree/main/bitnami/postgresql
 postgresql:
   enabled: false
+  image:
+    repository: bitnamilegacy/postgresql
   auth:
     username: "regula"
     password: "Regulapasswd#1"

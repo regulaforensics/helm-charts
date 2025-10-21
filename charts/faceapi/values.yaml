@@ -180,6 +180,7 @@ config:
         tlsVersion: 1.2
 
     storage:
+      # type: fs | s3 | gcs | az
       type: fs
       # s3:
       #   accessKey: <AWS_ACCESS_KEY_ID>
@@ -315,22 +316,41 @@ config:
       threshold: 1.0
 
       vectorDatabase:
+        # type: milvus | opensearch | atlas
         type: milvus
-        milvus:
-          user: ""
-          password: ""
-          token: ""
-          endpoint: "http://localhost:19530"
-          consistency: "Bounded"
-          reload: false
-          index:
-            type: "IVF_FLAT"
-            params:
-              nlist: 128
-          search:
-            type: "L2"
-            params:
-              nprobe: 5
+        # milvus:
+        #   user: ""
+        #   password: ""
+        #   token: ""
+        #   endpoint: "http://milvus:19530"
+        #   consistency: "Bounded"
+        #   reload: false
+        #   index:
+        #     type: "IVF_FLAT"
+        #     params:
+        #       nlist: 128
+        #   search:
+        #     type: "L2"
+        #     params:
+        #       nprobe: 5
+
+        # opensearch:
+        #   host: "opensearch"
+        #   port: "9200"
+        #   useSsl: false
+        #   verifyCerts: false
+        #   username: admin
+        #   password: "admin"
+        #   dimension: 512
+        #   awsAuth:
+        #     enabled: false
+        #     region: null
+        #     accessKey: null
+        #     secretKey: null
+
+        # # Must be specified if the main database of the application differs from MongoAtlas
+        # atlas:
+        #   connectionString: "mongodb+srv://login:password@127.0.0.1:27017/regula_db"
 
     # Housekeeper configuration, for the cases when needs to have automatic cleanup of the data
     # The housekeeper is responsible for cleaning up the data in the storage and database
@@ -517,6 +537,8 @@ milvus:
 # ref: https://github.com/bitnami/charts/tree/main/bitnami/postgresql
 postgresql:
   enabled: false
+  image:
+    repository: bitnamilegacy/postgresql
   auth:
     username: "regula"
     password: "Regulapasswd#1"

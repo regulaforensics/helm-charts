@@ -47,11 +47,10 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
-            - pipenv
-            - run
-            - python
-            - src/main.py
-            - migrate
+            - /bin/sh
+            - -c
+            - |
+              source /app/.venv/bin/activate && python src/main.py migrate
           env:
             {{- include "docreader.envs" . | indent 10 }}
             {{- if and (not .Values.postgresql.enabled) .Values.config.service.database.connectionStringSecretName }}

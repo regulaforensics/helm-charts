@@ -1,0 +1,544 @@
+nameOverride: ""
+fullnameOverride: ""
+
+commonLabels: {}
+
+podAnnotations: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+versionSha: latest
+
+image:
+  repository: regulaforensics/idv-coordinator
+  pullPolicy: Always
+  tag: ""
+imagePullSecrets: {}
+
+# Supply the name of existing secret with the regula.license file.
+# You can load it to a k8s generic secret via the following command:
+# `kubectl create secret generic idv-license -n <namespace> --from-file=regula.license=/path/to/file`
+#
+licenseSecretName: null
+
+api:
+  replicas: 1
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  resources: {}
+    # requests:
+    #   cpu: "1500m"
+    #   memory: "512Mi"
+  topologySpreadConstraints: []
+
+  terminationGracePeriodSeconds: 45
+
+  lifecycle: {}
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "sleep 30"]
+
+  service:
+    type: ClusterIP
+    port: 80
+    annotations: {}
+    loadBalancerSourceRanges: []
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+    # Either HPA or KEDA can be enabled at a time for autoscaling
+    keda:
+      enabled: false
+      triggers: []
+      TriggerAuthentication: null
+  # API pod disruption budget
+  podDisruptionBudget:
+    enabled: false
+    # PDB configuration
+    config:
+      # minAvailable and maxUnavailable cannot be both set
+      maxUnavailable: ~
+      minAvailable: 1
+
+  probes:
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+    startupProbe:
+      enabled: false
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+
+workflow:
+  replicas: 1
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  resources: {}
+    # requests:
+    #   cpu: "500m"
+    #   memory: "128Mi"
+  topologySpreadConstraints: []
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+    # Either HPA or KEDA can be enabled at a time for autoscaling
+    keda:
+      enabled: false
+      triggers: []
+      TriggerAuthentication: null
+
+  # Workflow pod disruption budget
+  podDisruptionBudget:
+    enabled: false
+    # PDB configuration
+    config:
+      # minAvailable and maxUnavailable cannot be both set
+      maxUnavailable: ~
+      minAvailable: 1
+
+scheduler:
+  replicas: 1
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  resources: {}
+  topologySpreadConstraints: []
+
+audit:
+  replicas: 1
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  resources: {}
+    # requests:
+    #   cpu: "100m"
+    #   memory: "128Mi"
+  topologySpreadConstraints: []
+
+indexer:
+  replicas: 1
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  resources: {}
+  topologySpreadConstraints: []
+
+config:
+  baseUrl: "http://idv.example.com"
+  fernetKey: "tton53xJw0QV6vfaOTNRP_YGnPc76ZJkXFdVFZSnaKQ="
+  identifier: null
+  basicAuth:
+    enabled: true
+
+  services:
+    api:
+      port: 8000
+      host: 0.0.0.0
+      workers: auto
+      threads: auto
+      keepalive: 120
+      timeout: 120
+      cors:
+        enabled: false
+        origins: "*"
+        methods: "*"
+        headers: "*"
+        maxAge: 0
+      maxBodySize: 64Mi
+      openapi: false
+
+    workflow:
+      workers: auto
+
+    scheduler:
+      jobs:
+        reloadWorkflows:
+          cron: '*/15 * * * * *'
+        expireSessions:
+          cron: '*/10 * * * * *'
+        cleanSessions:
+          cron: '*/30 * * * * *'
+          keepFor: 1d
+        expireDeviceLogs:
+          cron: '*/5 * * * *'
+          keepFor: 30d
+        reloadLocales:
+          cron: '*/15 * * * * *'
+        cronWorkflow:
+          cron: '*/30 * * * * *'
+
+    audit:
+      wsEnabled: false
+
+    indexer:
+      timeout: 60
+      maxBatchSize: 1000
+
+    docreader:
+      enabled: false
+      prefix: drapi
+      url: ''
+
+    faceapi:
+      enabled: false
+      prefix: faceapi
+      url: ''
+
+  mongo:
+    url: "mongodb://mongodb:27017/idv"
+
+  messageBroker:
+    url: "amqp://rabbitmq:5672/"
+
+  storage:
+    type: s3
+    s3:
+      endpoint: ""
+      accessKey: null
+      accessSecret: null
+      region: "eu-central-1"
+      secure: true
+
+    sessions:
+      location:
+        bucket: "idv-bucket"
+        prefix: "sessions"
+    persons:
+      location:
+        bucket: "idv-bucket"
+        prefix: "persons"
+    workflows:
+      location:
+        bucket: "idv-bucket"
+        prefix: "workflows"
+    userFiles:
+      location:
+        bucket: "idv-bucket"
+        prefix: "files"
+    locales:
+      location:
+        bucket: "idv-bucket"
+        prefix: "localization"
+    assets:
+      location:
+        bucket: "idv-bucket"
+        prefix: "assets"
+
+  faceSearch:
+    # Set opensearch.enabled.true if 'faceSearch' is enabled
+    enabled: false
+    limit: 1000
+    threshold: 0.75
+    database:
+      type: opensearch
+      opensearch:
+        host: "opensearch"
+        port: "9200"
+        useSsl: false
+        verifyCerts: false
+        method: "hnsw"
+        username: null
+        password: null
+        dimension: 512
+        awsAuth:
+          enabled: false
+          region: null
+          accessKey: null
+          secretKey: null
+      # type: atlas
+      atlas: {}
+
+  textSearch:
+    # Set opensearch.enabled.true if 'textSearch' is enabled
+    enabled: false
+    limit: 1000
+    database:
+      type: opensearch
+      opensearch:
+        host: "opensearch"
+        port: "9200"
+        useSsl: false
+        verifyCerts: false
+        username: null
+        password: null
+        awsAuth:
+          enabled: false
+          region: null
+          accessKey: null
+          secretKey: null
+      # type: atlas
+      atlas: {}
+
+  mobile: {}
+
+  smtp:
+    enabled: false
+    host: ""
+    port: 587
+    username: ""
+    password: ""
+    tls: true
+
+  oauth2:
+    enabled: false
+    accessTokenTtl: 600
+    refreshTokenTtl: 604800
+    providers: []
+
+  logging:
+    level: INFO
+    formatter: "%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(message)s"
+    console: true
+    file: false
+    path: /var/log
+    maxFileSize: 10485760
+    filesCount: 10
+
+  metrics:
+    statsd:
+      enabled: false
+      host: null
+      port: 9125
+      prefix: idv
+
+  ip2location:
+    enabled: false
+    type: regula
+    regula:
+      url: https://lic.regulaforensics.com
+      timeout: 3
+
+  deviceRegistration:
+    enabled: false
+
+
+env:
+  # The 'idv' secret has to be preinstalled in the same namespace as the IDV Coordinator.
+  # Uncomment the following lines to use secrets for sensitive configuration values.
+  # - name: IDV_CONFIG__MONGO__URL
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: idv
+  #       key: IDV_CONFIG__MONGO__URL
+  # - name: IDV_CONFIG__OAUTH2__PROVIDERS__0__SECRET
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: idv
+  #       key: IDV_CONFIG__OAUTH2__PROVIDERS__0__SECRET
+  # - name: IDV_CONFIG__OAUTH2__PROVIDERS__1__SECRET
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: idv
+  #       key: IDV_CONFIG__OAUTH2__PROVIDERS__1__SECRET
+  # - name: IDV_CONFIG__OAUTH2__PROVIDERS__3__SECRET
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: idv
+  #       key: IDV_CONFIG__OAUTH2__PROVIDERS__3__SECRET
+  # - name: IDV_CONFIG__FERNETKEY
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: idv
+  #       key: IDV_CONFIG__FERNETKEY
+  # - name: IDV_CONFIG__TOPICS__EVENT__URL
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: idv
+  #       key: IDV_CONFIG__TOPICS__EVENT__URL
+  # - name: IDV_CONFIG__TOPICS__CLIENT__URL
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: idv
+  #       key: IDV_CONFIG__TOPICS__CLIENT__URL
+  # - name: IDV_CONFIG__TOPICS__AUDIT__URL
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: idv
+  #       key: IDV_CONFIG__TOPICS__AUDIT__URL
+  # - name: IDV_CONFIG__SMTP__PASSWORD
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: idv
+  #       key: IDV_CONFIG__SMTP__PASSWORD
+  # - name: IDV_CONFIG__SMTP__USERNAME
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: idv
+  #       key: IDV_CONFIG__SMTP__USERNAME
+  # - name: AWS_ACCESS_KEY_ID
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: idv
+  #       key: AWS_ACCESS_KEY_ID
+  # - name: AWS_SECRET_ACCESS_KEY
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: idv
+  #       key: AWS_SECRET_ACCESS_KEY
+
+ingress:
+  enabled: false
+  # The Ingress Class for the web Ingress (used only with Kubernetes v1.19 and above)
+  # className: ""
+  annotations: {}
+  # The hostnames or hosts configuration for the web Ingress
+  hosts: []
+    # - idv.domain.com
+  paths: []
+    # - /
+  pathType: Prefix
+  # TLS configuration for the IDV Ingress
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+###################################
+# Subcharts
+###################################
+
+## prometheus-statsd-exporter
+statsd:
+  enabled: false
+  statsd:
+    mappingConfig: |-
+      mappings:
+      - match: "idv.(.*)_http_method_(.*)_route_(.*)_status_(.*)_duration"
+        name: "idv_${1}_http_duration"
+        match_type: regex
+        labels:
+          service: "$1"
+          method: "$2"
+          url_rule: "$3"
+          status: "$4"
+      - match: "idv.(.*)_http_status_(.*)_total"
+        name: "idv_${1}_http_request_total"
+        match_type: regex
+        labels:
+          service: "$1"
+          status: "$2"
+      - match: "idv.(.*)_(.*)_duration"
+        name: "idv_${1}_duration"
+        match_type: regex
+        labels:
+          service: "$1"
+          operation: "$2"
+      - match: "idv.(.*)_(.*)_(.*)_condition_eval_count"
+        name: "idv_workflow_step_condition_eval_count"
+        match_type: regex
+        labels:
+          workflow_id: "$1"
+          condition: "$2"
+          result: "$3"
+      - match: "idv.(.*)_(.*)_error_count"
+        name: "idv_error"
+        match_type: regex
+        labels:
+          service: "$1"
+          operation: "$2"
+      - match: "idv.(.*)_(.*)_success_count"
+        name: "idv_${1}_success_count"
+        match_type: regex
+        labels:
+          service: "$1"
+          operation: "$2"
+      - match: "idv.(.*)_(.*)_error_count"
+        name: "idv_${1}_error_count"
+        match_type: regex
+        labels:
+          service: "$1"
+          operation: "$2"
+      - match: "idv.(.*)_(.*)_count"
+        name: "idv_${1}_total"
+        match_type: regex
+        labels:
+          service: "$1"
+          operation: "$2"
+
+# NOTE
+# The subcharts below are used for the demonstration and Dev/Test purposes.
+# We strongly recommend to deploy separate installations of the DB in Production.
+
+mongodb:
+  enabled: false
+  image:
+    repository: bitnamilegacy/mongodb
+  fullnameOverride: mongodb
+  architecture: standalone
+  auth:
+    enabled: false
+
+rabbitmq:
+  enabled: false
+  image:
+    repository: bitnamilegacy/rabbitmq
+  auth:
+    username: idv
+    password: "admin"
+
+minio:
+  enabled: false
+  mode: standalone
+  persistence:
+    size: 10Gi
+  buckets:
+    - name: idv-bucket
+      policy: none
+      purge: false
+
+opensearch:
+  enabled: false
+  fullnameOverride: opensearch
+  opensearchPassword: ""
+  replicas: 1
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+  securityConfig:
+    enabled: true
+  nodeGroup: single-node
+  singleNode: true
+  config:
+    opensearch.yml: |
+      discovery.type: single-node
+      plugins.security.disabled: true
+      bootstrap.memory_lock: true
+  extraEnvs:
+    - name: OPENSEARCH_JAVA_OPTS
+      value: "-Xms128m -Xmx512m"

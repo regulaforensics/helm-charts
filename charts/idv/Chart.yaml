@@ -1,0 +1,35 @@
+apiVersion: v2
+name: idv
+home: https://idv.regula.app/
+version: 1.0.2
+appVersion: "develop"
+description: IDV Platform. On-premise and cloud integration
+icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
+keywords:
+  - regula
+  - idv
+  - idv-platform
+  - regulaforensics
+dependencies:
+  - name: prometheus-statsd-exporter
+    alias: statsd
+    version: 1.0.0
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: statsd.enabled
+  - name: opensearch
+    version: 2.35.1
+    repository: https://opensearch-project.github.io/helm-charts
+    condition: opensearch.enabled
+  - name: mongodb
+    version: 16.5.45
+    repository: https://charts.bitnami.com/bitnami
+    condition: mongodb.enabled
+  - name: rabbitmq
+    version: 16.0.14
+    repository: https://charts.bitnami.com/bitnami
+    condition: rabbitmq.enabled
+  - name: minio
+    version: 5.4.0
+    repository: https://charts.min.io/
+    condition: minio.enabled
+type: application

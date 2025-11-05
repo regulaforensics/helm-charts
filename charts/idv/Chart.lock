@@ -1,0 +1,18 @@
+dependencies:
+- name: prometheus-statsd-exporter
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 1.0.0
+- name: opensearch
+  repository: https://opensearch-project.github.io/helm-charts
+  version: 2.35.1
+- name: mongodb
+  repository: https://charts.bitnami.com/bitnami
+  version: 16.5.45
+- name: rabbitmq
+  repository: https://charts.bitnami.com/bitnami
+  version: 16.0.14
+- name: minio
+  repository: https://charts.min.io/
+  version: 5.4.0
+digest: sha256:50bfb5af9350ef686ffae6bcb5dcfae11256e58e586f53e8e08c76ef5d0e162f
+generated: "2025-10-22T16:12:23.879988678+03:00"

@@ -1,0 +1,21 @@
+{{- if and .Values.workflow.autoscaling.enabled .Values.workflow.autoscaling.keda.enabled .Values.workflow.autoscaling.keda.TriggerAuthentication }}
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ include "idv.fullname" . }}-workflow
+  labels:
+    {{- include "idv.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.workflow.autoscaling.keda.TriggerAuthentication.secretTargetRef }}
+  secretTargetRef:
+  {{- range .Values.workflow.autoscaling.keda.TriggerAuthentication.secretTargetRef }}
+  - parameter: {{ .parameter }}
+    name: {{ .name }}
+    key: {{ .key }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.workflow.autoscaling.keda.TriggerAuthentication.podIdentity }}
+  podIdentity:
+    provider: {{ .Values.workflow.autoscaling.keda.TriggerAuthentication.podIdentity.provider }}
+  {{- end }}
+{{- end }}

@@ -229,6 +229,14 @@ helm upgrade my-release regulaforensics/idv
 | `config.services.faceapi.enabled`                         | Enable faceapi integration                        | `false`                           |
 | `config.services.faceapi.prefix`                          | Faceapi path prefix                               | `faceapi`                         |
 | `config.services.faceapi.url`                             | Faceapi base URL                                  | `""`                              |
+| `config.services.ip2location.enabled`                     | Enable IP to Location service                     | `false`                           |
+| `config.services.ip2location.type`                        | IP to Location type                               | `regula`                          |
+| `config.services.ip2location.regula.url`                  | IP to Location URL                                | `https://lic.regulaforensics.com` |
+| `config.services.ip2location.regula.timeout`              | IP to Location timeout                            | `3`                               |
+| `config.services.livekit.enabled`                         | Enable Livekit                                    | `false`                           |
+| `config.services.livekit.url`                             | Livekit URL                                       | `http://livekit.example.com`.     |
+| `config.services.livekit.apiKey`                          | apiKey for Livekit                                | `devkey`                          |
+| `config.services.livekit.apiSecret`                       | apiSecret for Livekit                             | `secret`                          |
 | |
 | `config.mongo.url`                                        | Mongo connection URL                              | `"mongodb://mongodb:27017/idv"`   |
 | |
@@ -313,11 +321,6 @@ helm upgrade my-release regulaforensics/idv
 | `config.metrics.statsd.host`                              | StatsD host                                       | `null`                            |
 | `config.metrics.statsd.port`                              | StatsD port                                       | `9125`                            |
 | `config.metrics.statsd.prefix`                            | StatsD metrics prefix                             | `idv`                             |
-| |
-| `config.ip2location.enabled`                              | Enable IP to Location service                     | `false`                           |
-| `config.ip2location.type`                                 | IP to Location type                               | `regula`                          |
-| `config.ip2location.regula.url`                           | IP to Location URL                                | `https://lic.regulaforensics.com` |
-| `config.ip2location.regula.timeout`                       | IP to Location timeout                            | `3`                               |
 | |
 | `env`                                                     | Environment variables list                        | `[]`                              |
 | `ingress.enabled`                                         | Enable Ingress                                    | `false`                           |

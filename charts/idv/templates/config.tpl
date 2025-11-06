@@ -70,6 +70,23 @@ services:
     prefix: {{ quote .Values.config.services.faceapi.prefix }}
     url: {{ quote .Values.config.services.faceapi.url }}
     {{- end }}
+  
+  ip2location:
+    enabled: {{ .Values.config.services.ip2location.enabled }}
+    {{- if .Values.config.services.ip2location.enabled }}
+    type: {{ .Values.config.services.ip2location.type }}
+    {{- if eq .Values.config.services.ip2location.type "regula" }}
+    regula:
+      url: {{ .Values.config.services.ip2location.regula.url }}
+      timeout: {{ .Values.config.services.ip2location.regula.timeout }}
+    {{- end }}
+    {{- end }}
+  
+  livekit:
+    enabled: {{ .Values.config.services.livekit.enabled }}
+    {{- if .Values.config.services.livekit.enabled }}
+    url: {{ quote .Values.config.services.livekit.url }}
+    {{- end }}
 
 mongo:
   {{- if .Values.mongodb.enabled }}
@@ -294,17 +311,6 @@ metrics:
     {{- end }}
     prefix: {{ quote .Values.config.metrics.statsd.prefix }}
     {{- end }}
-
-ip2location:
-  enabled: {{ .Values.config.ip2location.enabled }}
-  {{- if .Values.config.ip2location.enabled }}
-  type: {{ .Values.config.ip2location.type }}
-  {{- if eq .Values.config.ip2location.type "regula" }}
-  regula:
-    url: {{ .Values.config.ip2location.regula.url }}
-    timeout: {{ .Values.config.ip2location.regula.timeout }}
-  {{- end }}
-  {{- end }}
 
 deviceRegistration:
   enabled: {{ .Values.config.deviceRegistration.enabled }}

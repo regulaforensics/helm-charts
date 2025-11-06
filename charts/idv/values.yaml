@@ -214,6 +214,17 @@ config:
       prefix: faceapi
       url: ''
 
+    ip2location:
+      enabled: false
+      type: regula
+      regula:
+        url: https://lic.regulaforensics.com
+        timeout: 3
+
+    livekit:
+      enabled: false
+      url: https://livekit.example.com
+
   mongo:
     url: "mongodb://mongodb:27017/idv"
 
@@ -330,13 +341,6 @@ config:
       host: null
       port: 9125
       prefix: idv
-
-  ip2location:
-    enabled: false
-    type: regula
-    regula:
-      url: https://lic.regulaforensics.com
-      timeout: 3
 
   deviceRegistration:
     enabled: false

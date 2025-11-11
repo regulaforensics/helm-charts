@@ -1,0 +1,25 @@
+{{- if and .Values.api.autoscaling.enabled .Values.api.autoscaling.keda.enabled }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "idv.fullname" . }}-api
+  labels:
+    {{- include "idv.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: {{ include "idv.fullname" . }}-api
+  minReplicaCount: {{ .Values.api.autoscaling.keda.minReplicaCount | default 1 }}
+  maxReplicaCount: {{ .Values.api.autoscaling.keda.maxReplicaCount | default 100 }}
+  cooldownPeriod: {{ .Values.api.autoscaling.keda.cooldownPeriod | default 300 }}
+  pollingInterval: {{ .Values.api.autoscaling.keda.pollingInterval | default 30 }}
+  triggers:
+  {{- range .Values.api.autoscaling.keda.triggers }}
+  - type: {{ .type }}
+    metadata:
+      {{- toYaml .metadata | nindent 6 }}
+    {{- if .authenticationRef }}
+    authenticationRef:
+      name: {{ .authenticationRef.name }}
+    {{- end }}
+  {{- end }}
+{{- end }}

@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "idv.fullname" . }}-api
+  labels:
+    {{- include "idv.api.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.api.autoscaling.enabled }}
+  replicas: {{ .Values.api.replicas }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "idv.api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configs/idv-config.yaml") . | sha256sum }}
+        checksum/version: {{ .Values.versionSha | quote }}
+        {{- if .Values.podAnnotations }}
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "idv.api.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "idv.serviceAccountName" . }}
+      {{- with .Values.api.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.api.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.api.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.api.topologySpreadConstraints }}
+      topologySpreadConstraints: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      {{- if .Values.licenseSecretName }}
+      - name: license
+        secret:
+          secretName: {{ .Values.licenseSecretName }}
+      {{- end }}
+      - name: idv-config
+        configMap:
+          name: {{ include "idv.fullname" . }}-config
+          items:
+            - key: idv-config
+              path: idv-config.yaml
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.api.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.api.terminationGracePeriodSeconds }}
+      {{- end }}
+      containers:
+      - name: api
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources: {{- toYaml .Values.api.resources | nindent 10 }}
+        securityContext: {{- toYaml .Values.securityContext | nindent 10 }}
+        {{- if .Values.api.probes.livenessProbe.enabled }}
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: api
+          initialDelaySeconds: {{ .Values.api.probes.livenessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.api.probes.livenessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.api.probes.livenessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.api.probes.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.api.probes.livenessProbe.successThreshold }}
+        {{- end }}
+        {{- if .Values.api.probes.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: api
+          initialDelaySeconds: {{ .Values.api.probes.readinessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.api.probes.readinessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.api.probes.readinessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.api.probes.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.api.probes.readinessProbe.successThreshold }}
+        {{- end }}
+        {{- if .Values.api.probes.startupProbe.enabled }}
+        startupProbe:
+          httpGet:
+            path: /api/health
+            port: api
+          initialDelaySeconds: {{ .Values.api.probes.startupProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.api.probes.startupProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.api.probes.startupProbe.periodSeconds }}
+          failureThreshold: {{ .Values.api.probes.startupProbe.failureThreshold }}
+          successThreshold: {{ .Values.api.probes.startupProbe.successThreshold }}
+        {{- end }}
+        lifecycle: {{- toYaml .Values.api.lifecycle | nindent 10 }}
+        ports:
+        - name: api
+          containerPort: {{ .Values.config.services.api.port }}
+          protocol: TCP
+        volumeMounts:
+        {{- if .Values.licenseSecretName }}
+        - name: license
+          mountPath: /app/extBin/unix/regula.license
+          subPath: regula.license
+          readOnly: true
+        {{- end }}
+        - name: idv-config
+          mountPath: /app/config.yaml
+          subPath: idv-config.yaml
+        command: ["idv"]
+        args: ["webserver", "start"]
+        env: {{- tpl (toYaml .Values.env) . | nindent 10 }}

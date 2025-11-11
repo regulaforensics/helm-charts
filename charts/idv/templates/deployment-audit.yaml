@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "idv.fullname" . }}-audit
+  labels:
+    {{- include "idv.audit.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.audit.replicas }}
+  selector:
+    matchLabels:
+      {{- include "idv.audit.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configs/idv-config.yaml") . | sha256sum }}
+        checksum/version: {{ .Values.versionSha | quote }}
+        {{- if .Values.podAnnotations }}
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "idv.audit.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "idv.serviceAccountName" . }}
+      {{- with .Values.audit.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.audit.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.audit.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.audit.topologySpreadConstraints }}
+      topologySpreadConstraints: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      {{- if .Values.licenseSecretName }}
+      - name: license
+        secret:
+          secretName: {{ .Values.licenseSecretName }}
+      {{- end }}
+      - name: idv-config
+        configMap:
+          name: {{ include "idv.fullname" . }}-config
+          items:
+            - key: idv-config
+              path: idv-config.yaml
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: audit
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources: {{- toYaml .Values.audit.resources | nindent 10 }}
+        securityContext: {{- toYaml .Values.securityContext | nindent 10 }}
+        volumeMounts:
+        {{- if .Values.licenseSecretName }}
+        - name: license
+          mountPath: /app/extBin/unix/regula.license
+          subPath: regula.license
+          readOnly: true
+        {{- end }}
+        - name: idv-config
+          mountPath: /app/config.yaml
+          subPath: idv-config.yaml
+        command: ["idv"]
+        args: ["audit", "start"]
+        env: {{- tpl (toYaml .Values.env) . | nindent 10 }}

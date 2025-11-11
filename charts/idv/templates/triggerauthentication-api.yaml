@@ -1,0 +1,15 @@
+{{- if and .Values.api.autoscaling.enabled .Values.api.autoscaling.keda.enabled .Values.api.autoscaling.keda.TriggerAuthentication }}
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ include "idv.fullname" . }}-api
+  labels:
+    {{- include "idv.labels" . | nindent 4 }}
+spec:
+  secretTargetRef:
+  {{- range .Values.api.autoscaling.keda.TriggerAuthentication.secretTargetRef }}
+  - parameter: {{ .parameter }}
+    name: {{ .name }}
+    key: {{ .key }}
+  {{- end }}
+{{- end }}

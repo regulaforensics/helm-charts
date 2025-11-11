@@ -1,0 +1,46 @@
+
+***********************************************************************
+*                                                                     *
+*                Regulaforensics IDV Platform Helm Chart              *
+*                                                                     *
+***********************************************************************
+
+Chart version: {{ .Chart.Version }}
+Kubernetes version compatibility: >= 1.23.0
+
+{{- if eq .Values.image.tag "latest" }}
+NOTE: Do not use "latest" mutable tag in production. Mutable tags can introduce multiple functional and security issues.
+{{- end }}
+{{- if and (not .Values.config.metrics.statsd.enabled) .Values.statsd.enabled }}
+MIND: Metrics collection is disabled, but statsd subchart has been deployed
+{{- else if and .Values.config.metrics.statsd.enabled (not .Values.statsd.enabled) }}
+MIND: Metrics collection is configured to external statsd deployment
+{{- end }}
+
+1. Get the application URL by running these commands:
+{{- if .Values.ingress.enabled }}
+{{- $paths := .Values.ingress.paths -}}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range $p := $paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ tpl $host $ }}{{ tpl $p $ }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.api.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "idv.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.api.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "idv.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "idv.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.api.service.port }}
+{{- else if contains "ClusterIP" .Values.api.service.type }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "idv.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
+{{- end }}
+
+{{- if eq .Values.config.fernetKey "tton53xJw0QV6vfaOTNRP_YGnPc76ZJkXFdVFZSnaKQ=" }}
+  * HELP: set a custom value with `config.fernetKey` or `IDV_CONFIG__FERNETKEY` env.
+{{- end }}

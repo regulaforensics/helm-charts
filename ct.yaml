@@ -6,4 +6,7 @@ chart-repos:
   - bitnami=https://charts.bitnami.com/bitnami
   - minio=https://charts.min.io/
   - milvus=https://zilliztech.github.io/milvus-helm
+  - opensearch=https://opensearch-project.github.io/helm-charts
+  - mongodb=https://charts.bitnami.com/bitnami
+  - prometheus-statsd-exporter=https://prometheus-community.github.io/helm-charts
 check-version-increment: false

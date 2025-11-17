@@ -21,6 +21,9 @@ sdk:
   {{- end }}
 
 service:
+  {{- if .Values.config.service.mode }}
+  mode: {{ .Values.config.service.mode }}
+  {{- end }}
   webServer:
     port: {{ .Values.config.service.webServer.port }}
     workers: {{ .Values.config.service.webServer.workers }}

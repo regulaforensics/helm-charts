@@ -92,6 +92,9 @@ podDisruptionBudget:
 licenseSecretName: ~
 
 config:
+  # run core library in separate process
+  # Note: this option is available only for Linux and Docker
+  # mode: inProc | outOfProc
   sdk:
     systemInfo:
       # Returns system information in the /api/healthz response and in the /api/process response.

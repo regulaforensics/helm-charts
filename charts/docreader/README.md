@@ -197,6 +197,7 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | `config.sdk.rfid.chipVerification.enabled`                | Whether to enable Chip Verification mode                                          | `false`                                                       |
 | `config.sdk.rfid.paSensitiveCodes`                        | RFID PKD PA Sensitive Codes to use                                                | `[]`                                                          |
 |                                                                                                                                                                                                               |
+| `config.service.mode`                                     | The mode to run core library process (`inProc` | `outOfProc`)                     | `inProc`                                                      |
 | `config.service.webServer.port`                           | Port server binding                                                               | `8080`                                                        |
 | `config.service.webServer.workers`                        | Number of workers per pod                                                         | `1`                                                           |
 | `config.service.webServer.timeout`                        | Number of seconds for the worker to process the request                           | `30`                                                          |

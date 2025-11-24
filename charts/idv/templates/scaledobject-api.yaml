@@ -17,9 +17,18 @@ spec:
   - type: {{ .type }}
     metadata:
       {{- toYaml .metadata | nindent 6 }}
+    {{- if .name }}
+    name: {{ .name }}
+    {{- end }}
+    {{- if .useCachedMetrics }}
+    useCachedMetrics: {{ .useCachedMetrics }}
+    {{- end }}
     {{- if .authenticationRef }}
     authenticationRef:
       name: {{ .authenticationRef.name }}
+    {{- end }}
+    {{- if .metricType }}
+    metricType: {{ .metricType }}
     {{- end }}
   {{- end }}
 {{- end }}

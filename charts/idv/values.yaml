@@ -199,6 +199,8 @@ config:
 
     audit:
       wsEnabled: false
+      user:
+        keepFor: "90d"
 
     indexer:
       timeout: 60

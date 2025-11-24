@@ -51,6 +51,8 @@ services:
   audit:
     enabled: true
     wsEnabled: {{ .Values.config.services.audit.wsEnabled }}
+    user:
+      keepFor: {{ quote .Values.config.services.audit.user.keepFor }}
 
   indexer:
     enabled: true

@@ -1,7 +1,7 @@
 apiVersion: v2
 name: idv
 home: https://idv.regula.app/
-version: 1.0.4
+version: 1.0.6
 appVersion: 3.1.3
 description: IDV Platform. On-premise and cloud integration
 icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg

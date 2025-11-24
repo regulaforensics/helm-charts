@@ -221,6 +221,7 @@ helm upgrade my-release regulaforensics/idv
 | `config.services.scheduler.jobs.reloadLocales.cron`       | Cron for reloading locales                        | `"*/15 * * * * *"`                |
 | `config.services.scheduler.jobs.cronWorkflow.cron`        | Cron for generic workflow task                    | `"*/30 * * * * *"`                |
 | `config.services.audit.wsEnabled`                         | Enable audit WebSocket                            | `false`                           |
+| `config.services.audit.user.keepFor`                      | Keep user data for specific time period           | `90d`                             |
 | `config.services.indexer.timeout`                         | Indexer request timeout seconds                   | `60`                              |
 | `config.services.indexer.maxBatchSize`                    | Indexer max batch size                            | `1000`                            |
 | `config.services.docreader.enabled`                       | Enable docreader integration                      | `false`                           |

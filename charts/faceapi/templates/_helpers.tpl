@@ -40,6 +40,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- define "faceapi.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "faceapi.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- if .Values.commonLabels }}
 {{ toYaml .Values.commonLabels }}
 {{- end }}

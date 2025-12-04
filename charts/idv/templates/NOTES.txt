@@ -22,7 +22,11 @@ MIND: Metrics collection is configured to external statsd deployment
 {{- $paths := .Values.ingress.paths -}}
 {{- range $host := .Values.ingress.hosts }}
   {{- range $p := $paths }}
-  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ tpl $host $ }}{{ tpl $p $ }}
+    {{- if kindIs "map" $p }}
+      http{{ if $.Values.ingress.tls }}s{{ end }}://{{ tpl $host $ }}{{ tpl $p.path $ }}
+    {{- else }}
+      http{{ if $.Values.ingress.tls }}s{{ end }}://{{ tpl $host $ }}{{ tpl $p $ }}
+    {{- end }}
   {{- end }}
 {{- end }}
 {{- else if contains "NodePort" .Values.api.service.type }}

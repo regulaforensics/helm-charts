@@ -1,6 +1,6 @@
 {{- if .Values.ingress.enabled -}}
-{{- $serviceName := printf "%s-api" (include "idv.fullname" .) -}}
-{{- $servicePort := .Values.api.service.port -}}
+{{- $defaultServiceName := printf "%s-api" (include "idv.fullname" .) -}}
+{{- $defaultServicePort := .Values.api.service.port -}}
 {{- $paths := .Values.ingress.paths -}}
 {{- $pathType := .Values.ingress.pathType | default "Prefix" -}}
 apiVersion: networking.k8s.io/v1
@@ -22,28 +22,60 @@ spec:
       http:
         paths:
         {{- range $p := $paths }}
+          {{- if kindIs "map" $p }}
+          - path: {{ tpl $p.path $ }}
+            pathType: {{ $p.pathType | default $pathType }}
+            backend:
+              service:
+                {{- if $p.action }}
+                name: {{ $p.action }}
+                port:
+                  name: use-annotation
+                {{- else }}
+                name: {{ $p.service.name | default $defaultServiceName }}
+                port:
+                  number: {{ $p.service.port | default $defaultServicePort }}
+                {{- end }}
+          {{- else }}
           - path: {{ tpl $p $ }}
             pathType: {{ $pathType }}
             backend:
               service:
-                name: {{ $serviceName }}
+                name: {{ $defaultServiceName }}
                 port:
-                  number: {{ $servicePort }}
-        {{- end -}}
+                  number: {{ $defaultServicePort }}
+          {{- end }}
+        {{- end }}
     {{- end -}}
   {{- else }}
     - http:
         paths:
         {{- range $p := $paths }}
+          {{- if kindIs "map" $p }}
+          - path: {{ tpl $p.path $ }}
+            pathType: {{ $p.pathType | default $pathType }}
+            backend:
+              service:
+                {{- if $p.action }}
+                name: {{ $p.action }}
+                port:
+                  name: use-annotation
+                {{- else }}
+                name: {{ $p.service.name | default $defaultServiceName }}
+                port:
+                  number: {{ $p.service.port | default $defaultServicePort }}
+                {{- end }}
+          {{- else }}
           - path: {{ tpl $p $ }}
             pathType: {{ $pathType }}
             backend:
               service:
-                name: {{ $serviceName }}
+                name: {{ $defaultServiceName }}
                 port:
-                  number: {{ $servicePort }}
-        {{- end -}}
-  {{- end -}}
+                  number: {{ $defaultServicePort }}
+          {{- end }}
+        {{- end }}
+  {{- end }}
   {{- with .Values.ingress.tls }}
   tls: {{- toYaml . | nindent 4 }}
   {{- end }}

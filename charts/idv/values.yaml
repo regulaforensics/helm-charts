@@ -415,13 +415,19 @@ env:
 ingress:
   enabled: false
   # The Ingress Class for the web Ingress (used only with Kubernetes v1.19 and above)
-  # className: ""
+  className: ""
   annotations: {}
   # The hostnames or hosts configuration for the web Ingress
   hosts: []
     # - idv.domain.com
   paths: []
     # - /
+    # - path: /api
+    #   service:
+    #     name: my-api-service
+    #     port: 8080
+    # - path: /metrics
+    #   action: metrics-block
   pathType: Prefix
   # TLS configuration for the IDV Ingress
   tls: []

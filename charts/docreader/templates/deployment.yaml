@@ -16,7 +16,7 @@ spec:
         {{- if .Values.podAnnotations }}
         {{- toYaml .Values.podAnnotations | nindent 8 }}
         {{- end }}
-      labels: {{- include "docreader.selectorLabels" . | nindent 8 }}
+      labels: {{- include "docreader.labels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "docreader.serviceAccount" . }}
       {{- with .Values.nodeSelector }}

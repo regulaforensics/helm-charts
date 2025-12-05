@@ -40,7 +40,6 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- define "docreader.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "docreader.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- if .Values.commonLabels }}
 {{ toYaml .Values.commonLabels }}
 {{- end }}

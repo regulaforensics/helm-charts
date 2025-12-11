@@ -330,6 +330,10 @@ helm upgrade my-release regulaforensics/idv
 | `ingress.paths`                                           | Ingress paths                                     | `[]`                              |
 | `ingress.pathType`                                        | Ingress path type                                 | `Prefix`                          |
 | `ingress.tls`                                             | Ingress TLS entries                               | `[]`                              |
+| `networkPolicy.enabled`                                   | Enable NetworkPolicy                              | `false`                           |
+| `networkPolicy.annotations`                               | NetworkPolicy annotations                         | `{}`                              |
+| `networkPolicy.ingress`                                   | Set NetworkPolicy Ingress rules                   | `{}`                              |
+| `networkPolicy.egress`                                    | Set NetworkPolicy Egress rules                    | `{}`                              |
 | `serviceAccount.create`                                   | Create service account                            | `true`                            |
 | `serviceAccount.annotations`                              | Service account annotations                       | `{}`                              |
 | `serviceAccount.name`                                     | Service account name override                     | `""`                              |

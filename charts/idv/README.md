@@ -337,6 +337,10 @@ helm upgrade my-release regulaforensics/idv
 | `serviceAccount.create`                                   | Create service account                            | `true`                            |
 | `serviceAccount.annotations`                              | Service account annotations                       | `{}`                              |
 | `serviceAccount.name`                                     | Service account name override                     | `""`                              |
+| `rbac.create`                                             | Create Role and RoleBinding                       | `false`                           |
+| `rbac.annotations`                                        | Role and RoleBinding annotations                  | `{}`                              |
+| `rbac.useExistingRole`                                    | Existing Role name to use                         | `""`                              |
+| `rbac.extraRoleRules`                                     | Extra rules for Role                              | `[]`                              |
 
 
 > [!NOTE]

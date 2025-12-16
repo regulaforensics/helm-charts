@@ -471,6 +471,18 @@ serviceAccount:
   annotations: {}
   name: ""
 
+rbac:
+  create: false
+  annotations: {}
+  # Use an existing Role
+  useExistingRole: ""
+  extraRoleRules: []
+  # Uncomment the lines below if you are going to use RBAC without pre-existing Role
+  # Also you can add your rules to the ones given below
+  # - apiGroups: [""]
+  #   resources: ["namespaces", "serviceaccounts"]
+  #   verbs: ["get"]
+
 ###################################
 # Subcharts
 ###################################

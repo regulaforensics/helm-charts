@@ -261,6 +261,9 @@ helm upgrade my-release regulaforensics/idv
 | `config.storage.locales.location.prefix`                  | Locales prefix                                    | `"localization"`                  |
 | `config.storage.assets.location.bucket`                   | Assets bucket                                     | `coordinator`                     |
 | `config.storage.assets.location.prefix`                   | Assets prefix                                     | `"assets"`                        |
+| `config.storage.tempFiles.location.bucket`                | Temp files bucket                                 | `"coordinator"`                   |
+| `config.storage.tempFiles.location.prefix`                | Temp files prefix                                 | `"tmp"`                           |
+| `config.storage.tempFiles.location.folder`                | Temp files folder                                 | `"files"`                         |
 | |
 | `config.faceSearch.enabled`                               | Enable Face search                                | `false`                           |
 | `config.faceSearch.limit`                                 | Max Face search results                           | `1000`                            |

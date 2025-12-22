@@ -267,6 +267,12 @@ config:
         bucket: "idv-bucket"
         prefix: "assets"
 
+    tempFiles:
+      location:
+        bucket: "idv-bucket"
+        prefix: "tmp"
+        folder: "files"
+
   faceSearch:
     # Set opensearch.enabled.true if 'faceSearch' is enabled
     enabled: false

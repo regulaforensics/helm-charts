@@ -169,6 +169,14 @@ storage:
       prefix: {{ quote .Values.config.storage.assets.location.prefix }}
       {{- end }}
 
+  tempFiles:
+    location:
+      {{- if eq .Values.config.storage.type "s3" }}
+      bucket: {{ quote .Values.config.storage.tempFiles.location.bucket }}
+      prefix: {{ quote .Values.config.storage.tempFiles.location.prefix }}
+      folder: {{ quote .Values.config.storage.tempFiles.location.folder }}
+      {{- end }}
+
 faceSearch:
   enabled: {{ .Values.config.faceSearch.enabled }}
   {{- if .Values.config.faceSearch.enabled }}

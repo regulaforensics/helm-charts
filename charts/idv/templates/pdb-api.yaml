@@ -1,4 +1,4 @@
-{{- if .Values.api.podDisruptionBudget.enabled }}
+{{- if or .Values.api.podDisruptionBudget.enabled .Values.api.autoscaling.enabled }}
 kind: PodDisruptionBudget
 apiVersion: policy/v1
 metadata:

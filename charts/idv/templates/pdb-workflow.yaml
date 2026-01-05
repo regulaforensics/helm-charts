@@ -1,4 +1,4 @@
-{{- if .Values.workflow.podDisruptionBudget.enabled }}
+{{- if or .Values.workflow.podDisruptionBudget.enabled .Values.workflow.autoscaling.enabled }}
 kind: PodDisruptionBudget
 apiVersion: policy/v1
 metadata:

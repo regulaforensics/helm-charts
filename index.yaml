@@ -3,6 +3,32 @@ entries:
   docreader:
   - apiVersion: v2
     appVersion: 8.4.315448.2033
+    created: "2026-01-05T11:24:16.7197106Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 13.4.4
+    description: Fast and accurate data extraction from identity documents. On-premise
+      and cloud integration
+    digest: 56788e23e07f0b588526c8914f650064f79401a98b375efa0c307df9bb2cfd26
+    home: https://api.regulaforensics.com/
+    icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
+    keywords:
+    - regula
+    - docreader
+    - regulaforensics
+    maintainers:
+    - email: support@regulaforensics.com
+      name: Regula Forensics Support
+      url: https://support.regulaforensics.com
+    name: docreader
+    type: application
+    urls:
+    - https://github.com/regulaforensics/helm-charts/releases/download/docreader-2.4.4/docreader-2.4.4.tgz
+    version: 2.4.4
+  - apiVersion: v2
+    appVersion: 8.4.315448.2033
     created: "2025-12-05T10:20:02.732305573Z"
     dependencies:
     - condition: postgresql.enabled
@@ -883,6 +909,36 @@ entries:
   faceapi:
   - apiVersion: v2
     appVersion: 7.2.599.1453
+    created: "2026-01-05T11:24:16.952816647Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 13.4.4
+    - condition: milvus.enabled
+      name: milvus
+      repository: https://zilliztech.github.io/milvus-helm/
+      version: 4.1.28
+    description: Face Recognition Service. On-premise and cloud integration
+    digest: 80a9b5139f49d3cc71f3d8edca6ae1f817713155d229ef4534153ffed348ff6b
+    home: https://faceapi.regulaforensics.com/
+    icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
+    keywords:
+    - regula
+    - faceapi
+    - face-api
+    - regulaforensics
+    maintainers:
+    - email: support@regulaforensics.com
+      name: Regula Forensics Support
+      url: https://support.regulaforensics.com
+    name: faceapi
+    type: application
+    urls:
+    - https://github.com/regulaforensics/helm-charts/releases/download/faceapi-2.3.4/faceapi-2.3.4.tgz
+    version: 2.3.4
+  - apiVersion: v2
+    appVersion: 7.2.599.1453
     created: "2025-12-05T10:20:02.956152323Z"
     dependencies:
     - condition: postgresql.enabled
@@ -1724,6 +1780,45 @@ entries:
   idv:
   - apiVersion: v2
     appVersion: 3.1.5
+    created: "2026-01-05T11:24:17.138987154Z"
+    dependencies:
+    - alias: statsd
+      condition: statsd.enabled
+      name: prometheus-statsd-exporter
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 1.0.0
+    - condition: opensearch.enabled
+      name: opensearch
+      repository: https://opensearch-project.github.io/helm-charts
+      version: 2.35.1
+    - condition: mongodb.enabled
+      name: mongodb
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.5.45
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.0.14
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.min.io/
+      version: 5.4.0
+    description: IDV Platform. On-premise and cloud integration
+    digest: 7d4e689a8307b49ad5954e29d88294858d282f4e9458cfdab0855ed4269fb80c
+    home: https://idv.regula.app/
+    icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
+    keywords:
+    - regula
+    - idv
+    - idv-platform
+    - regulaforensics
+    name: idv
+    type: application
+    urls:
+    - https://github.com/regulaforensics/helm-charts/releases/download/idv-1.0.12/idv-1.0.12.tgz
+    version: 1.0.12
+  - apiVersion: v2
+    appVersion: 3.1.5
     created: "2025-12-22T14:06:14.412623304Z"
     dependencies:
     - alias: statsd
@@ -1995,4 +2090,4 @@ entries:
     urls:
     - https://github.com/regulaforensics/helm-charts/releases/download/idv-1.0.3/idv-1.0.3.tgz
     version: 1.0.3
-generated: "2025-12-22T14:06:14.41279242Z"
+generated: "2026-01-05T11:24:17.139331086Z"

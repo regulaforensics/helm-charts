@@ -135,6 +135,7 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | `nameOverride`                            | String to partially override common.names.fullname template (will maintain the release name)  | `""`                          |
 | `fullnameOverride`                        | String to fully override common.names.fullname template                                       | `""`                          |
 | `commonLabels`                            | Extra labels to apply to all resources                                                        | `{}`                          |
+| `enableComponentLabels`                   | Enable use of "app.kubernetes.io/component" label to distinguish Pods of different components | `false`                       |
 | `resources`                               | CPU/Memory resource requests/limits                                                           | `{}`                          |
 | `securityContext`                         | Enable security context                                                                       | `{}`                          |
 | `podSecurityContext`                      | Enable pod security context                                                                   | `{}`                          |

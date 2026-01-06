@@ -6,6 +6,7 @@ metadata:
   labels: {{- include "faceapi.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   backoffLimit: 1
   template:
@@ -14,7 +15,7 @@ spec:
         {{- if .Values.podAnnotations }}
         {{- toYaml .Values.podAnnotations | nindent 8 }}
         {{- end }}
-      labels: {{- include "faceapi.selectorLabels" . | nindent 8 }}
+      labels: {{- include "faceapi.migrationSelectorLabels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "faceapi.serviceAccount" . }}
       {{- $jobNodeSelector := .Values.jobNodeSelector | default .Values.nodeSelector }}

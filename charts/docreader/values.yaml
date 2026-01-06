@@ -18,6 +18,13 @@ fullnameOverride: ""
 ## Labels to apply to all resources
 commonLabels: {}
 
+# Enable use of "app.kubernetes.io/component" label to distinguish Pods of different components.
+# Recommended: true (braking changes warning, see description below)
+# Default: false (for maximum backward compatibility and safe upgrades for all users)
+# Note: Enabling this on an existing release requires a one-time recreation of the Deployment
+# due to immutable selector fields.
+enableComponentLabels: false
+
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little

@@ -40,8 +40,23 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- define "docreader.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "docreader.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Values.enableComponentLabels }}
+app.kubernetes.io/component: docreader
+{{- end }}
 {{- if .Values.commonLabels }}
-{{ toYaml .Values.commonLabels }}
+{{- toYaml .Values.commonLabels | nindent 0 }}
+{{- end }}
+{{- end }}
+
+{{/* Selector labels for migration job */}}
+{{- define "docreader.migrationSelectorLabels" -}}
+app.kubernetes.io/name: {{ include "docreader.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Values.enableComponentLabels }}
+app.kubernetes.io/component: db-migration
+{{- end }}
+{{- if .Values.commonLabels }}
+{{- toYaml .Values.commonLabels | nindent 0 }}
 {{- end }}
 {{- end }}
 
@@ -52,7 +67,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- else -}}
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
-{{- end -}}
+{{- end }}
 
 {{/* Config map name */}}
 {{- define "docreader.config.name" -}}

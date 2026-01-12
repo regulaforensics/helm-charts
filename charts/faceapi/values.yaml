@@ -10,7 +10,7 @@ image:
   # '-gpu' tag requires nvidia gpu nodes
   # https://github.com/NVIDIA/k8s-device-plugin
   # Please mind, setting a '-gpu' tag also requires adding 'nvidia.com/gpu: 1' at the 'resources' section.
-  tag: 7.1-cpu
+  tag: 7.2-cpu
   pullPolicy: Always
 imagePullSecrets: []
 
@@ -19,6 +19,14 @@ fullnameOverride: ""
 
 ## Labels to apply to all resources
 commonLabels: {}
+
+
+# Enable use of "app.kubernetes.io/component" label to distinguish Pods of different components.
+# Recommended: true (braking changes warning, see description below)
+# Default: false (for maximum backward compatibility and safe upgrades for all users)
+# Note: Enabling this on an existing release requires a one-time recreation of the Deployment
+# due to immutable selector fields.
+enableComponentLabels: false
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

@@ -40,8 +40,23 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- define "faceapi.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "faceapi.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Values.enableComponentLabels }}
+app.kubernetes.io/component: faceapi
+{{- end }}
 {{- if .Values.commonLabels }}
-{{ toYaml .Values.commonLabels }}
+{{- toYaml .Values.commonLabels | nindent 0 }}
+{{- end }}
+{{- end }}
+
+{{/* Selector labels for migration job */}}
+{{- define "faceapi.migrationSelectorLabels" -}}
+app.kubernetes.io/name: {{ include "faceapi.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Values.enableComponentLabels }}
+app.kubernetes.io/component: db-migration
+{{- end }}
+{{- if .Values.commonLabels }}
+{{- toYaml .Values.commonLabels | nindent 0 }}
 {{- end }}
 {{- end }}
 
@@ -52,7 +67,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- else -}}
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
-{{- end -}}
+{{- end }}
 
 {{/* Config map name */}}
 {{- define "faceapi.config.name" -}}

@@ -106,6 +106,26 @@ messageBroker:
   url: {{ quote .Values.config.messageBroker.url }}
   {{- end }}
 
+topics:
+  event:
+    name: {{ if .Values.config.tenantid }}{{ .Values.config.tenantid }}-event{{ else }}event{{ end }}
+    options:
+      x-expires: 360000
+  audit:
+    name: {{ if .Values.config.tenantid }}{{ .Values.config.tenantid }}-audit{{ else }}audit{{ end }}
+    options:
+      x-expires: 360000
+  config:
+    name: {{ if .Values.config.tenantid }}{{ .Values.config.tenantid }}-config{{ else }}config{{ end }}
+    options:
+      x-expires: 360000
+  client:
+    name: {{ if .Values.config.tenantid }}{{ .Values.config.tenantid }}-client{{ else }}client{{ end }}
+    options:
+      durable: false
+      x-expires: 60000
+      x-message-ttl: 60000
+
 storage:
   {{- if eq .Values.config.storage.type "s3" }}
   type: s3

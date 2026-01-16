@@ -196,6 +196,7 @@ helm upgrade my-release regulaforensics/idv
 | |
 | `config.baseUrl`                                          | Application base URL                              | `""`                              |
 | `config.fernetKey`                                        | Fernet encryption key                             | `""`                              |
+| `config.tenantid`                                         | Tenant ID used for named broker topics            | `""`                              |
 | `config.identifier`                                       | Instance identifier                               | `null`                            |
 | `config.basicAuth.enabled`                                | Enable basic authentication                       | `false`                           |
 | `config.services.api.port`                                | Internal API port                                 | `8000`                            |

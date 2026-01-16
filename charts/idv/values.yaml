@@ -156,6 +156,7 @@ indexer:
 config:
   baseUrl: "http://idv.example.com"
   fernetKey: "tton53xJw0QV6vfaOTNRP_YGnPc76ZJkXFdVFZSnaKQ="
+  tenantid: ""
   identifier: null
   basicAuth:
     enabled: true

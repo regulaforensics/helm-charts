@@ -37,9 +37,11 @@ services:
         cron: {{ quote .Values.config.services.scheduler.jobs.reloadWorkflows.cron }}
       expireSessions:
         cron: {{ quote .Values.config.services.scheduler.jobs.expireSessions.cron }}
+      {{- if .Values.config.services.scheduler.jobs.cleanSessions }}
       cleanSessions:
         cron: {{ quote .Values.config.services.scheduler.jobs.cleanSessions.cron }}
         keepFor: {{ quote .Values.config.services.scheduler.jobs.cleanSessions.keepFor }}
+      {{- end }}
       expireDeviceLogs:
         cron: {{ quote .Values.config.services.scheduler.jobs.expireDeviceLogs.cron }}
         keepFor: {{ quote .Values.config.services.scheduler.jobs.expireDeviceLogs.keepFor }}
@@ -146,11 +148,20 @@ storage:
     secure: {{ .Values.config.storage.s3.secure }}
   {{- end }}
   {{- end }}
+  {{- if eq .Values.config.storage.type "az" }}
+  type: az
+  az:
+    storageAccount: {{ quote .Values.config.storage.az.storageAccount }}
+    connectionString: {{ quote .Values.config.storage.az.connectionString }}
+  {{- end }}
 
   sessions:
     location:
       {{- if eq .Values.config.storage.type "s3" }}
       bucket: {{ quote .Values.config.storage.sessions.location.bucket }}
+      prefix: {{ quote .Values.config.storage.sessions.location.prefix }}
+      {{- end }}
+      {{- if eq .Values.config.storage.type "az" }}
       prefix: {{ quote .Values.config.storage.sessions.location.prefix }}
       {{- end }}
 
@@ -160,11 +171,17 @@ storage:
       bucket: {{ quote .Values.config.storage.persons.location.bucket }}
       prefix: {{ quote .Values.config.storage.persons.location.prefix }}
       {{- end }}
+      {{- if eq .Values.config.storage.type "az" }}
+      prefix: {{ quote .Values.config.storage.persons.location.prefix }}
+      {{- end }}
 
   workflows:
     location:
       {{- if eq .Values.config.storage.type "s3" }}
       bucket: {{ quote .Values.config.storage.workflows.location.bucket }}
+      prefix: {{ quote .Values.config.storage.workflows.location.prefix }}
+      {{- end }}
+      {{- if eq .Values.config.storage.type "az" }}
       prefix: {{ quote .Values.config.storage.workflows.location.prefix }}
       {{- end }}
 
@@ -174,11 +191,17 @@ storage:
       bucket: {{ quote .Values.config.storage.userFiles.location.bucket }}
       prefix: {{ quote .Values.config.storage.userFiles.location.prefix }}
       {{- end }}
+      {{- if eq .Values.config.storage.type "az" }}
+      prefix: {{ quote .Values.config.storage.userFiles.location.prefix }}
+      {{- end }}
 
   locales:
     location:
       {{- if eq .Values.config.storage.type "s3" }}
       bucket: {{ quote .Values.config.storage.locales.location.bucket }}
+      prefix: {{ quote .Values.config.storage.locales.location.prefix }}
+      {{- end }}
+      {{- if eq .Values.config.storage.type "az" }}
       prefix: {{ quote .Values.config.storage.locales.location.prefix }}
       {{- end }}
   
@@ -188,11 +211,18 @@ storage:
       bucket: {{ quote .Values.config.storage.assets.location.bucket }}
       prefix: {{ quote .Values.config.storage.assets.location.prefix }}
       {{- end }}
+      {{- if eq .Values.config.storage.type "az" }}
+      prefix: {{ quote .Values.config.storage.assets.location.prefix }}
+      {{- end }}
 
   tempFiles:
     location:
       {{- if eq .Values.config.storage.type "s3" }}
       bucket: {{ quote .Values.config.storage.tempFiles.location.bucket }}
+      prefix: {{ quote .Values.config.storage.tempFiles.location.prefix }}
+      folder: {{ quote .Values.config.storage.tempFiles.location.folder }}
+      {{- end }}
+      {{- if eq .Values.config.storage.type "az" }}
       prefix: {{ quote .Values.config.storage.tempFiles.location.prefix }}
       folder: {{ quote .Values.config.storage.tempFiles.location.folder }}
       {{- end }}
@@ -314,6 +344,28 @@ oauth2:
         {{- end }}
         {{- if .urls.revoke }}
         revoke: {{ .urls.revoke | quote }}
+        {{- end }}
+  {{- end }}
+  {{- end }}
+
+saml:
+  enabled: {{ .Values.config.saml.enabled }}
+  {{- if .Values.config.saml.enabled }}
+  providers:
+  {{- range .Values.config.saml.providers }}
+    - name: {{ .name | quote }}
+      defaultRoles: {{ .defaultRoles | toJson }}
+      defaultGroups: {{ .defaultGroups | toJson }}
+      entityId: {{ .entityId | quote }}
+      ssoService:
+        url: {{ .ssoService.url | quote }}
+      security:
+        x509cert: {{ .security.x509cert | quote }}
+        {{- if .security.spPrivateKey }}
+        spPrivateKey: {{ .security.spPrivateKey | quote }}
+        {{- end }}
+        {{- if .security.spPublicCert }}
+        spPublicCert: {{ .security.spPublicCert | quote }}
         {{- end }}
   {{- end }}
   {{- end }}

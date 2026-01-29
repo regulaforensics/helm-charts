@@ -215,8 +215,8 @@ helm upgrade my-release regulaforensics/idv
 | `config.services.workflow.workers`                        | Workflow service workers                          | `auto`                            |
 | `config.services.scheduler.jobs.reloadWorkflows.cron`     | Cron for reloading workflows                      | `"*/15 * * * * *"`                |
 | `config.services.scheduler.jobs.expireSessions.cron`      | Cron for expiring sessions                        | `"*/10 * * * * *"`                |
-| `config.services.scheduler.jobs.cleanSessions.cron`       | Cron for cleaning sessions                        | `"*/30 * * * * *"`                |
-| `config.services.scheduler.jobs.cleanSessions.keepFor`    | Keep session data for                             | `"1d"`                            |
+| `config.services.scheduler.jobs.cleanSessions.cron`       | Cron for cleaning sessions                        | `null`                            |
+| `config.services.scheduler.jobs.cleanSessions.keepFor`    | Keep session data for                             | `null`                            |
 | `config.services.scheduler.jobs.expireDeviceLogs.cron`    | Cron for expiring device logs                     | `"* */5 * * *"`                   |
 | `config.services.scheduler.jobs.expireDeviceLogs.keepFor` | Keep device logs for                              | `"30d"`                           |
 | `config.services.scheduler.jobs.reloadLocales.cron`       | Cron for reloading locales                        | `"*/15 * * * * *"`                |
@@ -244,12 +244,14 @@ helm upgrade my-release regulaforensics/idv
 | |
 | `config.messageBroker.url`                                | Message broker URL                                | `"amqp://rabbitmq:5672/"`         |
 | |
-| `config.storage.type`                                     | Storage type                                      | `s3`                              |
+| `config.storage.type`                                     | Storage type (s3|az)                              | `s3`                              |
 | `config.storage.s3.endpoint`                              | S3 endpoint                                       | `""`                              |
 | `config.storage.s3.accessKey`                             | S3 access key                                     | `null`                            |
 | `config.storage.s3.accessSecret`                          | S3 access secret                                  | `null`                            |
 | `config.storage.s3.region`                                | S3 region                                         | `"eu-central-1"`                  |
 | `config.storage.s3.secure`                                | Use HTTPS for S3                                  | `true`                            |
+| `config.storage.az.storageAccount`                        | Azure storage account                             | `""`                              |
+| `config.storage.az.connectionString`                      | Azure connection string                           | `null`                              |
 | `config.storage.sessions.location.bucket`                 | Sessions bucket                                   | `coordinator`                     |
 | `config.storage.sessions.location.prefix`                 | Sessions prefix                                   | `"sessions"`                      |
 | `config.storage.persons.location.bucket`                  | Persons bucket                                    | `coordinator`                     |
@@ -313,6 +315,29 @@ helm upgrade my-release regulaforensics/idv
 | `config.oauth2.accessTokenTtl`                            | OAuth2 access token TTL                           | `600`                             |
 | `config.oauth2.refreshTokenTtl`                           | OAuth2 refresh token TTL                          | `604800`                          |
 | `config.oauth2.providers`                                 | OAuth2 providers list                             | `[]`                              |
+| `config.oauth2.providers.name`                            | OAuth2 provider name                              | `null`                            |
+| `config.oauth2.providers.clientId`                        | OAuth2 provider clientId                          | `null`                            |
+| `config.oauth2.providers.scope`                           | OAuth2 provider scope                             | `null`                            |
+| `config.oauth2.providers.secret`                          | OAuth2 provider secret                            | `null`                            |
+| `config.oauth2.providers.type`                            | OAuth2 provider type                              | `null`                            |
+| `config.oauth2.providers.defaultRoles`                    | Roles to be assigned to the user                  | `null`                            |
+| `config.oauth2.providers.defaultGroups`                   | Groups to be assigned to the user                 | `null`                            |
+| `config.oauth2.providers.urls.jwk`                        | OAuth2 provider JWK URL                           | `null`                            |
+| `config.oauth2.providers.urls.authorize`                  | OAuth2 provider authorize URL                     | `null`                            |
+| `config.oauth2.providers.urls.token`                      | OAuth2 provider token URL                         | `null`                            |
+| `config.oauth2.providers.urls.refresh`                    | OAuth2 provider refresh URL                       | `null`                            |
+| `config.oauth2.providers.urls.revoke`                     | OAuth2 provider revoke URL                        | `null`                            |
+| |
+| `config.saml.enabled`                                     | Enable SAML                                       | `false`                           |
+| `config.saml.providers`                                   | Identity providers list                           | `[]`                              |
+| `config.saml.providers.name`                              | Identity provider name                            | `null`                            |
+| `config.saml.providers.defaultRoles`                      | Roles to be assigned to the user                  | `null`                            |
+| `config.saml.providers.defaultGroups`                     | Groups to be assigned to the user                 | `null`                            |
+| `config.saml.providers.entityId`                          | Identity provider entityId                        | `null`                            |
+| `config.saml.providers.ssoService.url`                    | Identity provider SSO service URL                 | `null`                            |
+| `config.saml.providers.security.x509cert`                 | Identity provider x509 cert (base64 encoded)      | `null`                            |
+| `config.saml.providers.security.spPrivateKey`             | Service provider private key (base64 encoded)     | `null`                            |
+| `config.saml.providers.security.spPublicCert`             | Service provider public cert (base64 encoded)     | `null`                            |
 | |
 | `config.logging.level`                                    | Logging level                                     | `INFO`                            |
 | `config.logging.formatter`                                | Log formatter                                     | `"%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(message)s"` |

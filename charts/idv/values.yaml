@@ -187,9 +187,11 @@ config:
           cron: '*/15 * * * * *'
         expireSessions:
           cron: '*/10 * * * * *'
-        cleanSessions:
-          cron: '*/30 * * * * *'
-          keepFor: 1d
+        # cleanSessions is ommitted by default to keep session data forever
+        # uncomment and configure the following lines to enable session data cleanup
+        # cleanSessions:
+        #   cron: '*/30 * * * * *'
+        #   keepFor: 1d
         expireDeviceLogs:
           cron: '*/5 * * * *'
           keepFor: 30d
@@ -242,6 +244,11 @@ config:
       accessSecret: null
       region: "eu-central-1"
       secure: true
+    # az:
+    #   storageAccount: ""
+    #   # `connectionString` is a sensitive value, consider using Kubernetes Secret to provide it,
+    #   # see `IDV_CONFIG__STORAGE__AZ__CONNECTIONSTRING` env variable in the env section below
+    #   connectionString: ~
 
     sessions:
       location:
@@ -335,6 +342,10 @@ config:
     refreshTokenTtl: 604800
     providers: []
 
+  saml:
+    enabled: false
+    providers: []
+
   logging:
     level: INFO
     formatter: "%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(message)s"
@@ -363,6 +374,11 @@ env:
   #     secretKeyRef:
   #       name: idv
   #       key: IDV_CONFIG__MONGO__URL
+  # - name: IDV_CONFIG__STORAGE__AZ__CONNECTIONSTRING
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: idv
+  #       key: IDV_CONFIG__STORAGE__AZ__CONNECTIONSTRING
   # - name: IDV_CONFIG__OAUTH2__PROVIDERS__0__SECRET
   #   valueFrom:
   #     secretKeyRef:
@@ -378,6 +394,16 @@ env:
   #     secretKeyRef:
   #       name: idv
   #       key: IDV_CONFIG__OAUTH2__PROVIDERS__3__SECRET
+  # - name: IDV_CONFIG__SAML__PROVIDERS__0__SECURITY__SPPRIVATEKEY
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: idv
+  #       key: IDV_CONFIG__SAML__PROVIDERS__0__SECURITY__SPPRIVATEKEY
+  # - name: IDV_CONFIG__SAML__PROVIDERS__0__SECURITY__SPPUBLICCERT
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: idv
+  #       key: IDV_CONFIG__SAML__PROVIDERS__0__SECURITY__SPPUBLICCERT
   # - name: IDV_CONFIG__FERNETKEY
   #   valueFrom:
   #     secretKeyRef:

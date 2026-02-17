@@ -1,8 +1,8 @@
 {{- if .Values.ingress.enabled -}}
-  {{- $serviceName := include "docreader.fullname" . -}}
-  {{- $servicePort := .Values.service.port -}}
-  {{- $paths := .Values.ingress.paths -}}
-  {{- $pathType := .Values.ingress.pathType | default "Prefix" -}}
+{{- $serviceName := include "docreader.fullname" . -}}
+{{- $servicePort := .Values.service.port -}}
+{{- $paths := .Values.ingress.paths -}}
+{{- $pathType := .Values.ingress.pathType | default "Prefix" -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:

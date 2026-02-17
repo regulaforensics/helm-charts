@@ -164,6 +164,15 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | `ingress.annotations`                     | Ingress annotations                                                                           | `{}`                          |
 | `ingress.hosts`                           | Ingress hostnames                                                                             | `[]`                          |
 | `ingress.tls`                             | Ingress TLS configuration                                                                     | `[]`                          |
+| `route.main.enabled`                      | Enables or disables creation of the Gateway API route                                         | `false`                       |
+| `route.main.apiVersion`                   | API version of the Gateway API Route resource (e.g., gateway.networking.k8s.io/v1)            | `gateway.networking.k8s.io/v1`|
+| `route.main.kind`                         | Type of Gateway API Route. Options: GRPCRoute, HTTPRoute, TCPRoute, TLSRoute, UDPRoute        | `HTTPRoute`                   |
+| `route.main.annotations`                  | Annotations to add to the Route resource                                                      | `{}`                          |
+| `route.main.labels`                       | Labels to add to the Route resource                                                           | `{}`                          |
+| `route.main.hostnames`                    | List of hostnames that the Route should match                                                 | `[]`                          |
+| `route.main.parentRefs`                   | List of parent references (e.g., Gateways) that this Route attaches to                        | `[]`                          |
+| `route.main.httpsRedirect`                | Enables HTTPS redirect. Should only be enabled on an HTTP listener to avoid redirect loops    | `false`                       |
+| `route.main.matches`                      | List of match rules for the Route                                                             | `[{ path: { type: PathPrefix, value: "/" } }]` |
 | `serviceAccount.create`                   | Whether to create Service Account                                                             | `false`                       |
 | `serviceAccount.name`                     | Service Account name                                                                          | `""`                          |
 | `serviceAccount.annotations`              | Service Account annotations                                                                   | `{}`                          |
@@ -216,9 +225,9 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | `config.service.webServer.logging.formatter`              | Specify application logs format. Possible values: `text`, `json`                  | `text`                                                        |
 | `config.service.webServer.logging.access.console`         | Whether to print access logs to a console                                         | `true`                                                        |
 | `config.service.webServer.logging.access.path`            | Access logs file path                                                             | `logs/access/docreader-access.log`                            |
+| `config.service.webServer.logging.access.format`          | Access logs format                                                                | `%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"` |
 | `config.service.webServer.logging.app.console`            | Whether to print application logs to a console                                    | `true`                                                        |
 | `config.service.webServer.logging.app.path`               | Application logs file path                                                        | `logs/app/docreader-app.log`                                  |
-| `config.service.webServer.logging.access.format`          | Access logs format                                                                | `%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"` |
 | `config.service.webServer.metrics.enabled`                | Whether to enable prometheus metrics endpoint                                     | `false`                                                       |
 | `config.service.webServer.ssl.enabled`                    | Whether to enable SSL mode                                                        | `false`                                                       |
 | `config.service.webServer.ssl.certificatesSecretName`     | The name of an existing secret containing the cert/key files reuired for HTTPS    | `""`                                                          |

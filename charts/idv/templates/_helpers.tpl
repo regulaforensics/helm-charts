@@ -143,6 +143,15 @@ app.kubernetes.io/component: workflow
 {{- end }}
 
 {{/*
+GCS credentials secret name
+*/}}
+{{- define "idv.gcs.credentials.secret" -}}
+{{- if and (eq .Values.config.storage.type "gcs") .Values.config.storage.gcs.gcsKeyJsonSecretName -}}
+{{ default (printf "%s-gcs-credentials" .Release.Name) .Values.config.storage.gcs.gcsKeyJsonSecretName }}
+{{- end }}
+{{- end }}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "idv.serviceAccountName" -}}

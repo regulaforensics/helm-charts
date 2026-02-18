@@ -3,6 +3,8 @@ mode: cluster
 baseUrl: {{ quote .Values.config.baseUrl }}
 fernetKey: {{ quote .Values.config.fernetKey }}
 identifier: {{ quote .Values.config.identifier }}
+tenant: {{ quote .Values.config.tenant }}
+env: {{ quote .Values.config.env }}
 basicAuth:
   enabled: {{ .Values.config.basicAuth.enabled }}
 
@@ -110,19 +112,19 @@ messageBroker:
 
 topics:
   event:
-    name: {{ if .Values.config.tenantid }}{{ .Values.config.tenantid }}-event{{ else }}event{{ end }}
+    name: {{ if .Values.config.tenant }}{{ .Values.config.tenant }}-event{{ else }}event{{ end }}
     options:
       x-expires: 360000
   audit:
-    name: {{ if .Values.config.tenantid }}{{ .Values.config.tenantid }}-audit{{ else }}audit{{ end }}
+    name: {{ if .Values.config.tenant }}{{ .Values.config.tenant }}-audit{{ else }}audit{{ end }}
     options:
       x-expires: 360000
   config:
-    name: {{ if .Values.config.tenantid }}{{ .Values.config.tenantid }}-config{{ else }}config{{ end }}
+    name: {{ if .Values.config.tenant }}{{ .Values.config.tenant }}-config{{ else }}config{{ end }}
     options:
       x-expires: 360000
   client:
-    name: {{ if .Values.config.tenantid }}{{ .Values.config.tenantid }}-client{{ else }}client{{ end }}
+    name: {{ if .Values.config.tenant }}{{ .Values.config.tenant }}-client{{ else }}client{{ end }}
     options:
       durable: false
       x-expires: 60000
@@ -154,10 +156,17 @@ storage:
     storageAccount: {{ quote .Values.config.storage.az.storageAccount }}
     connectionString: {{ quote .Values.config.storage.az.connectionString }}
   {{- end }}
+  {{- if eq .Values.config.storage.type "gcs" }}
+  type: gcs
+  {{- if and (hasKey .Values.config.storage "gcs") .Values.config.storage.gcs.gcsKeyJsonSecretName }}
+  gcs:
+    gcsKeyJson: "/etc/credentials/gcs_key.json"
+  {{- end }}
+  {{- end }}
 
   sessions:
     location:
-      {{- if eq .Values.config.storage.type "s3" }}
+      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
       bucket: {{ quote .Values.config.storage.sessions.location.bucket }}
       prefix: {{ quote .Values.config.storage.sessions.location.prefix }}
       {{- end }}
@@ -167,7 +176,7 @@ storage:
 
   persons:
     location:
-      {{- if eq .Values.config.storage.type "s3" }}
+      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
       bucket: {{ quote .Values.config.storage.persons.location.bucket }}
       prefix: {{ quote .Values.config.storage.persons.location.prefix }}
       {{- end }}
@@ -177,7 +186,7 @@ storage:
 
   workflows:
     location:
-      {{- if eq .Values.config.storage.type "s3" }}
+      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
       bucket: {{ quote .Values.config.storage.workflows.location.bucket }}
       prefix: {{ quote .Values.config.storage.workflows.location.prefix }}
       {{- end }}
@@ -187,7 +196,7 @@ storage:
 
   userFiles:
     location:
-      {{- if eq .Values.config.storage.type "s3" }}
+      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
       bucket: {{ quote .Values.config.storage.userFiles.location.bucket }}
       prefix: {{ quote .Values.config.storage.userFiles.location.prefix }}
       {{- end }}
@@ -197,7 +206,7 @@ storage:
 
   locales:
     location:
-      {{- if eq .Values.config.storage.type "s3" }}
+      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
       bucket: {{ quote .Values.config.storage.locales.location.bucket }}
       prefix: {{ quote .Values.config.storage.locales.location.prefix }}
       {{- end }}
@@ -207,7 +216,7 @@ storage:
   
   assets:
     location:
-      {{- if eq .Values.config.storage.type "s3" }}
+      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
       bucket: {{ quote .Values.config.storage.assets.location.bucket }}
       prefix: {{ quote .Values.config.storage.assets.location.prefix }}
       {{- end }}
@@ -217,7 +226,7 @@ storage:
 
   tempFiles:
     location:
-      {{- if eq .Values.config.storage.type "s3" }}
+      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
       bucket: {{ quote .Values.config.storage.tempFiles.location.bucket }}
       prefix: {{ quote .Values.config.storage.tempFiles.location.prefix }}
       folder: {{ quote .Values.config.storage.tempFiles.location.folder }}

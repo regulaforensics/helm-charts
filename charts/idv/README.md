@@ -196,7 +196,7 @@ helm upgrade my-release regulaforensics/idv
 | |
 | `config.baseUrl`                                          | Application base URL                              | `""`                              |
 | `config.fernetKey`                                        | Fernet encryption key                             | `""`                              |
-| `config.tenantid`                                         | Tenant ID used for named broker topics            | `""`                              |
+| `config.tenant`                                           | Tenant name/id used for named broker topics       | `null`                            |
 | `config.identifier`                                       | Instance identifier                               | `null`                            |
 | `config.basicAuth.enabled`                                | Enable basic authentication                       | `false`                           |
 | `config.services.api.port`                                | Internal API port                                 | `8000`                            |
@@ -244,14 +244,15 @@ helm upgrade my-release regulaforensics/idv
 | |
 | `config.messageBroker.url`                                | Message broker URL                                | `"amqp://rabbitmq:5672/"`         |
 | |
-| `config.storage.type`                                     | Storage type (s3|az)                              | `s3`                              |
+| `config.storage.type`                                     | Storage type (s3|az|gcs)                          | `s3`                              |
 | `config.storage.s3.endpoint`                              | S3 endpoint                                       | `""`                              |
 | `config.storage.s3.accessKey`                             | S3 access key                                     | `null`                            |
 | `config.storage.s3.accessSecret`                          | S3 access secret                                  | `null`                            |
 | `config.storage.s3.region`                                | S3 region                                         | `"eu-central-1"`                  |
 | `config.storage.s3.secure`                                | Use HTTPS for S3                                  | `true`                            |
 | `config.storage.az.storageAccount`                        | Azure storage account                             | `""`                              |
-| `config.storage.az.connectionString`                      | Azure connection string                           | `null`                              |
+| `config.storage.az.connectionString`                      | Azure connection string                           | `null`                            |
+| `config.service.storage.gcs.gcsKeyJsonSecretName`         | Secret name containing Google Service Account key | `""`                              |
 | `config.storage.sessions.location.bucket`                 | Sessions bucket                                   | `coordinator`                     |
 | `config.storage.sessions.location.prefix`                 | Sessions prefix                                   | `"sessions"`                      |
 | `config.storage.persons.location.bucket`                  | Persons bucket                                    | `coordinator`                     |
@@ -359,6 +360,17 @@ helm upgrade my-release regulaforensics/idv
 | `ingress.paths`                                           | Ingress paths                                     | `[]`                              |
 | `ingress.pathType`                                        | Ingress path type                                 | `Prefix`                          |
 | `ingress.tls`                                             | Ingress TLS entries                               | `[]`                              |
+| |
+| `route.main.enabled`       | Enables or disables creation of the Gateway API route                                      | `false`                                        |
+| `route.main.apiVersion`    | API version of the Gateway API Route resource (e.g., gateway.networking.k8s.io/v1)         | `gateway.networking.k8s.io/v1`                 |
+| `route.main.kind`          | Type of Gateway API Route. Options: GRPCRoute, HTTPRoute, TCPRoute, TLSRoute, UDPRoute     | `HTTPRoute`                                    |
+| `route.main.annotations`   | Annotations to add to the Route resource                                                   | `{}`                                           |
+| `route.main.labels`        | Labels to add to the Route resource                                                        | `{}`                                           |
+| `route.main.hostnames`     | List of hostnames that the Route should match                                              | `[]`                                           |
+| `route.main.parentRefs`    | List of parent references (e.g., Gateways) that this Route attaches to                     | `[]`                                           |
+| `route.main.httpsRedirect` | Enables HTTPS redirect. Should only be enabled on an HTTP listener to avoid redirect loops | `false`                                        |
+| `route.main.matches`       | List of match rules for the Route                                                          | `[{ path: { type: PathPrefix, value: "/" } }]` |
+| |
 | `networkPolicy.enabled`                                   | Enable NetworkPolicy                              | `false`                           |
 | `networkPolicy.annotations`                               | NetworkPolicy annotations                         | `{}`                              |
 | `networkPolicy.ingress`                                   | Set NetworkPolicy Ingress rules                   | `{}`                              |

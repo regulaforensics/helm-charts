@@ -50,6 +50,11 @@ spec:
           items:
             - key: idv-config
               path: idv-config.yaml
+      {{- if and (hasKey .Values.config.storage "gcs") .Values.config.storage.gcs.gcsKeyJsonSecretName }}
+      - name: gcs-credentials
+        secret:
+          secretName: {{ template "idv.gcs.credentials.secret" . }}
+      {{- end }}
       securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
       - name: workflow
@@ -67,6 +72,12 @@ spec:
         - name: idv-config
           mountPath: /app/config.yaml
           subPath: idv-config.yaml
+        {{- if and (hasKey .Values.config.storage "gcs") .Values.config.storage.gcs.gcsKeyJsonSecretName }}
+        - name: gcs-credentials
+          mountPath: /etc/credentials/gcs_key.json
+          subPath: gcs_key.json
+          readOnly: true
+        {{- end }}
         command: ["idv"]
         args: ["workflow", "start"]
         env: {{- tpl (toYaml .Values.env) . | nindent 10 }}

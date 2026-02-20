@@ -1,8 +1,8 @@
 {{- if .Values.ingress.enabled -}}
-  {{- $serviceName := include "faceapi.fullname" . -}}
-  {{- $servicePort := .Values.service.port -}}
-  {{- $paths := .Values.ingress.paths -}}
-  {{- $pathType := .Values.ingress.pathType | default "Prefix" -}}
+{{- $serviceName := include "faceapi.fullname" . -}}
+{{- $servicePort := .Values.service.port -}}
+{{- $pathType := .Values.ingress.pathType | default "Prefix" -}}
+{{- $globalPaths := .Values.ingress.paths | default (list "/") -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -17,11 +17,29 @@ spec:
   {{- end }}
   rules:
   {{- if .Values.ingress.hosts }}
-    {{- range $host := .Values.ingress.hosts }}
+    {{- if and (gt (len .Values.ingress.hosts) 0) (typeIs "map[string]interface {}" (index .Values.ingress.hosts 0)) (hasKey (index .Values.ingress.hosts 0) "host") }}
+      {{- range $hostConfig := .Values.ingress.hosts }}
+      {{- $host := $hostConfig.host }}
+      {{- $paths := $hostConfig.paths | default $globalPaths }}
     - host: {{ tpl $host $ }}
       http:
         paths:
         {{- range $p := $paths }}
+          {{- if kindIs "map" $p }}
+          - path: {{ tpl $p.path $ }}
+            pathType: {{ $p.pathType | default $pathType }}
+            backend:
+              service:
+                {{- if $p.action }}
+                name: {{ $p.action }}
+                port:
+                  name: use-annotation
+                {{- else }}
+                name: {{ $p.service.name | default $serviceName }}
+                port:
+                  number: {{ $p.service.port | default $servicePort }}
+                {{- end }}
+          {{- else }}
           - path: {{ tpl $p $ }}
             pathType: {{ $pathType }}
             backend:
@@ -29,12 +47,60 @@ spec:
                 name: {{ $serviceName }}
                 port:
                   number: {{ $servicePort }}
+          {{- end }}
         {{- end -}}
+      {{- end -}}
+    {{- else }}
+      {{- range $host := .Values.ingress.hosts }}
+    - host: {{ tpl $host $ }}
+      http:
+        paths:
+        {{- range $p := $globalPaths }}
+          {{- if kindIs "map" $p }}
+          - path: {{ tpl $p.path $ }}
+            pathType: {{ $p.pathType | default $pathType }}
+            backend:
+              service:
+                {{- if $p.action }}
+                name: {{ $p.action }}
+                port:
+                  name: use-annotation
+                {{- else }}
+                name: {{ $p.service.name | default $serviceName }}
+                port:
+                  number: {{ $p.service.port | default $servicePort }}
+                {{- end }}
+          {{- else }}
+          - path: {{ tpl $p $ }}
+            pathType: {{ $pathType }}
+            backend:
+              service:
+                name: {{ $serviceName }}
+                port:
+                  number: {{ $servicePort }}
+          {{- end }}
+        {{- end -}}
+      {{- end -}}
     {{- end -}}
   {{- else }}
     - http:
         paths:
-        {{- range $p := $paths }}
+        {{- range $p := $globalPaths }}
+          {{- if kindIs "map" $p }}
+          - path: {{ tpl $p.path $ }}
+            pathType: {{ $p.pathType | default $pathType }}
+            backend:
+              service:
+                {{- if $p.action }}
+                name: {{ $p.action }}
+                port:
+                  name: use-annotation
+                {{- else }}
+                name: {{ $p.service.name | default $serviceName }}
+                port:
+                  number: {{ $p.service.port | default $servicePort }}
+                {{- end }}
+          {{- else }}
           - path: {{ tpl $p $ }}
             pathType: {{ $pathType }}
             backend:
@@ -42,6 +108,7 @@ spec:
                 name: {{ $serviceName }}
                 port:
                   number: {{ $servicePort }}
+          {{- end }}
         {{- end -}}
   {{- end -}}
   {{- with .Values.ingress.tls }}

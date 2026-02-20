@@ -47,12 +47,18 @@ spec:
           securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command:
-            - pipenv
-            - run
-            - python
-            - src/gunicorn_runner.py
-            - migrate
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -euo pipefail
+              if [ -x /app/gunicorn_runner.bin ]; then
+                exec /app/gunicorn_runner.bin migrate
+              elif [ -f /app/src/gunicorn_runner.py ]; then
+                source /app/.venv/bin/activate && python /app/src/gunicorn_runner.py migrate
+              else
+                echo "ERROR: gunicorn_runner not found" >&2
+                exit 1
+              fi
           env:
             {{- include "faceapi.envs" . | indent 10 }}
             {{- if and (not .Values.postgresql.enabled) .Values.config.service.database.connectionStringSecretName }}

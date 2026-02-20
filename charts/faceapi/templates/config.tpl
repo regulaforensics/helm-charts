@@ -257,4 +257,8 @@ service:
       enabled: {{ .Values.config.service.houseKeeper.search.enabled }}
       keepFor: {{ .Values.config.service.houseKeeper.search.keepFor | int64 }}
     {{- end }}
+
+  idv:
+    enabled: {{ .Values.config.service.idv.enabled }}
+
 {{- end }}

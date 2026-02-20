@@ -93,7 +93,7 @@ The command removes all the Kubernetes components associated with the chart and 
 |---------------------------------------|-----------------------------------------------------------------------------------------------|-------------------------------|
 | `replicas`                            | Number of nodes                                                                               | `1`                           |
 | `image.repository`                    | Image repository                                                                              | `regulaforensics/face-api`    |
-| `image.tag`                           | Overrides the Face-API image tag                                                              | `"7.2-cpu"`                   |
+| `image.tag`                           | Overrides the Face-API image tag                                                              | `"8.1-cpu"`               |
 | `image.pullPolicy`                    | Image pull policy                                                                             | `IfNotPresent`                |
 | `imagePullSecrets`                    | Image pull secrets                                                                            | `[]`                          |
 | `nameOverride`                        | String to partially override common.names.fullname template (will maintain the release name)  | `""`                          |
@@ -126,8 +126,19 @@ The command removes all the Kubernetes components associated with the chart and 
 | `ingress.enabled`                     | Enables Ingress                                                                               | `false`                       |
 | `ingress.className`                   | Ingress Class Name                                                                            | `false`                       |
 | `ingress.annotations`                 | Ingress annotations                                                                           | `{}`                          |
-| `ingress.hosts`                       | Ingress hostnames                                                                             | `[]`                          |
+| `ingress.hosts`                       | Ingress hosts (supports both string list and host objects with individual paths)              | `[]`                          |
+| `ingress.paths`                       | Ingress paths (supports both simple strings and objects with service/action routing)          | `[]`                          |
+| `ingress.pathType`                    | Ingress path type (Prefix, Exact, ImplementationSpecific)                                     | `Prefix`                      |
 | `ingress.tls`                         | Ingress TLS configuration                                                                     | `[]`                          |
+| `route.main.enabled`                  | Enables or disables creation of the Gateway API route                                         | `false`                       |
+| `route.main.apiVersion`               | API version of the Gateway API Route resource (e.g., gateway.networking.k8s.io/v1)            | `gateway.networking.k8s.io/v1`|
+| `route.main.kind`                     | Type of Gateway API Route. Options: GRPCRoute, HTTPRoute, TCPRoute, TLSRoute, UDPRoute        | `HTTPRoute`                   |
+| `route.main.annotations`              | Annotations to add to the Route resource                                                      | `{}`                          |
+| `route.main.labels`                   | Labels to add to the Route resource                                                           | `{}`                          |
+| `route.main.hostnames`                | List of hostnames that the Route should match                                                 | `[]`                          |
+| `route.main.parentRefs`               | List of parent references (e.g., Gateways) that this Route attaches to                        | `[]`                          |
+| `route.main.httpsRedirect`            | Enables HTTPS redirect. Should only be enabled on an HTTP listener to avoid redirect loops    | `false`                       |
+| `route.main.matches`                  | List of match rules for the Route                                                             | `[{ path: { type: PathPrefix, value: "/" } }]` |
 | `serviceAccount.create`               | Whether to create Service Account                                                             | `false`                       |
 | `serviceAccount.name`                 | Service Account name                                                                          | `""`                          |
 | `serviceAccount.annotations`          | Service Account annotations                                                                   | `{}`                          |
@@ -167,6 +178,63 @@ To enable KEDA autoscaling:
 helm install my-release regulaforensics/faceapi \
     --set licenseSecretName=face-api-license \
     --set autoscaling.keda.enabled=true
+## Ingress Configuration
+
+The Ingress resource supports multiple flexible configuration formats for advanced routing capabilities:
+
+### Format 1: Simple host list with global paths
+
+Use this format when all hosts should expose the same paths:
+
+```yaml
+ingress:
+  enabled: true
+  hosts:
+    - faceapi.example.com
+    - api.example.com
+  paths:
+    - /
+    - /api/v1
+    - /health
+  pathType: Prefix
+```
+
+### Format 2: Host objects with individual paths
+
+Use this format when each host needs its own set of paths:
+
+```yaml
+ingress:
+  enabled: true
+  hosts:
+    - host: faceapi.example.com
+      paths:
+        - /
+        - /api/v1
+    - host: api.example.com
+      paths:
+        - /api
+        - /health
+  pathType: Prefix
+```
+
+### Format 3: Advanced routing with service/action support
+
+Use this format for advanced scenarios like AWS ALB with fixed responses or custom service routing:
+
+```yaml
+ingress:
+  enabled: true
+  className: "alb"
+  annotations:
+    alb.ingress.kubernetes.io/actions.metrics-block: '{"type":"fixed-response","fixedResponseConfig":{"statusCode":"403","contentType":"text/plain","messageBody":"Forbidden"}}'
+  hosts:
+    - host: faceapi.example.com
+      paths:
+        - /
+        - path: /metrics
+          action: metrics-block
+  pathType: Prefix
 ```
 
 ## Application parameters

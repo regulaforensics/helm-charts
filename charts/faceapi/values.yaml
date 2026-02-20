@@ -10,7 +10,7 @@ image:
   # '-gpu' tag requires nvidia gpu nodes
   # https://github.com/NVIDIA/k8s-device-plugin
   # Please mind, setting a '-gpu' tag also requires adding 'nvidia.com/gpu: 1' at the 'resources' section.
-  tag: 7.2-cpu
+  tag: 8.1-cpu
   pullPolicy: Always
 imagePullSecrets: []
 
@@ -19,7 +19,6 @@ fullnameOverride: ""
 
 ## Labels to apply to all resources
 commonLabels: {}
-
 
 # Enable use of "app.kubernetes.io/component" label to distinguish Pods of different components.
 # Recommended: true (braking changes warning, see description below)
@@ -374,6 +373,9 @@ config:
         enabled: false
         keepFor: 31536000
 
+    idv:
+      enabled: false
+
 env: []
 # - name: ""
 #   value: ""
@@ -401,12 +403,42 @@ ingress:
   # className: ""
 
   annotations: {}
+  # annotations:
+  #   alb.ingress.kubernetes.io/actions.metrics-block: '{"type":"fixed-response","fixedResponseConfig":{"statusCode":"403","contentType":"text/plain","messageBody":"Forbidden"}}'
 
   # The hostnames or hosts configuration for the web Ingress
-  hosts: []
-    # - faceapi.domain.com
-  paths: []
-    # - /
+  # Supports multiple formats for flexible ingress configuration:
+  #
+  # Format 1: Simple list of hosts with global paths
+  # All hosts use the same paths defined in 'paths' field
+  # hosts:
+  #   - faceapi.example.com
+  #   - foo.example.com
+  # paths:
+  #   - /
+  #   - /api
+  #
+  # Format 2: Host objects with individual paths
+  # Each host can have different paths
+  # hosts:
+  #   - host: faceapi.example.com
+  #     paths:
+  #       - /
+  #       - /api
+  #   - host: foo.example.com
+  #     paths:
+  #       - /bar
+  #       - /baz
+  #
+  # Format 3: Advanced routing with service/action support
+  # Use this format for advanced scenarios like AWS ALB with fixed responses or custom service routing
+  # hosts:
+  #   - faceapi.example.com
+  # paths:
+  #   - /
+  #   - path: /metrics
+  #     action: metrics-block
+
   pathType: Prefix
 
   # TLS configuration for the FaceAPI Ingress
@@ -414,6 +446,42 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+
+# You need to configure Gateway API in your cluster prior to using the route configuration
+route:
+  main:
+    # -- Enables or disables the route
+    enabled: false
+
+    # -- Set the route apiVersion, e.g. gateway.networking.k8s.io/v1 or gateway.networking.k8s.io/v1alpha2
+    apiVersion: gateway.networking.k8s.io/v1
+    # -- Set the route kind
+    # Valid options are GRPCRoute, HTTPRoute, TCPRoute, TLSRoute, UDPRoute
+    kind: HTTPRoute
+
+    annotations: {}
+    labels: {}
+
+    hostnames: []
+    # - my-filter.example.com
+    parentRefs: []
+    # - name: acme-gw
+
+    # -- create http route for redirect (https://gateway-api.sigs.k8s.io/guides/http-redirect-rewrite/#http-to-https-redirects)
+    ## Take care that you only enable this on the http listener of the gateway to avoid an infinite redirect.
+    ## matches, filters and additionalRules will be ignored if this is set to true. Be are
+    httpsRedirect: false
+
+    matches:
+      - path:
+          type: PathPrefix
+          value: /
+
+    ## Filters define the filters that are applied to requests that match this rule.
+    filters: []
+
+    ## Additional custom rules that can be added to the route
+    additionalRules: []
 
 networkPolicy:
   enabled: false

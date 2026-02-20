@@ -6,7 +6,7 @@
 ***********************************************************************
 
 Chart version: {{ .Chart.Version }}
-FaceAPI version compatibility: >= 7.1
+FaceAPI version compatibility: >= 8.1
 Kubernetes version compatibility: >= 1.23.0
 
 {{- if or (eq .Values.image.tag "latest") (eq .Values.image.tag "latest-gpu") }}
@@ -15,11 +15,31 @@ NOTE: Do not use "latest" mutable tag in production. Mutable tags can introduce 
 
 1. Get the application URL by running these commands:
 {{- if .Values.ingress.enabled }}
-{{- $paths := .Values.ingress.paths -}}
-{{- range $host := .Values.ingress.hosts }}
+{{- if .Values.ingress.hosts }}
+{{- $globalPaths := .Values.ingress.paths | default (list "/") -}}
+{{- if and (gt (len .Values.ingress.hosts) 0) (typeIs "map[string]interface {}" (index .Values.ingress.hosts 0)) (hasKey (index .Values.ingress.hosts 0) "host") }}
+  {{- range $hostConfig := .Values.ingress.hosts }}
+  {{- $host := $hostConfig.host }}
+  {{- $paths := $hostConfig.paths | default $globalPaths }}
   {{- range $p := $paths }}
+  {{- if kindIs "map" $p }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ tpl $host $ }}{{ tpl $p.path $ }}
+  {{- else }}
   http{{ if $.Values.ingress.tls }}s{{ end }}://{{ tpl $host $ }}{{ tpl $p $ }}
   {{- end }}
+  {{- end }}
+  {{- end }}
+{{- else }}
+  {{- range $host := .Values.ingress.hosts }}
+  {{- range $p := $globalPaths }}
+  {{- if kindIs "map" $p }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ tpl $host $ }}{{ tpl $p.path $ }}
+  {{- else }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ tpl $host $ }}{{ tpl $p $ }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+{{- end }}
 {{- end }}
 {{- else if contains "NodePort" .Values.service.type }}
   export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "faceapi.fullname" . }})

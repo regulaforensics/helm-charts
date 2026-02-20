@@ -178,6 +178,7 @@ To enable KEDA autoscaling:
 helm install my-release regulaforensics/faceapi \
     --set licenseSecretName=face-api-license \
     --set autoscaling.keda.enabled=true
+
 ## Ingress Configuration
 
 The Ingress resource supports multiple flexible configuration formats for advanced routing capabilities:

@@ -176,3 +176,31 @@ Create the name of the service account to use
 {{- define "idv.minio" -}}
 {{ default (printf "%s-minio" .Release.Name) }}
 {{- end }}
+
+{{- define "idv.minioInitContainer" -}}
+{{- if .Values.minio.enabled }}
+initContainers:
+  - name: init-minio-bucket
+    image: "{{ .Values.minio.mcImage.repository }}:{{ .Values.minio.mcImage.tag }}"
+    imagePullPolicy: {{ .Values.minio.mcImage.pullPolicy }}
+    command: ["sh", "-c"]
+    args:
+      - |
+        set -euo pipefail
+        until mc alias set myminio http://{{ template "idv.minio" . }}:9000 {{ .Values.minio.rootUser | default "user" | quote }} {{ .Values.minio.rootPassword | default "password123" | quote }}; do sleep 5; done
+        mc mb myminio/{{ .Values.config.storage.sessions.location.bucket }} --ignore-existing
+        mc mb myminio/{{ .Values.config.storage.persons.location.bucket }} --ignore-existing
+        mc mb myminio/{{ .Values.config.storage.workflows.location.bucket }} --ignore-existing
+        mc mb myminio/{{ .Values.config.storage.userFiles.location.bucket }} --ignore-existing
+        mc mb myminio/{{ .Values.config.storage.locales.location.bucket }} --ignore-existing
+        mc mb myminio/{{ .Values.config.storage.assets.location.bucket }} --ignore-existing
+        mc mb myminio/{{ .Values.config.storage.tempFiles.location.bucket }} --ignore-existing
+        mc mb myminio/{{ .Values.config.storage.banlists.location.bucket }} --ignore-existing
+        echo "Buckets ready"
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+    securityContext: {{- toYaml .Values.securityContext | nindent 6 }}
+{{- end }}
+{{- end }}

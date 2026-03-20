@@ -73,6 +73,7 @@ services:
   faceapi:
     enabled: {{ .Values.config.services.faceapi.enabled }}
     {{- if .Values.config.services.faceapi.enabled }}
+    mode: {{ quote .Values.config.services.faceapi.mode }}
     prefix: {{ quote .Values.config.services.faceapi.prefix }}
     url: {{ quote .Values.config.services.faceapi.url }}
     {{- end }}
@@ -92,6 +93,16 @@ services:
     enabled: {{ .Values.config.services.livekit.enabled }}
     {{- if .Values.config.services.livekit.enabled }}
     url: {{ quote .Values.config.services.livekit.url }}
+    {{- if .Values.config.services.livekit.apiKey }}
+    apiKey: {{ quote .Values.config.services.livekit.apiKey }}
+    {{- end }}
+    {{- if .Values.config.services.livekit.apiSecret }}
+    apiSecret: {{ quote .Values.config.services.livekit.apiSecret }}
+    {{- end }}
+    {{- if .Values.config.services.livekit.egress }}
+    egress:
+      enabled: {{ .Values.config.services.livekit.egress.enabled }}
+    {{- end }}
     {{- end }}
 
 mongo:
@@ -137,8 +148,8 @@ storage:
   ## `s3` configuration has been overridden by `minio.enabled=true` value
   s3:
     endpoint: http://{{ template "idv.minio" . }}:9000
-    accessKey: console
-    accessSecret: console123
+    accessKey: {{ quote (.Values.minio.rootUser | default "console") }}
+    accessSecret: {{ quote (.Values.minio.rootPassword | default "console123") }}
     region: {{ quote .Values.config.storage.s3.region }}
     secure: false
   {{- else }}
@@ -234,6 +245,16 @@ storage:
       {{- if eq .Values.config.storage.type "az" }}
       prefix: {{ quote .Values.config.storage.tempFiles.location.prefix }}
       folder: {{ quote .Values.config.storage.tempFiles.location.folder }}
+      {{- end }}
+
+  banlists:
+    location:
+      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
+      bucket: {{ quote .Values.config.storage.banlists.location.bucket }}
+      prefix: {{ quote .Values.config.storage.banlists.location.prefix }}
+      {{- end }}
+      {{- if eq .Values.config.storage.type "az" }}
+      prefix: {{ quote .Values.config.storage.banlists.location.prefix }}
       {{- end }}
 
 faceSearch:
@@ -405,5 +426,19 @@ metrics:
 
 deviceRegistration:
   enabled: {{ .Values.config.deviceRegistration.enabled }}
+
+rateLimit:
+  enabled: {{ .Values.config.rateLimit.enabled }}
+  {{- if .Values.config.rateLimit.enabled }}
+  profiles:
+  {{- range $profileName, $profileConfig := .Values.config.rateLimit.profiles }}
+    {{ $profileName }}:
+      window: {{ quote $profileConfig.window }}
+      limit: {{ $profileConfig.limit }}
+  {{- end }}
+  {{- end }}
+
+authorizedKeys:
+  enabled: {{ .Values.config.authorizedKeys.enabled }}
 
 {{- end }}

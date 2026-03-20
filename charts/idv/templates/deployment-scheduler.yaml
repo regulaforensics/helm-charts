@@ -54,6 +54,7 @@ spec:
           secretName: {{ template "idv.gcs.credentials.secret" . }}
       {{- end }}
       securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- include "idv.minioInitContainer" . | nindent 6 }}
       containers:
       - name: scheduler
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"

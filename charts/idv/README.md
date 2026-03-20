@@ -71,6 +71,44 @@ config:
           key: fernet-key
 ```
 
+### Configure LiveKit (Optional)
+
+To enable LiveKit integration for video/audio capabilities, you need to configure the LiveKit server details and credentials.
+
+#### Creating a Secret for LiveKit Credentials
+
+Since `apiKey` and `apiSecret` are sensitive values, it's recommended to store them in a Kubernetes Secret:
+
+```bash
+kubectl create secret generic idv-livekit \
+  --from-literal=IDV_CONFIG__SERVICES__LIVEKIT__APIKEY=your-api-key \
+  --from-literal=IDV_CONFIG__SERVICES__LIVEKIT__APISECRET=your-api-secret
+```
+
+#### Configuring LiveKit in values.yaml
+
+```yaml
+config:
+  services:
+    livekit:
+      enabled: true
+      url: https://livekit.your-domain.com
+      egress:
+        enabled: false
+
+env:
+  - name: IDV_CONFIG__SERVICES__LIVEKIT__APIKEY
+    valueFrom:
+      secretKeyRef:
+        name: idv-livekit
+        key: IDV_CONFIG__SERVICES__LIVEKIT__APIKEY
+  - name: IDV_CONFIG__SERVICES__LIVEKIT__APISECRET
+    valueFrom:
+      secretKeyRef:
+        name: idv-livekit
+        key: IDV_CONFIG__SERVICES__LIVEKIT__APISECRET
+```
+
 ### Installation
 
 To install the chart with the release name `my-release`:
@@ -229,6 +267,7 @@ helm upgrade my-release regulaforensics/idv
 | `config.services.docreader.prefix`                        | Docreader path prefix                             | `drapi`                           |
 | `config.services.docreader.url`                           | Docreader base URL                                | `""`                              |
 | `config.services.faceapi.enabled`                         | Enable faceapi integration                        | `false`                           |
+| `config.services.faceapi.mode`                            | Faceapi operation mode (used by IDV)              | `idv`                             |
 | `config.services.faceapi.prefix`                          | Faceapi path prefix                               | `faceapi`                         |
 | `config.services.faceapi.url`                             | Faceapi base URL                                  | `""`                              |
 | `config.services.ip2location.enabled`                     | Enable IP to Location service                     | `false`                           |
@@ -236,9 +275,10 @@ helm upgrade my-release regulaforensics/idv
 | `config.services.ip2location.regula.url`                  | IP to Location URL                                | `https://lic.regulaforensics.com` |
 | `config.services.ip2location.regula.timeout`              | IP to Location timeout                            | `3`                               |
 | `config.services.livekit.enabled`                         | Enable Livekit                                    | `false`                           |
-| `config.services.livekit.url`                             | Livekit URL                                       | `http://livekit.example.com`.     |
-| `config.services.livekit.apiKey`                          | apiKey for Livekit                                | `devkey`                          |
-| `config.services.livekit.apiSecret`                       | apiSecret for Livekit                             | `secret`                          |
+| `config.services.livekit.url`                             | Livekit URL                                       | `https://livekit.example.com`     |
+| `config.services.livekit.apiKey`                          | API key for Livekit (provide via env var)         | `null`                            |
+| `config.services.livekit.apiSecret`                       | API secret for Livekit (provide via env var)      | `null`                            |
+| `config.services.livekit.egress.enabled`                  | Enable Livekit Egress                             | `false`                           |
 | |
 | `config.mongo.url`                                        | Mongo connection URL                              | `"mongodb://mongodb:27017/idv"`   |
 | |
@@ -252,22 +292,24 @@ helm upgrade my-release regulaforensics/idv
 | `config.storage.s3.secure`                                | Use HTTPS for S3                                  | `true`                            |
 | `config.storage.az.storageAccount`                        | Azure storage account                             | `""`                              |
 | `config.storage.az.connectionString`                      | Azure connection string                           | `null`                            |
-| `config.service.storage.gcs.gcsKeyJsonSecretName`         | Secret name containing Google Service Account key | `""`                              |
-| `config.storage.sessions.location.bucket`                 | Sessions bucket                                   | `coordinator`                     |
+| `config.storage.gcs.gcsKeyJsonSecretName`                 | Secret name containing Google Service Account key | `null`                            |
+| `config.storage.sessions.location.bucket`                 | Sessions bucket                                   | `idv-bucket`                      |
 | `config.storage.sessions.location.prefix`                 | Sessions prefix                                   | `"sessions"`                      |
-| `config.storage.persons.location.bucket`                  | Persons bucket                                    | `coordinator`                     |
+| `config.storage.persons.location.bucket`                  | Persons bucket                                    | `idv-bucket`                      |
 | `config.storage.persons.location.prefix`                  | Persons prefix                                    | `"persons"`                       |
-| `config.storage.workflows.location.bucket`                | Workflows bucket                                  | `coordinator`                     |
+| `config.storage.workflows.location.bucket`                | Workflows bucket                                  | `idv-bucket`                      |
 | `config.storage.workflows.location.prefix`                | Workflows prefix                                  | `"workflows"`                     |
-| `config.storage.userFiles.location.bucket`                | User files bucket                                 | `coordinator`                     |
+| `config.storage.userFiles.location.bucket`                | User files bucket                                 | `idv-bucket`                      |
 | `config.storage.userFiles.location.prefix`                | User files prefix                                 | `"files"`                         |
-| `config.storage.locales.location.bucket`                  | Locales bucket                                    | `coordinator`                     |
+| `config.storage.locales.location.bucket`                  | Locales bucket                                    | `idv-bucket`                      |
 | `config.storage.locales.location.prefix`                  | Locales prefix                                    | `"localization"`                  |
-| `config.storage.assets.location.bucket`                   | Assets bucket                                     | `coordinator`                     |
+| `config.storage.assets.location.bucket`                   | Assets bucket                                     | `idv-bucket`                      |
 | `config.storage.assets.location.prefix`                   | Assets prefix                                     | `"assets"`                        |
-| `config.storage.tempFiles.location.bucket`                | Temp files bucket                                 | `"coordinator"`                   |
+| `config.storage.tempFiles.location.bucket`                | Temp files bucket                                 | `idv-bucket`                      |
 | `config.storage.tempFiles.location.prefix`                | Temp files prefix                                 | `"tmp"`                           |
 | `config.storage.tempFiles.location.folder`                | Temp files folder                                 | `"files"`                         |
+| `config.storage.banlists.location.bucket`                 | Banlists bucket                                   | `idv-bucket`                      |
+| `config.storage.banlists.location.prefix`                 | Banlists prefix                                   | `"banlist"`                       |
 | |
 | `config.faceSearch.enabled`                               | Enable Face search                                | `false`                           |
 | `config.faceSearch.limit`                                 | Max Face search results                           | `1000`                            |
@@ -352,6 +394,15 @@ helm upgrade my-release regulaforensics/idv
 | `config.metrics.statsd.host`                              | StatsD host                                       | `null`                            |
 | `config.metrics.statsd.port`                              | StatsD port                                       | `9125`                            |
 | `config.metrics.statsd.prefix`                            | StatsD metrics prefix                             | `idv`                             |
+| |
+| `config.rateLimit.enabled`                                | Enable built‑in rate limiter                      | `true`                            |
+| `config.rateLimit.profiles.s.window`                      | Window duration for small profile                 | `"1m"`                            |
+| `config.rateLimit.profiles.s.limit`                       | Request limit for small profile                   | `10`                              |
+| `config.rateLimit.profiles.m.window`                      | Window duration for medium profile                | `"1m"`                            |
+| `config.rateLimit.profiles.m.limit`                       | Request limit for medium profile                  | `100`                             |
+| `config.rateLimit.profiles.l.window`                      | Window duration for large profile                 | `"1m"`                            |
+| `config.rateLimit.profiles.l.limit`                       | Request limit for large profile                   | `1000`                            |
+| `config.authorizedKeys.enabled`                           | Enable authorized keys support                    | `false`                           |
 | |
 | `env`                                                     | Environment variables list                        | `[]`                              |
 | `ingress.enabled`                                         | Enable Ingress                                    | `false`                           |

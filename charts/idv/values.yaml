@@ -217,6 +217,9 @@ config:
 
     faceapi:
       enabled: false
+      # when integration is enabled, the service mode tells faceapi how it will be used by IDV
+      # currently only "idv" is supported
+      mode: idv
       prefix: faceapi
       url: ''
 
@@ -230,6 +233,12 @@ config:
     livekit:
       enabled: false
       url: https://livekit.example.com
+      # apiKey and apiSecret are sensitive values and should be provided via environment variables
+      # See the 'env' section below for examples of how to reference them from Kubernetes Secrets
+      apiKey: null
+      apiSecret: null
+      egress:
+        enabled: false
 
   mongo:
     url: "mongodb://mongodb:27017/idv"
@@ -286,6 +295,11 @@ config:
         bucket: "idv-bucket"
         prefix: "tmp"
         folder: "files"
+
+    banlists:
+      location:
+        bucket: "idv-bucket"
+        prefix: "banlist"
 
   faceSearch:
     # Set opensearch.enabled.true if 'faceSearch' is enabled
@@ -371,6 +385,21 @@ config:
   deviceRegistration:
     enabled: false
 
+  rateLimit:
+    enabled: true
+    profiles:
+      s:
+        window: "1m"
+        limit: 10
+      m:
+        window: "1m"
+        limit: 100
+      l:
+        window: "1m"
+        limit: 1000
+
+  authorizedKeys:
+    enabled: false
 
 env:
   # The 'idv' secret has to be preinstalled in the same namespace as the IDV Coordinator.
@@ -385,6 +414,16 @@ env:
   #     secretKeyRef:
   #       name: idv
   #       key: IDV_CONFIG__STORAGE__AZ__CONNECTIONSTRING
+  # - name: IDV_CONFIG__SERVICES__LIVEKIT__APIKEY
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: idv
+  #       key: IDV_CONFIG__SERVICES__LIVEKIT__APIKEY
+  # - name: IDV_CONFIG__SERVICES__LIVEKIT__APISECRET
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: idv
+  #       key: IDV_CONFIG__SERVICES__LIVEKIT__APISECRET
   # - name: IDV_CONFIG__OAUTH2__PROVIDERS__0__SECRET
   #   valueFrom:
   #     secretKeyRef:
@@ -643,6 +682,8 @@ rabbitmq:
 
 minio:
   enabled: false
+  rootUser: user
+  rootPassword: password123
   mode: standalone
   persistence:
     size: 10Gi

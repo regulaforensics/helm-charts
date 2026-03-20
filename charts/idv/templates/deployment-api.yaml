@@ -59,6 +59,7 @@ spec:
       {{- if .Values.api.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.api.terminationGracePeriodSeconds }}
       {{- end }}
+      {{- include "idv.minioInitContainer" . | nindent 6 }}
       containers:
       - name: api
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"

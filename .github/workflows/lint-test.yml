@@ -60,8 +60,66 @@ jobs:
 
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'
+        id: ct-install
+        continue-on-error: true
         run: |
           kubectl create namespace test-charts
           echo -n ${{ secrets.base64_value }} | base64 --decode > regula.license
           kubectl create secret --namespace test-charts generic license --from-file=regula.license
-          ct install --namespace test-charts --config "${CT_CONFIGFILE}" --helm-extra-set-args "--set=licenseSecretName=license"
+          ct install --namespace test-charts \
+            --config "${CT_CONFIGFILE}" \
+            --helm-extra-args='--timeout 600s' \
+            --helm-extra-set-args '--set=licenseSecretName=license --set=mongodb.enabled=true --set=rabbitmq.enabled=true --set=minio.enabled=true --set=minio.rootUser=user --set=minio.rootPassword=password123 --set=minio.resources.requests.memory=512Mi --set=api.probes.startupProbe.enabled=true --set=api.probes.startupProbe.failureThreshold=30'
+
+      - name: Dump Kubernetes debug info (on failure)
+        if: steps.list-changed.outputs.changed == 'true' && steps.ct-install.outcome != 'success'
+        run: |
+          set +e
+          ns=test-charts
+          echo "🚨 TEST FAILED — dumping debug info for namespace: $ns"
+
+          echo "=== 1. All resources ==="
+          kubectl -n $ns get all -o wide
+
+          echo "=== 2. Pods (sorted by age) ==="
+          kubectl -n $ns get pods -o wide --sort-by=.metadata.creationTimestamp
+
+          echo "=== 3. Events (errors only) ==="
+          kubectl -n $ns get events --sort-by=.metadata.creationTimestamp --field-selector type!=Normal
+
+          echo "=== 4. Describe ALL pods ==="
+          for p in $(kubectl -n $ns get pod -o name); do
+            echo "────────────────────"
+            echo "🔍 describe $p"
+            kubectl -n $ns describe $p
+          done
+
+          echo "=== 5. Logs — only problematic pods ==="
+          for p in $(kubectl -n $ns get pod -o jsonpath='{range .items[?(@.status.phase=="Failed" || @.status.phase=="Pending" || @.status.containerStatuses[*].restartCount>0)]}{.metadata.name}{"\n"}{end}'); do
+            echo "📜 logs pod/$p — last 300 lines"
+            kubectl -n $ns logs pod/$p --all-containers=true --tail=300 || true
+            echo "📜 previous logs pod/$p"
+            kubectl -n $ns logs pod/$p --all-containers=true --previous --tail=300 || true
+          done
+
+          echo "=== 6. Subchart quick checks ==="
+          echo "MinIO:"; kubectl -n $ns get pods -l "app.kubernetes.io/name=minio" -o wide || true
+          kubectl -n $ns logs -l "app.kubernetes.io/name=minio" --tail=100 || true
+          echo "RabbitMQ:"; kubectl -n $ns get pods -l "app.kubernetes.io/name=rabbitmq" -o wide || true
+          kubectl -n $ns exec -it $(kubectl -n $ns get pod -l "app.kubernetes.io/name=rabbitmq" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "") -- rabbitmqctl list_queues 2>/dev/null || true
+          echo "MongoDB:"; kubectl -n $ns get pods -l "app.kubernetes.io/name=mongodb" -o wide || true
+
+          echo "✅ Debug dump finished — saving full output"
+          kubectl -n $ns get all -o yaml > /tmp/debug.log 2>&1 || true
+
+      - name: Upload debug artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubernetes-debug-logs-${{ github.run_id }}
+          path: /tmp/debug.log
+          retention-days: 7
+
+      - name: Fail if ct install failed
+        if: steps.list-changed.outputs.changed == 'true' && steps.ct-install.outcome != 'success'
+        run: exit 1

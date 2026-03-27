@@ -109,6 +109,44 @@ env:
         key: IDV_CONFIG__SERVICES__LIVEKIT__APISECRET
 ```
 
+### Configure Sentry (Optional)
+
+To enable Sentry integration for error tracking and monitoring, you can configure the Sentry portal settings.
+
+#### Configuring Sentry in values.yaml
+
+```yaml
+config:
+  sentry:
+    portal:
+      enabled: true
+      dsn: "https://your-sentry-key@o0000.ingest.sentry.io/project-id"
+      environment: "production"
+```
+
+To use sensitive values like DSN from Kubernetes Secrets (recommended):
+
+```bash
+kubectl create secret generic idv-sentry \
+  --from-literal=IDV_CONFIG__SENTRY__PORTAL__DSN=your-sentry-dsn
+```
+
+```yaml
+config:
+  sentry:
+    portal:
+      enabled: true
+      dsn: null
+      environment: "production"
+
+env:
+  - name: IDV_CONFIG__SENTRY__PORTAL__DSN
+    valueFrom:
+      secretKeyRef:
+        name: idv-sentry
+        key: IDV_CONFIG__SENTRY__PORTAL__DSN
+```
+
 ### Installation
 
 To install the chart with the release name `my-release`:
@@ -283,6 +321,10 @@ helm upgrade my-release regulaforensics/idv
 | `config.mongo.url`                                        | Mongo connection URL                              | `"mongodb://mongodb:27017/idv"`   |
 | |
 | `config.messageBroker.url`                                | Message broker URL                                | `"amqp://rabbitmq:5672/"`         |
+| |
+| `config.sentry.portal.enabled`                            | Enable Sentry integration                         | `false`                           |
+| `config.sentry.portal.dsn`                                | Sentry DSN (provide via env var for security)     | `null`                            |
+| `config.sentry.portal.environment`                        | Sentry environment name                           | `null`                            |
 | |
 | `config.storage.type`                                     | Storage type (s3|az|gcs)                          | `s3`                              |
 | `config.storage.s3.endpoint`                              | S3 endpoint                                       | `""`                              |

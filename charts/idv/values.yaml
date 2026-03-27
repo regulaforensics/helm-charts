@@ -401,6 +401,12 @@ config:
   authorizedKeys:
     enabled: false
 
+  sentry:
+    portal:
+      enabled: false
+      dsn: null
+      environment: null
+
 env:
   # The 'idv' secret has to be preinstalled in the same namespace as the IDV Coordinator.
   # Uncomment the following lines to use secrets for sensitive configuration values.

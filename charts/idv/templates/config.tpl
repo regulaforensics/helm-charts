@@ -441,4 +441,16 @@ rateLimit:
 authorizedKeys:
   enabled: {{ .Values.config.authorizedKeys.enabled }}
 
+sentry:
+  portal:
+    enabled: {{ .Values.config.sentry.portal.enabled }}
+    {{- if .Values.config.sentry.portal.enabled }}
+    {{- if .Values.config.sentry.portal.dsn }}
+    dsn: {{ quote .Values.config.sentry.portal.dsn }}
+    {{- end }}
+    {{- if .Values.config.sentry.portal.environment }}
+    environment: {{ quote .Values.config.sentry.portal.environment }}
+    {{- end }}
+    {{- end }}
+
 {{- end }}

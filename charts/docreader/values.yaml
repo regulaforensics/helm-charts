@@ -117,6 +117,13 @@ config:
         storageClassName: ~
         existingClaim: ~
 
+    # Optional map of SDK processing parameters passed verbatim to the core library.
+    # See Regula SDK documentation for supported keys.
+    processParam: {}
+
+    # optional request size and content limits for API processing
+    requestLimits: {}
+
   service:
     # run core library in separate process
     # Note: this option is available only for Linux and Docker

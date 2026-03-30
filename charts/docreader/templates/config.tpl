@@ -20,6 +20,11 @@ sdk:
     {{- toYaml .Values.config.sdk.processParam | nindent 4 }}
   {{- end }}
 
+  {{- if .Values.config.sdk.requestLimits }}
+  requestLimits:
+    {{- toYaml .Values.config.sdk.requestLimits | nindent 4 }}
+  {{- end }}
+
 service:
   {{- if .Values.config.service.mode }}
   mode: {{ .Values.config.service.mode }}

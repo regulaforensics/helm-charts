@@ -359,9 +359,9 @@ config:
         # atlas:
         #   connectionString: "mongodb+srv://login:password@127.0.0.1:27017/regula_db"
 
-    # Enable enrollment service
+    # Enable enrolment service
     # For work "liveness" and "search" services must be enabled
-    enrollment:
+    enrolment:
       enabled: false
 
     # Housekeeper configuration, for the cases when needs to have automatic cleanup of the data

@@ -275,11 +275,11 @@ service:
       {{- end }}
     {{- end }}
 
-  enrollment:
-    enabled: {{ .Values.config.service.enrollment.enabled }}
+  enrolment:
+    enabled: {{ .Values.config.service.enrolment.enabled }}
     {{- if .Values.config.service.extraConfig }}
-    {{- if .Values.config.service.extraConfig.enrollment }}
-    {{- toYaml .Values.config.service.extraConfig.enrollment | nindent 4 }}
+    {{- if .Values.config.service.extraConfig.enrolment }}
+    {{- toYaml .Values.config.service.extraConfig.enrolment | nindent 4 }}
     {{- end }}
     {{- end }}
 

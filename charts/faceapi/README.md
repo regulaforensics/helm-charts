@@ -247,7 +247,7 @@ ingress:
 | `config.sdk.param`                                        | Configuration of SDK `param` capabilities                                         | `[]`                                                          |
 | `config.sdk.detect`                                       | Configuration of SDK `detect` capabilities                                        | `[]`                                                          |
 | `config.sdk.liveness`                                     | Configuration of SDK `liveness` capabilities                                      | `[]`                                                          |
-| `config.service.enrollment.enabled`                       | Enable enrollment/verify functionality (requires `liveness` and `search`)         | `false`                                                       |
+| `config.service.enrolment.enabled`                       | Enable enrolment/verify functionality (requires `liveness` and `search`)         | `false`                                                       |
 |                                                                                                                                                                                                               |
 | `config.service.webServer.port`                           | Port server binding                                                               | `41101`                                                       |
 | `config.service.webServer.workers`                        | Number of workers per pod                                                         | `1`                                                           |

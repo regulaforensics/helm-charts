@@ -18,3 +18,10 @@
         {{ required "When 'Liveness or/and Search' mode(-s) is/are enabled, `database.connectionString` or `database.connectionStringSecretName` or `postgresql.enabled` value should be set." nil }}
     {{- end }}
 {{- end }}
+
+{{- /* Enrollment module checks */ -}}
+{{- if .Values.config.service.enrollment.enabled }}
+    {{- if not (and .Values.config.service.liveness.enabled .Values.config.service.search.enabled) }}
+        {{ required "When 'Enrollment' mode is enabled, both `config.service.liveness.enabled` and `config.service.search.enabled` must be set to true." nil }}
+    {{- end }}
+{{- end }}

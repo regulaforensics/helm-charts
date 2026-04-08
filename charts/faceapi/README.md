@@ -93,7 +93,7 @@ The command removes all the Kubernetes components associated with the chart and 
 |---------------------------------------|-----------------------------------------------------------------------------------------------|-------------------------------|
 | `replicas`                            | Number of nodes                                                                               | `1`                           |
 | `image.repository`                    | Image repository                                                                              | `regulaforensics/face-api`    |
-| `image.tag`                           | Overrides the Face-API image tag                                                              | `"8.1-cpu"`                   |
+| `image.tag`                           | Overrides the Face-API image tag                                                              | `"8.2-cpu"`                   |
 | `image.pullPolicy`                    | Image pull policy                                                                             | `IfNotPresent`                |
 | `imagePullSecrets`                    | Image pull secrets                                                                            | `[]`                          |
 | `nameOverride`                        | String to partially override common.names.fullname template (will maintain the release name)  | `""`                          |
@@ -247,6 +247,7 @@ ingress:
 | `config.sdk.param`                                        | Configuration of SDK `param` capabilities                                         | `[]`                                                          |
 | `config.sdk.detect`                                       | Configuration of SDK `detect` capabilities                                        | `[]`                                                          |
 | `config.sdk.liveness`                                     | Configuration of SDK `liveness` capabilities                                      | `[]`                                                          |
+| `config.service.enrollment.enabled`                       | Enable enrollment/verify functionality (requires `liveness` and `search`)         | `false`                                                       |
 |                                                                                                                                                                                                               |
 | `config.service.webServer.port`                           | Port server binding                                                               | `41101`                                                       |
 | `config.service.webServer.workers`                        | Number of workers per pod                                                         | `1`                                                           |

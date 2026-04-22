@@ -58,6 +58,14 @@ api:
       enabled: false
       triggers: []
       TriggerAuthentication: null
+      # Optional: fallback behavior when the metric source is unavailable
+      # (e.g. RabbitMQ queue not yet created in ephemeral PR environments).
+      # KEDA will hold `replicas` replicas after `failureThreshold` consecutive errors,
+      # then resume normal scaling once the metric source recovers.
+      # fallback:
+      #   failureThreshold: 3
+      #   replicas: 1
+
   # API pod disruption budget
   podDisruptionBudget:
     enabled: false
@@ -113,6 +121,13 @@ workflow:
       enabled: false
       triggers: []
       TriggerAuthentication: null
+      # Optional: fallback behavior when the metric source is unavailable
+      # (e.g. RabbitMQ queue not yet created in ephemeral PR environments).
+      # KEDA will hold `replicas` replicas after `failureThreshold` consecutive errors,
+      # then resume normal scaling once the metric source recovers.
+      # fallback:
+      #   failureThreshold: 3
+      #   replicas: 1
 
   # Workflow pod disruption budget
   podDisruptionBudget:

@@ -382,7 +382,10 @@ config:
       enabled: false
 
     # Extra configuration to change app behavior in different deployment models
+    # This allows extending the configuration without modifying the main service sections
     # Structure mirrors the service subsections above (webServer, storage, database, etc.)
+    # Each subsection is rendered as a separate section under service.extraConfig
+    # Example:
     # extraConfig:
     #   webServer:
     #     customParam: value

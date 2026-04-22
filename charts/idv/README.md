@@ -211,8 +211,15 @@ helm upgrade my-release regulaforensics/idv
 | `api.autoscaling.targetCPUUtilizationPercentage`          | Target CPU utilization percent                    | `80`                              |
 | `api.autoscaling.targetMemoryUtilizationPercentage`       | Target memory utilization percent                 | `80`                              |
 | `api.autoscaling.keda.enabled`                            | Enable KEDA for API                               | `false`                           |
+| `api.autoscaling.keda.minReplicaCount`                    | KEDA minimum replica count for API                | `1`                               |
+| `api.autoscaling.keda.maxReplicaCount`                    | KEDA maximum replica count for API                | `100`                             |
+| `api.autoscaling.keda.cooldownPeriod`                     | KEDA cooldown period (seconds) for API            | `300`                             |
+| `api.autoscaling.keda.pollingInterval`                    | KEDA polling interval (seconds) for API           | `30`                              |
 | `api.autoscaling.keda.triggers`                           | KEDA triggers for API                             | `[]`                              |
 | `api.autoscaling.keda.TriggerAuthentication`              | KEDA TriggerAuthentication for API                | `null`                            |
+| `api.autoscaling.keda.fallback`                           | KEDA fallback config when metrics unavailable     | `null`                            |
+| `api.autoscaling.keda.fallback.failureThreshold`          | Errors before fallback activates                  | `3`                               |
+| `api.autoscaling.keda.fallback.replicas`                  | Replica count during fallback                     | `1`                               |
 | `api.podDisruptionBudget.enabled`                         | Enable PDB for API                                | `false`                           |
 | `api.podDisruptionBudget.config.maxUnavailable`           | PDB maxUnavailable for API                        | `~`                               |
 | `api.podDisruptionBudget.config.minAvailable`             | PDB minAvailable for API                          | `1`                               |
@@ -246,8 +253,15 @@ helm upgrade my-release regulaforensics/idv
 | `workflow.autoscaling.targetCPUUtilizationPercentage`     | Workflow target CPU percent                       | `80`                              |
 | `workflow.autoscaling.targetMemoryUtilizationPercentage`  | Workflow target memory percent                    | `80`                              |
 | `workflow.autoscaling.keda.enabled`                       | Enable KEDA for Workflow                          | `false`                           |
+| `workflow.autoscaling.keda.minReplicaCount`               | KEDA minimum replica count for Workflow           | `1`                               |
+| `workflow.autoscaling.keda.maxReplicaCount`               | KEDA maximum replica count for Workflow           | `100`                             |
+| `workflow.autoscaling.keda.cooldownPeriod`                | KEDA cooldown period (seconds) for Workflow       | `300`                             |
+| `workflow.autoscaling.keda.pollingInterval`               | KEDA polling interval (seconds) for Workflow      | `30`                              |
 | `workflow.autoscaling.keda.triggers`                      | KEDA triggers for Workflow                        | `[]`                              |
 | `workflow.autoscaling.keda.TriggerAuthentication`         | KEDA TriggerAuthentication for Workflow           | `null`                            |
+| `workflow.autoscaling.keda.fallback`                      | KEDA fallback config when metrics unavailable     | `null`                            |
+| `workflow.autoscaling.keda.fallback.failureThreshold`     | Errors before fallback activates                  | `3`                               |
+| `workflow.autoscaling.keda.fallback.replicas`             | Replica count during fallback                     | `1`                               |
 | `workflow.podDisruptionBudget.enabled`                    | Enable PDB for Workflow                           | `false`                           |
 | `workflow.podDisruptionBudget.config.maxUnavailable`      | PDB maxUnavailable for Workflow                   | `~`                               |
 | `workflow.podDisruptionBudget.config.minAvailable`        | PDB minAvailable for Workflow                     | `1`                               |

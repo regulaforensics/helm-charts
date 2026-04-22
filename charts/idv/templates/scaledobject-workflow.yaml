@@ -12,6 +12,11 @@ spec:
   maxReplicaCount: {{ .Values.workflow.autoscaling.keda.maxReplicaCount | default 100 }}
   cooldownPeriod: {{ .Values.workflow.autoscaling.keda.cooldownPeriod | default 300 }}
   pollingInterval: {{ .Values.workflow.autoscaling.keda.pollingInterval | default 30 }}
+  {{- if .Values.workflow.autoscaling.keda.fallback }}
+  fallback:
+    failureThreshold: {{ .Values.workflow.autoscaling.keda.fallback.failureThreshold | default 3 }}
+    replicas: {{ .Values.workflow.autoscaling.keda.fallback.replicas | default 1 }}
+  {{- end }}
   triggers:
   {{- range .Values.workflow.autoscaling.keda.triggers }}
   - type: {{ .type }}

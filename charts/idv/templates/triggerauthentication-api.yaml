@@ -6,10 +6,16 @@ metadata:
   labels:
     {{- include "idv.labels" . | nindent 4 }}
 spec:
+  {{- if .Values.api.autoscaling.keda.TriggerAuthentication.secretTargetRef }}
   secretTargetRef:
   {{- range .Values.api.autoscaling.keda.TriggerAuthentication.secretTargetRef }}
   - parameter: {{ .parameter }}
     name: {{ .name }}
     key: {{ .key }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.api.autoscaling.keda.TriggerAuthentication.podIdentity }}
+  podIdentity:
+    provider: {{ .Values.api.autoscaling.keda.TriggerAuthentication.podIdentity.provider }}
   {{- end }}
 {{- end }}

@@ -56,8 +56,21 @@ api:
     # Either HPA or KEDA can be enabled at a time for autoscaling
     keda:
       enabled: false
+      # KEDA-specific replica count settings (override autoscaling.minReplicas/maxReplicas)
+      # minReplicaCount: 1
+      # maxReplicaCount: 10
+      # cooldownPeriod: 300
+      # pollingInterval: 30
       triggers: []
       TriggerAuthentication: null
+      # Optional: fallback behavior when the metric source is unavailable
+      # (e.g. RabbitMQ queue not yet created in ephemeral PR environments).
+      # KEDA will hold `replicas` replicas after `failureThreshold` consecutive errors,
+      # then resume normal scaling once the metric source recovers.
+      # fallback:
+      #   failureThreshold: 3
+      #   replicas: 1
+
   # API pod disruption budget
   podDisruptionBudget:
     enabled: false
@@ -111,8 +124,20 @@ workflow:
     # Either HPA or KEDA can be enabled at a time for autoscaling
     keda:
       enabled: false
+      # KEDA-specific replica count settings (override autoscaling.minReplicas/maxReplicas)
+      # minReplicaCount: 1
+      # maxReplicaCount: 100
+      # cooldownPeriod: 300
+      # pollingInterval: 30
       triggers: []
       TriggerAuthentication: null
+      # Optional: fallback behavior when the metric source is unavailable
+      # (e.g. RabbitMQ queue not yet created in ephemeral PR environments).
+      # KEDA will hold `replicas` replicas after `failureThreshold` consecutive errors,
+      # then resume normal scaling once the metric source recovers.
+      # fallback:
+      #   failureThreshold: 3
+      #   replicas: 1
 
   # Workflow pod disruption budget
   podDisruptionBudget:
@@ -407,7 +432,7 @@ config:
       dsn: null
       environment: null
 
-env:
+env: []
   # The 'idv' secret has to be preinstalled in the same namespace as the IDV Coordinator.
   # Uncomment the following lines to use secrets for sensitive configuration values.
   # - name: IDV_CONFIG__MONGO__URL
@@ -621,18 +646,64 @@ statsd:
           method: "$2"
           url_rule: "$3"
           status: "$4"
+
       - match: "idv.(.*)_http_status_(.*)_total"
         name: "idv_${1}_http_request_total"
         match_type: regex
         labels:
           service: "$1"
           status: "$2"
+
+      - match: "idv.(mongo|vector_db|text_search|storage)_([^_]+)_(.+)_duration"
+        name: "idv_${1}_duration"
+        match_type: regex
+        observer_type: summary
+        summary_options:
+          quantiles:
+            - quantile: 0.5
+              error: 0.05
+            - quantile: 0.9
+              error: 0.02
+            - quantile: 0.95
+              error: 0.01
+            - quantile: 0.99
+              error: 0.001
+        labels:
+          type: "$1"
+          repo: "$2"
+          operation: "$3"
+
+      - match: "idv.(mongo|vector_db|text_search|storage)_([^_]+)_(.+)_success_count"
+        name: "idv_${1}_success_count"
+        match_type: regex
+        labels:
+          type: "$1"
+          repo: "$2"
+          operation: "$3"
+
+      - match: "idv.(mongo|vector_db|text_search|storage)_([^_]+)_(.+)_error_count"
+        name: "idv_${1}_error_count"
+        match_type: regex
+        labels:
+          type: "$1"
+          repo: "$2"
+          operation: "$3"
+
+      - match: "idv.(mongo|vector_db|text_search|storage)_([^_]+)_(.+)_count"
+        name: "idv_${1}_total"
+        match_type: regex
+        labels:
+          type: "$1"
+          repo: "$2"
+          operation: "$3"
+
       - match: "idv.(.*)_(.*)_duration"
         name: "idv_${1}_duration"
         match_type: regex
         labels:
           service: "$1"
           operation: "$2"
+
       - match: "idv.(.*)_(.*)_(.*)_condition_eval_count"
         name: "idv_workflow_step_condition_eval_count"
         match_type: regex
@@ -640,24 +711,28 @@ statsd:
           workflow_id: "$1"
           condition: "$2"
           result: "$3"
+
       - match: "idv.(.*)_(.*)_error_count"
         name: "idv_error"
         match_type: regex
         labels:
           service: "$1"
           operation: "$2"
+
       - match: "idv.(.*)_(.*)_success_count"
         name: "idv_${1}_success_count"
         match_type: regex
         labels:
           service: "$1"
           operation: "$2"
+
       - match: "idv.(.*)_(.*)_error_count"
         name: "idv_${1}_error_count"
         match_type: regex
         labels:
           service: "$1"
           operation: "$2"
+
       - match: "idv.(.*)_(.*)_count"
         name: "idv_${1}_total"
         match_type: regex

@@ -16,6 +16,10 @@ sdk:
   {{- end }}
 
 service:
+  {{- if .Values.config.service.extraConfig }}
+  extraConfig: {{- toYaml .Values.config.service.extraConfig | nindent 4 }}
+  {{- end }}
+
   webServer:
     port: {{ .Values.config.service.webServer.port }}
     workers: {{ .Values.config.service.webServer.workers }}
@@ -45,11 +49,6 @@ service:
         path: {{ quote .Values.config.service.webServer.logging.app.path }}
     metrics:
       enabled: {{ .Values.config.service.webServer.metrics.enabled }}
-    {{- if .Values.config.service.extraConfig }}
-    {{- if .Values.config.service.extraConfig.webServer }}
-    {{- toYaml .Values.config.service.extraConfig.webServer | nindent 4 }}
-    {{- end }}
-    {{- end }}
 
   storage:
     {{- if eq .Values.config.service.storage.type "fs" }}
@@ -85,11 +84,6 @@ service:
       connectionString: {{ quote .Values.config.service.storage.az.connectionString }}
     {{- end }}
     {{- end }}
-    {{- if .Values.config.service.extraConfig }}
-    {{- if .Values.config.service.extraConfig.storage }}
-    {{- toYaml .Values.config.service.extraConfig.storage | nindent 4 }}
-    {{- end }}
-    {{- end }}
   {{- if or .Values.config.service.liveness.enabled .Values.config.service.search.enabled }}
   {{ if .Values.postgresql.enabled }}
   ## `database` configuration has been overridden by `postgresql.enabled=true` value
@@ -112,11 +106,6 @@ service:
     {{- end }}
   {{- end }}
   {{- end }}
-    {{- if .Values.config.service.extraConfig }}
-    {{- if .Values.config.service.extraConfig.database }}
-    {{- toYaml .Values.config.service.extraConfig.database | nindent 4 }}
-    {{- end }}
-    {{- end }}
   {{- end }}
 
   detectMatch:
@@ -139,11 +128,6 @@ service:
         {{- if eq .Values.config.service.storage.type "fs" }}
         folder: {{ quote .Values.config.service.detectMatch.results.location.folder }}
         {{- end }}
-    {{- end }}
-    {{- if .Values.config.service.extraConfig }}
-    {{- if .Values.config.service.extraConfig.detectMatch }}
-    {{- toYaml .Values.config.service.extraConfig.detectMatch | nindent 4 }}
-    {{- end }}
     {{- end }}
 
   liveness:
@@ -172,11 +156,6 @@ service:
         folder: {{ quote .Values.config.service.liveness.sessions.location.folder }}
         {{- end }}
     {{- end }}
-    {{- if .Values.config.service.extraConfig }}
-    {{- if .Values.config.service.extraConfig.liveness }}
-    {{- toYaml .Values.config.service.extraConfig.liveness | nindent 4 }}
-    {{- end }}
-    {{- end }}
 
   search:
     enabled: {{ .Values.config.service.search.enabled }}
@@ -194,11 +173,6 @@ service:
         {{- if eq .Values.config.service.storage.type "fs" }}
         folder: {{ quote .Values.config.service.search.persons.location.folder }}
         {{- end }}
-    {{- if .Values.config.service.extraConfig }}
-    {{- if .Values.config.service.extraConfig.search }}
-    {{- toYaml .Values.config.service.extraConfig.search | nindent 4 }}
-    {{- end }}
-    {{- end }}
     {{- if .Values.config.service.search.results }}
     results:
       audit: {{ .Values.config.service.search.results.audit }}
@@ -277,11 +251,6 @@ service:
 
   enrollment:
     enabled: {{ .Values.config.service.enrollment.enabled }}
-    {{- if .Values.config.service.extraConfig }}
-    {{- if .Values.config.service.extraConfig.enrollment }}
-    {{- toYaml .Values.config.service.extraConfig.enrollment | nindent 4 }}
-    {{- end }}
-    {{- end }}
 
   houseKeeper:
     enabled: {{ .Values.config.service.houseKeeper.enabled }}
@@ -295,18 +264,8 @@ service:
       enabled: {{ .Values.config.service.houseKeeper.search.enabled }}
       keepFor: {{ .Values.config.service.houseKeeper.search.keepFor | int64 }}
     {{- end }}
-    {{- if .Values.config.service.extraConfig }}
-    {{- if .Values.config.service.extraConfig.houseKeeper }}
-    {{- toYaml .Values.config.service.extraConfig.houseKeeper | nindent 4 }}
-    {{- end }}
-    {{- end }}
 
   idv:
     enabled: {{ .Values.config.service.idv.enabled }}
-    {{- if .Values.config.service.extraConfig }}
-    {{- if .Values.config.service.extraConfig.idv }}
-    {{- toYaml .Values.config.service.extraConfig.idv | nindent 4 }}
-    {{- end }}
-    {{- end }}
 
 {{- end }}

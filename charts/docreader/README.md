@@ -333,9 +333,9 @@ env:
 | Parameter                                                 | Description                                                                             | Default                         |
 |-----------------------------------------------------------|-----------------------------------------------------------------------------------------|---------------------------------|
 | `config.service.sdkErrorLog.enabled`                      | Whether to enable SDK Error Log                                                         | `false`                         |
-| `config.service.sdkErrorLog.location.folder`              | The SDK Error Log folder name in case of `fs` storage type                              | `/app/docreader-errors/sdk` |
-| `config.service.sdkErrorLog.location.bucket`              | The SDK Error Log bucket name in case of `s3`/`gcs` storage type                        | `docreader-errors`          |
-| `config.service.sdkErrorLog.location.container`           | The SDK Error Log storage container name in case of `az` storage type                   | `docreader-errors`          |
+| `config.service.sdkErrorLog.location.folder`              | The SDK Error Log folder name in case of `fs` storage type                              | `/app/docreader-errors/sdk`     |
+| `config.service.sdkErrorLog.location.bucket`              | The SDK Error Log bucket name in case of `s3`/`gcs` storage type                        | `docreader-errors`              |
+| `config.service.sdkErrorLog.location.container`           | The SDK Error Log storage container name in case of `az` storage type                   | `docreader-errors`              |
 | `config.service.sdkErrorLog.location.prefix`              | The SDK Error Log prefix path in the `bucket/container`                                 | `sdk`                           |
 | `config.service.sdkErrorLog.persistence.enabled`          | Whether to enable SDK Error Log persistence (Applicable only for the `fs` storage type) | `false`                         |
 | `config.service.sdkErrorLog.persistence.accessMode`       | The SDK Error Log data Persistence access mode                                          | `ReadWriteMany`                 |

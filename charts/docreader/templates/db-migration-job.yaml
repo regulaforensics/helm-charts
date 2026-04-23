@@ -53,7 +53,7 @@ spec:
             - |
               source /app/.venv/bin/activate && python src/main.py migrate
           env:
-            {{- include "docreader.envs" . | indent 10 }}
+            {{- include "docreader.envs" . | nindent 12 }}
             {{- if and (not .Values.postgresql.enabled) .Values.config.service.database.connectionStringSecretName }}
             - name: SQL_CONNECTION_STRING
               valueFrom:

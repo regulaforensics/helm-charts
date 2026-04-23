@@ -129,10 +129,9 @@ app.kubernetes.io/component: db-migration
 
 {{/* User defined faceapi environment variables */}}
 {{- define "faceapi.envs" -}}
-  {{- range $i, $config := .Values.env }}
-  - name: {{ $config.name }}
-    value: {{ $config.value | quote }}
-  {{- end }}
+{{- if .Values.env }}
+{{- tpl (toYaml .Values.env) . }}
+{{- end }}
 {{- end }}
 
 {{/* Faceapi detect-match/results existing volume claim */}}

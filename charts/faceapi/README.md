@@ -86,6 +86,39 @@ helm delete my-release
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
 
+## Environment Variables
+
+You can pass additional environment variables to the Face-API container using the `env` parameter. This supports standard Kubernetes env var formats:
+
+### Simple key-value pairs
+
+```yaml
+env:
+  - name: MY_ENV_VAR
+    value: "my-value"
+```
+
+### From Kubernetes Secret
+
+```yaml
+env:
+  - name: MY_SECRET_VAR
+    valueFrom:
+      secretKeyRef:
+        name: my-secret
+        key: secret-key
+```
+
+### From ConfigMap
+
+```yaml
+env:
+  - name: MY_CONFIG_VAR
+    valueFrom:
+      configMapKeyRef:
+        name: my-configmap
+        key: config-key
+```
 
 ## Common parameters
 
@@ -115,7 +148,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `topologySpreadConstraints`           | Topology Spread Constraints for pod assignment                                                | `[]`                          |
 | `podDisruptionBudget.enabled`         | Enable Pod Disruption Budgets                                                                 | `false`                       |
 | `podDisruptionBudget.config`          | Configure Pod Disruption Budgets                                                              | `maxUnavailable: 1`           |
-| `env`                                 | Additional environment variables                                                              | `[]`                          |
+| `env`                                 | Additional environment variables (supports value, secretKeyRef, configMapKeyRef)              | `[]`                          |
 | `extraVolumes`                        | Additional Face-API volumes                                                                   | `[]`                          |
 | `extraVolumeMounts`                   | Additional Face-API volume mounts                                                             | `[]`                          |
 | `service.type`                        | Kubernetes service type                                                                       | `ClusterIP`                   |

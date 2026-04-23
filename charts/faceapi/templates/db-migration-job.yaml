@@ -60,7 +60,7 @@ spec:
                 exit 1
               fi
           env:
-            {{- include "faceapi.envs" . | indent 10 }}
+            {{- include "faceapi.envs" . | nindent 12 }}
             {{- if and (not .Values.postgresql.enabled) .Values.config.service.database.connectionStringSecretName }}
             - name: SQL_CONNECTION_STRING
               valueFrom:

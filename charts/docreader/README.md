@@ -123,6 +123,40 @@ helm upgrade my-release regulaforensics/docreader
 
 A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an incompatible breaking change needing manual actions.
 
+## Environment Variables
+
+You can pass additional environment variables to the Docreader container using the `env` parameter. This supports standard Kubernetes env var formats:
+
+### Simple key-value pairs
+
+```yaml
+env:
+  - name: MY_ENV_VAR
+    value: "my-value"
+```
+
+### From Kubernetes Secret
+
+```yaml
+env:
+  - name: MY_SECRET_VAR
+    valueFrom:
+      secretKeyRef:
+        name: my-secret
+        key: secret-key
+```
+
+### From ConfigMap
+
+```yaml
+env:
+  - name: MY_CONFIG_VAR
+    valueFrom:
+      configMapKeyRef:
+        name: my-configmap
+        key: config-key
+```
+
 ## Common parameters
 
 | Parameter                                 | Description                                                                                   | Default                       |
@@ -151,7 +185,7 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | `topologySpreadConstraints`               | Topology Spread Constraints for pod assignment                                                | `[]`                          |
 | `podDisruptionBudget.enabled`             | Enable Pod Disruption Budgets                                                                 | `false`                       |
 | `podDisruptionBudget.config`              | Configure Pod Disruption Budgets                                                              | `maxUnavailable: 1`           |
-| `env`                                     | Additional environment variables                                                              | `[]`                          |
+| `env`                                     | Additional environment variables (supports value, secretKeyRef, configMapKeyRef)              | `[]`                          |
 | `extraVolumes`                            | Additional Docreader volumes                                                                  | `[]`                          |
 | `extraVolumeMounts`                       | Additional Docreader volume mounts                                                            | `[]`                          |
 | `service.type`                            | Kubernetes service type                                                                       | `ClusterIP`                   |
@@ -206,6 +240,7 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | `config.sdk.rfid.pkdPaExistingClaim`                      | Name of the existing Persistent Volume Claim containing RFID PKD PA certificates  | `""`                                                          |
 | `config.sdk.rfid.chipVerification.enabled`                | Whether to enable Chip Verification mode                                          | `false`                                                       |
 | `config.sdk.rfid.paSensitiveCodes`                        | RFID PKD PA Sensitive Codes to use                                                | `[]`                                                          |
+| `config.sdk.mDL.sessionVerification.enabled`              | Whether to enable MDL Session Verification mode                                   | `false`                                                       |
 |                                                                                                                                                                                                               |
 | `config.service.mode`                                     | The mode to run core library process (`inProc` | `outOfProc`)                     | `inProc`                                                      |
 | `config.service.webServer.port`                           | Port server binding                                                               | `8080`                                                        |
@@ -253,8 +288,10 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 
 | Parameter                                                         | Description                                                                                   | Default                               |
 |-------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|---------------------------------------|
-| `config.service.processing.results.enabled`                       | Whether to enable processing                                                                  | `false`                               |
-| `config.service.processing.results.ecdhSchema`                    | ECDH schema to use                                                                            | `prime256v1`                          |
+| `config.service.processing.enabled`                               | Whether to enable processing                                                                  | `true`                                |
+| `config.service.processing.ecdhSchema`                            | ECDH schema to use                                                                            | `prime256v1`                          |
+| `config.service.processing.externalImageUrl`                      | Whether to use external images in processing                                                  | `false`                               |
+| `config.service.processing.results.saveResult`                    | Whether to save processing results                                                            | `false`                               |
 | `config.service.processing.results.location.bucket`               | The processing results bucket name in case of `s3`/`gcs` storage type                         | `""`                                  |
 | `config.service.processing.results.location.container`            | The processing results storage container name in case of `az` storage type                    | `""`                                  |
 | `config.service.processing.results.location.folder`               | The processing results folder name in case of `fs` storage type                               | `"/app/docreader-processing/results"` |
@@ -271,6 +308,7 @@ A major chart version change (like v0.1.2 -> v1.0.0) indicates that there is an 
 | Parameter                                                             | Description                                                                                        | Default                                      |
 |-----------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|----------------------------------------------|
 | `config.service.sessionApi.enabled`                                   | Whether to enable Session API mode (default)                                                       | `false`                                      |
+| `config.service.sessionApi.saveRequest`                               | Whether to save Session API requests                                                               | `false`                                      |
 | `config.service.sessionApi.transactions.location.bucket`              | The Session API result logs bucket name in case of `s3`/`gcs` storage type                         | `""`                                         |
 | `config.service.sessionApi.transactions.location.container`           | The Session API result logs storage container name in case of `az` storage type                    | `""`                                         |
 | `config.service.sessionApi.transactions.location.folder`              | The Session API result logs folder name in case of `fs` storage type                               | `"/app/docreader-session-api/transactions"`  |

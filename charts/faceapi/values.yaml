@@ -397,8 +397,25 @@ config:
     extraConfig: {}
 
 env: []
-# - name: ""
-#   value: ""
+# Environment variables support both simple key-value pairs and references to secrets/configmaps.
+# Examples:
+# Simple key-value pairs:
+# - name: MY_ENV_VAR
+#   value: "my-value"
+#
+# From Kubernetes Secret:
+# - name: MY_SECRET_VAR
+#   valueFrom:
+#     secretKeyRef:
+#       name: my-secret
+#       key: secret-key
+#
+# From ConfigMap:
+# - name: MY_CONFIG_VAR
+#   valueFrom:
+#     configMapKeyRef:
+#       name: my-configmap
+#       key: config-key
 
 # Mount additional volumes into faceapi pod.
 extraVolumes: []

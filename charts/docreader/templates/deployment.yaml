@@ -103,7 +103,7 @@ spec:
           {{- end }}
           resources: {{- toYaml .Values.resources | nindent 12 }}
           env:
-            {{- include "docreader.envs" . | indent 10 }}
+            {{- include "docreader.envs" . | nindent 12 }}
             {{- if and (eq .Values.config.service.storage.type "s3") .Values.config.service.storage.s3.awsCredentialsSecretName }}
             - name: AWS_ACCESS_KEY_ID
               valueFrom:

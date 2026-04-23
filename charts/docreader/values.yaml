@@ -117,6 +117,10 @@ config:
         storageClassName: ~
         existingClaim: ~
 
+    mDL:
+      sessionVerification:
+        enabled: false
+
     # Optional map of SDK processing parameters passed verbatim to the core library.
     # See Regula SDK documentation for supported keys.
     processParam: {}
@@ -151,11 +155,11 @@ config:
       logging:
         level: "INFO"
         formatter: text
+        format: '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
         access:
           console: true
           path: "logs/access/docreader-access.log"
-          format: '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
         app:
           console: true
           path: "logs/app/docreader-app.log"
@@ -220,6 +224,7 @@ config:
     processing:
       enabled: true
       ecdhSchema: "prime256v1"
+      externalImageUrl: false
       results:
         saveResult: false
         location:
@@ -238,6 +243,7 @@ config:
 
     sessionApi:
       enabled: false
+      saveRequest: false
       transactions:
         location:
           folder: "/app/docreader-session-api/transactions"
@@ -281,8 +287,25 @@ config:
         existingClaim: ~
 
 env: []
-# - name: ""
-#   value: ""
+# Environment variables support both simple key-value pairs and references to secrets/configmaps.
+# Examples:
+# Simple key-value pairs:
+# - name: MY_ENV_VAR
+#   value: "my-value"
+#
+# From Kubernetes Secret:
+# - name: MY_SECRET_VAR
+#   valueFrom:
+#     secretKeyRef:
+#       name: my-secret
+#       key: secret-key
+#
+# From ConfigMap:
+# - name: MY_CONFIG_VAR
+#   valueFrom:
+#     configMapKeyRef:
+#       name: my-configmap
+#       key: config-key
 
 # Mount additional volumes into docreader pod.
 extraVolumes: []

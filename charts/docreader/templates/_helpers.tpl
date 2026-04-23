@@ -124,10 +124,9 @@ app.kubernetes.io/component: db-migration
 
 {{/* User defined docreader environment variables */}}
 {{- define "docreader.envs" -}}
-  {{- range $i, $config := .Values.env }}
-  - name: {{ $config.name }}
-    value: {{ $config.value | quote }}
-  {{- end }}
+{{- if .Values.env }}
+{{- tpl (toYaml .Values.env) . }}
+{{- end }}
 {{- end }}
 
 {{/* Docreader processing results volume claim */}}

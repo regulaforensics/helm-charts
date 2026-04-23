@@ -15,6 +15,10 @@ sdk:
     {{- else }}
     {{- end }}
 
+  mDL:
+    sessionVerification:
+      enabled: {{ .Values.config.sdk.mDL.sessionVerification.enabled }}
+
   {{- if .Values.config.sdk.processParam }}
   processParam:
     {{- toYaml .Values.config.sdk.processParam | nindent 4 }}
@@ -122,6 +126,7 @@ service:
     enabled: {{ .Values.config.service.processing.enabled }}
     {{- if .Values.config.service.processing.enabled }}
     ecdhSchema: {{ quote .Values.config.service.processing.ecdhSchema }}
+    externalImageUrl: {{ .Values.config.service.processing.externalImageUrl }}
     results:
       saveResult: {{ .Values.config.service.processing.results.saveResult }}
       location:
@@ -141,6 +146,7 @@ service:
   sessionApi:
     enabled: {{ .Values.config.service.sessionApi.enabled }}
     {{- if .Values.config.service.sessionApi.enabled }}
+    saveRequest: {{ .Values.config.service.sessionApi.saveRequest }}
     transactions:
       location:
         {{- if or (eq .Values.config.service.storage.type "s3") (eq .Values.config.service.storage.type "gcs") }}

@@ -258,9 +258,11 @@ env:
 | `config.service.webServer.cors.methods`                   | Methods, allowed to invoke on the API                                             | `"POST,PUT,GET,DELETE,PATCH,HEAD,OPTIONS`                     |
 | `config.service.webServer.logging.level`                  | Specify application logs level. Possible values: `ERROR`, `WARN`, `INFO`, `DEBUG` | `INFO`                                                        |
 | `config.service.webServer.logging.formatter`              | Specify application logs format. Possible values: `text`, `json`                  | `text`                                                        |
+| `config.service.webServer.logging.access.enabled`         | Whether to enable access log file output                                          | `true`                                                        |
 | `config.service.webServer.logging.access.console`         | Whether to print access logs to a console                                         | `true`                                                        |
 | `config.service.webServer.logging.access.path`            | Access logs file path                                                             | `logs/access/docreader-access.log`                            |
 | `config.service.webServer.logging.access.format`          | Access logs format                                                                | `%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"` |
+| `config.service.webServer.logging.app.enabled`            | Whether to enable application log file output                                     | `true`                                                        |
 | `config.service.webServer.logging.app.console`            | Whether to print application logs to a console                                    | `true`                                                        |
 | `config.service.webServer.logging.app.path`               | Application logs file path                                                        | `logs/app/docreader-app.log`                                  |
 | `config.service.webServer.metrics.enabled`                | Whether to enable prometheus metrics endpoint                                     | `false`                                                       |

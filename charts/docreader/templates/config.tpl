@@ -64,10 +64,12 @@ service:
       level: {{ quote .Values.config.service.webServer.logging.level }}
       formatter: {{ quote .Values.config.service.webServer.logging.formatter }}
       access:
+        enabled: {{ .Values.config.service.webServer.logging.access.enabled }}
         console: {{ .Values.config.service.webServer.logging.access.console }}
         path: {{ quote .Values.config.service.webServer.logging.access.path }}
         format: {{ quote .Values.config.service.webServer.logging.access.format }}
       app:
+        enabled: {{ .Values.config.service.webServer.logging.app.enabled }}
         console: {{ .Values.config.service.webServer.logging.app.console }}
         path: {{ quote .Values.config.service.webServer.logging.app.path }}
     metrics:

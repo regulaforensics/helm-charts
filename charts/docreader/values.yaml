@@ -155,12 +155,14 @@ config:
       logging:
         level: "INFO"
         formatter: text
-        format: '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
         access:
+          enabled: true
           console: true
           path: "logs/access/docreader-access.log"
+          format: '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
         app:
+          enabled: true
           console: true
           path: "logs/app/docreader-app.log"
 

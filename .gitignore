@@ -1,3 +1,4 @@
 .DS_Store
 .vscode
+.kiro/
 charts/**/test-*.yaml

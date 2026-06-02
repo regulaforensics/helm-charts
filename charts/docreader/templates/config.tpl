@@ -20,11 +20,12 @@ sdk:
       enabled: {{ .Values.config.sdk.mDL.sessionVerification.enabled }}
 
   {{- if .Values.config.sdk.processParam }}
+
   processParam:
     {{- toYaml .Values.config.sdk.processParam | nindent 4 }}
   {{- end }}
-
   {{- if .Values.config.sdk.requestLimits }}
+
   requestLimits:
     {{- toYaml .Values.config.sdk.requestLimits | nindent 4 }}
   {{- end }}

@@ -13,6 +13,19 @@ spec:
   maxReplicaCount: {{ .Values.autoscaling.keda.maxReplicaCount | default 10 }}
   pollingInterval: {{ .Values.autoscaling.keda.pollingInterval | default 30 }} 
   cooldownPeriod: {{ .Values.autoscaling.keda.cooldownPeriod | default 300 }}
+  {{- if .Values.autoscaling.keda.advanced }}
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        {{- if .Values.autoscaling.keda.advanced.scaleUp }}
+        scaleUp:
+          stabilizationWindowSeconds: {{ .Values.autoscaling.keda.advanced.scaleUp.stabilizationWindowSeconds | default 180 }}
+        {{- end }}
+        {{- if .Values.autoscaling.keda.advanced.scaleDown }}
+        scaleDown:
+          stabilizationWindowSeconds: {{ .Values.autoscaling.keda.advanced.scaleDown.stabilizationWindowSeconds | default 300 }}
+        {{- end }}
+  {{- end }}
   triggers:
 {{- range .Values.autoscaling.keda.triggers }}
   - type: {{ .type }}

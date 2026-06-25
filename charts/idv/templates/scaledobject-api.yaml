@@ -17,6 +17,19 @@ spec:
     failureThreshold: {{ .Values.api.autoscaling.keda.fallback.failureThreshold | default 3 }}
     replicas: {{ .Values.api.autoscaling.keda.fallback.replicas | default 1 }}
   {{- end }}
+  {{- if .Values.api.autoscaling.keda.advanced }}
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        {{- if .Values.api.autoscaling.keda.advanced.scaleUp }}
+        scaleUp:
+          stabilizationWindowSeconds: {{ .Values.api.autoscaling.keda.advanced.scaleUp.stabilizationWindowSeconds | default 180 }}
+        {{- end }}
+        {{- if .Values.api.autoscaling.keda.advanced.scaleDown }}
+        scaleDown:
+          stabilizationWindowSeconds: {{ .Values.api.autoscaling.keda.advanced.scaleDown.stabilizationWindowSeconds | default 300 }}
+        {{- end }}
+  {{- end }}
   triggers:
   {{- range .Values.api.autoscaling.keda.triggers }}
   - type: {{ .type }}

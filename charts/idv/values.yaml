@@ -8,6 +8,30 @@ podAnnotations: {}
 podSecurityContext: {}
 securityContext: {}
 
+# Extra volumes and volumeMounts added to every IDV deployment (api, workflow, scheduler,
+# audit, indexer). Empty by default (no change to existing deployments).
+extraVolumes: []
+extraVolumeMounts: []
+
+# Optional: trust an internal/private CA for in-cluster TLS to backends without rebuilding the
+# image. Point `configMapName` at a ConfigMap (e.g. produced by cert-manager trust-manager)
+# holding a CA bundle under `key`. When set, the chart mounts the bundle at `mountPath`,
+# overlays it onto the image's CA store(s) listed in `caStorePaths`, and sets SSL_CERT_FILE /
+# REQUESTS_CA_BUNDLE / AWS_CA_BUNDLE env vars so all Python TLS clients trust certificates
+# signed by that CA. Disabled by default.
+tls:
+  trustedCABundle:
+    configMapName: ""
+    key: ca-bundle.pem
+    # Directory the bundle is mounted at (use this path for e.g. MongoDB tlsCAFile).
+    mountPath: /etc/regula/tls
+    # CA-store files to overlay with the bundle. Defaults target the idv-coordinator image;
+    # update when the image changes Python version.
+    caStorePaths:
+      - /app/.venv/lib/python3.11/site-packages/botocore/cacert.pem
+      - /app/.venv/lib/python3.11/site-packages/certifi/cacert.pem
+      - /etc/pki/tls/cert.pem
+
 versionSha: latest
 
 image:
@@ -58,7 +82,7 @@ api:
       enabled: false
       # KEDA-specific replica count settings (override autoscaling.minReplicas/maxReplicas)
       # minReplicaCount: 1
-      # maxReplicaCount: 10
+      # maxReplicaCount: 100
       # cooldownPeriod: 300
       # pollingInterval: 30
       triggers: []
@@ -70,6 +94,14 @@ api:
       # fallback:
       #   failureThreshold: 3
       #   replicas: 1
+      # Optional: HPA scaling behavior
+      # .stabilizationWindowSeconds prevents reacting to short CPU/metric spikes (e.g. during pod startup)
+      # by requiring the metric to stay above threshold for the full window before scaling up or down.
+      # advanced:
+      #   scaleUp:
+      #     stabilizationWindowSeconds: 180
+      #   scaleDown:
+      #     stabilizationWindowSeconds: 300
 
   # API pod disruption budget
   podDisruptionBudget:
@@ -138,6 +170,14 @@ workflow:
       # fallback:
       #   failureThreshold: 3
       #   replicas: 1
+      # Optional: HPA scaling behavior
+      # .stabilizationWindowSeconds prevents reacting to short CPU/metric spikes (e.g. during pod startup)
+      # by requiring the metric to stay above threshold for the full window before scaling up or down.
+      # advanced:
+      #   scaleUp:
+      #     stabilizationWindowSeconds: 180
+      #   scaleDown:
+      #     stabilizationWindowSeconds: 300
 
   # Workflow pod disruption budget
   podDisruptionBudget:

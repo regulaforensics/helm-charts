@@ -204,3 +204,60 @@ initContainers:
     securityContext: {{- toYaml .Values.securityContext | nindent 6 }}
 {{- end }}
 {{- end }}
+
+{{/*
+TLS trusted CA bundle: file path of the mounted bundle.
+*/}}
+{{- define "idv.tls.bundleFile" -}}
+{{- printf "%s/%s" .Values.tls.trustedCABundle.mountPath .Values.tls.trustedCABundle.key -}}
+{{- end -}}
+
+{{/*
+Extra pod volumes: optional trusted-CA bundle ConfigMap + user-provided extraVolumes.
+Backward compatible: renders nothing unless tls.trustedCABundle.configMapName or extraVolumes is set.
+*/}}
+{{- define "idv.extraVolumes" -}}
+{{- if .Values.tls.trustedCABundle.configMapName }}
+- name: regula-ca-bundle
+  configMap:
+    name: {{ .Values.tls.trustedCABundle.configMapName }}
+{{- end }}
+{{- with .Values.extraVolumes }}
+{{ toYaml . }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Extra container volumeMounts: CA bundle as a directory (for clients that take an explicit CA
+path, e.g. MongoDB tlsCAFile) plus per-CA-store file overlays (for clients that read a bundled
+CA store such as certifi/botocore or the system trust store), then user extraVolumeMounts.
+*/}}
+{{- define "idv.extraVolumeMounts" -}}
+{{- if .Values.tls.trustedCABundle.configMapName }}
+- name: regula-ca-bundle
+  mountPath: {{ .Values.tls.trustedCABundle.mountPath }}
+  readOnly: true
+{{- range .Values.tls.trustedCABundle.caStorePaths }}
+- name: regula-ca-bundle
+  mountPath: {{ . }}
+  subPath: {{ $.Values.tls.trustedCABundle.key }}
+  readOnly: true
+{{- end }}
+{{- end }}
+{{- with .Values.extraVolumeMounts }}
+{{ toYaml . }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Full container env: when a trusted-CA bundle is configured, prepend the standard CA-bundle
+environment variables (honored by clients that read them), then the user-provided env.
+*/}}
+{{- define "idv.fullEnv" -}}
+{{- $env := .Values.env | default (list) -}}
+{{- if .Values.tls.trustedCABundle.configMapName -}}
+{{- $f := include "idv.tls.bundleFile" . -}}
+{{- $env = concat (list (dict "name" "SSL_CERT_FILE" "value" $f) (dict "name" "REQUESTS_CA_BUNDLE" "value" $f) (dict "name" "AWS_CA_BUNDLE" "value" $f)) $env -}}
+{{- end -}}
+{{- toYaml $env -}}
+{{- end -}}

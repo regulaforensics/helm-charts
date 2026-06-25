@@ -164,3 +164,42 @@ app.kubernetes.io/component: db-migration
 {{ .Release.Name }}-rfid-pkd-pa
 {{- end -}}
 {{- end -}}
+
+{{/*
+Optional trusted-CA bundle volume (enabled via tls.trustedCABundle.configMapName).
+*/}}
+{{- define "docreader.caBundle.volumes" -}}
+- name: regula-ca-bundle
+  configMap:
+    name: {{ .Values.tls.trustedCABundle.configMapName }}
+{{- end -}}
+
+{{/*
+Trusted-CA bundle mount: the bundle is mounted as a directory so clients that take an explicit
+CA file path (e.g. MongoDB tlsCAFile) can reference it directly, plus per-CA-store file overlays
+so clients that read a bundled CA store (certifi, botocore) trust it.
+*/}}
+{{- define "docreader.caBundle.volumeMounts" -}}
+- name: regula-ca-bundle
+  mountPath: {{ .Values.tls.trustedCABundle.mountPath }}
+  readOnly: true
+{{- range .Values.tls.trustedCABundle.caStorePaths }}
+- name: regula-ca-bundle
+  mountPath: {{ . }}
+  subPath: {{ $.Values.tls.trustedCABundle.key }}
+  readOnly: true
+{{- end }}
+{{- end -}}
+
+{{/*
+TLS CA bundle environment variables. Sets SSL_CERT_FILE, REQUESTS_CA_BUNDLE, and AWS_CA_BUNDLE
+so all Python TLS clients trust the mounted bundle regardless of Python/package version.
+*/}}
+{{- define "docreader.caBundle.env" -}}
+- name: SSL_CERT_FILE
+  value: {{ printf "%s/%s" .Values.tls.trustedCABundle.mountPath .Values.tls.trustedCABundle.key }}
+- name: REQUESTS_CA_BUNDLE
+  value: {{ printf "%s/%s" .Values.tls.trustedCABundle.mountPath .Values.tls.trustedCABundle.key }}
+- name: AWS_CA_BUNDLE
+  value: {{ printf "%s/%s" .Values.tls.trustedCABundle.mountPath .Values.tls.trustedCABundle.key }}
+{{- end -}}

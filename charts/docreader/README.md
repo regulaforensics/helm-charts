@@ -157,6 +157,31 @@ env:
         key: config-key
 ```
 
+## In-cluster TLS (trusted CA bundle)
+
+When connecting to backends (MongoDB, S3/object storage, OpenSearch) over TLS that is signed by
+an internal/private CA, the application must trust that CA. Rather than rebuilding the image, set
+`tls.trustedCABundle.configMapName` to a ConfigMap containing a PEM CA bundle (for example one
+produced by [cert-manager trust-manager](https://cert-manager.io/docs/trust/trust-manager/),
+combining your private CA with the public CAs). The chart then:
+
+- mounts the bundle as a directory at `tls.trustedCABundle.mountPath` (use this path for clients
+  that take an explicit CA file, e.g. a MongoDB connection string `…&tls=true&tlsCAFile=/etc/regula/tls/ca-bundle.pem`);
+- overlays the bundle onto the image's CA store file(s) listed in `tls.trustedCABundle.caStorePaths`
+  (the Python `certifi` store by default) so clients that read a bundled store (boto3/S3,
+  opensearch-py) trust it; and
+- sets `SSL_CERT_FILE`, `REQUESTS_CA_BUNDLE`, and `AWS_CA_BUNDLE` environment variables as an
+  additional layer of coverage.
+
+```yaml
+tls:
+  trustedCABundle:
+    configMapName: my-ca-bundle   # ConfigMap with key `ca-bundle.pem`
+```
+
+The feature is disabled by default (`configMapName: ""`) and changes nothing in existing releases.
+`caStorePaths` defaults target this image's layout; update when the image changes Python version.
+
 ## Common parameters
 
 | Parameter                                 | Description                                                                                   | Default                       |
@@ -188,6 +213,10 @@ env:
 | `env`                                     | Additional environment variables (supports value, secretKeyRef, configMapKeyRef)              | `[]`                          |
 | `extraVolumes`                            | Additional Docreader volumes                                                                  | `[]`                          |
 | `extraVolumeMounts`                       | Additional Docreader volume mounts                                                            | `[]`                          |
+| `tls.trustedCABundle.configMapName`       | Name of a ConfigMap holding a CA bundle to trust for in-cluster TLS (e.g. from cert-manager trust-manager). Empty disables the feature | `""`        |
+| `tls.trustedCABundle.key`                 | Key in the ConfigMap that holds the PEM CA bundle                                             | `ca-bundle.pem`               |
+| `tls.trustedCABundle.mountPath`           | Directory the bundle is mounted at (use for e.g. MongoDB `tlsCAFile`)                         | `/etc/regula/tls`             |
+| `tls.trustedCABundle.caStorePaths`        | CA-store file(s) overlaid with the bundle (image-version-dependent; update on Python upgrade)  | `[certifi cacert.pem]`        |
 | `service.type`                            | Kubernetes service type                                                                       | `ClusterIP`                   |
 | `service.port`                            | Kubernetes port where service is exposed                                                      | `80`                          |
 | `service.annotations`                     | Service annotations (can be templated)                                                        | `{}`                          |
@@ -220,6 +249,13 @@ env:
 | `startupProbe.enabled`                    | Enable startupProbe                                                                           | `true`                        |
 | `autoscaling.enabled`                     | Enable autoscaling                                                                            | `false`                       |
 | `autoscaling.keda.enabled`                | Enable KEDA autoscaling                                                                       | `false`                       |
+| `autoscaling.keda.minReplicaCount`        | KEDA minimum replica count                                                                    | `1`                           |
+| `autoscaling.keda.maxReplicaCount`        | KEDA maximum replica count                                                                    | `10`                          |
+| `autoscaling.keda.pollingInterval`        | How frequently (seconds) KEDA polls the triggers                                              | `30`                          |
+| `autoscaling.keda.cooldownPeriod`         | Seconds to wait before scaling in after load drops                                            | `300`                         |
+| `autoscaling.keda.advanced.scaleUp.stabilizationWindowSeconds` | Seconds the HPA observes metric before scaling up                        | `180`                         |
+| `autoscaling.keda.advanced.scaleDown.stabilizationWindowSeconds` | Seconds the HPA observes metric before scaling down                    | `300`                         |
+| `autoscaling.keda.triggers`               | List of KEDA scaler triggers                                                                  | `[]`                          |
 | `networkPolicy.enabled`                   | Enable NetworkPolicy                                                                          | `false`                       |
 | `networkPolicy.annotations`               | NetworkPolicy annotations                                                                     | `{}`                          |
 | `networkPolicy.ingress`                   | Set NetworkPolicy Ingress rules                                                               | `{}`                          |

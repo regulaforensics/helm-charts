@@ -130,6 +130,9 @@ spec:
                   name: {{ template "docreader.db.credentials.secret" . }}
                   key: SQL_CONNECTION_STRING
             {{- end }}
+            {{- if .Values.tls.trustedCABundle.configMapName }}
+            {{- include "docreader.caBundle.env" . | nindent 12 }}
+            {{- end }}
           volumeMounts:
             - name: docreader-config
               mountPath: /app/config.yaml
@@ -170,6 +173,9 @@ spec:
             {{- end }}
 {{- if .Values.extraVolumeMounts }}
 {{ toYaml .Values.extraVolumeMounts | indent 12 }}
+{{- end }}
+{{- if .Values.tls.trustedCABundle.configMapName }}
+{{ include "docreader.caBundle.volumeMounts" . | indent 12 }}
 {{- end }}
       volumes:
         - name: docreader-config
@@ -212,4 +218,7 @@ spec:
         {{- end }}
 {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | indent 8 }}
+{{- end }}
+{{- if .Values.tls.trustedCABundle.configMapName }}
+{{ include "docreader.caBundle.volumes" . | indent 8 }}
 {{- end }}

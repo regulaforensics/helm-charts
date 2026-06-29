@@ -130,6 +130,9 @@ spec:
                   name: {{ template "faceapi.db.credentials.secret" . }}
                   key: SQL_CONNECTION_STRING
             {{- end }}
+            {{- if .Values.tls.trustedCABundle.configMapName }}
+            {{- include "faceapi.caBundle.env" . | nindent 12 }}
+            {{- end }}
           volumeMounts:
             - name: faceapi-config
               mountPath: /app/config.yaml
@@ -167,6 +170,9 @@ spec:
 {{- if .Values.extraVolumeMounts }}
 {{ toYaml .Values.extraVolumeMounts | indent 12 }}
 {{- end }}
+{{- if .Values.tls.trustedCABundle.configMapName }}
+{{ include "faceapi.caBundle.volumeMounts" . | indent 12 }}
+{{- end }}
       volumes:
         - name: faceapi-config
           configMap:
@@ -203,4 +209,7 @@ spec:
         {{- end }}
 {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | indent 8 }}
+{{- end }}
+{{- if .Values.tls.trustedCABundle.configMapName }}
+{{ include "faceapi.caBundle.volumes" . | indent 8 }}
 {{- end }}

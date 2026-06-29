@@ -55,6 +55,9 @@ spec:
         secret:
           secretName: {{ template "idv.gcs.credentials.secret" . }}
       {{- end }}
+      {{- if or .Values.tls.trustedCABundle.configMapName .Values.extraVolumes }}
+      {{- include "idv.extraVolumes" . | nindent 6 }}
+      {{- end }}
       securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
       {{- if .Values.api.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.api.terminationGracePeriodSeconds }}
@@ -120,6 +123,13 @@ spec:
           subPath: gcs_key.json
           readOnly: true
         {{- end }}
+        {{- if or .Values.tls.trustedCABundle.configMapName .Values.extraVolumeMounts }}
+        {{- include "idv.extraVolumeMounts" . | nindent 8 }}
+        {{- end }}
         command: ["idv"]
         args: ["webserver", "start"]
+        {{- if .Values.tls.trustedCABundle.configMapName }}
+        env: {{- tpl (include "idv.fullEnv" .) $ | nindent 10 }}
+        {{- else }}
         env: {{- tpl (toYaml .Values.env) . | nindent 10 }}
+        {{- end }}

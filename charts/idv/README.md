@@ -187,6 +187,12 @@ helm upgrade my-release regulaforensics/idv
 | `podAnnotations`                                          | Pod annotations                                   | `{}`                              |
 | `podSecurityContext`                                      | Pod security context                              | `{}`                              |
 | `securityContext`                                         | Container security context                        | `{}`                              |
+| `extraVolumes`                                            | Additional volumes added to all IDV deployments   | `[]`                              |
+| `extraVolumeMounts`                                       | Additional volume mounts added to all IDV deployments | `[]`                          |
+| `tls.trustedCABundle.configMapName`                       | ConfigMap holding a CA bundle to trust for in-cluster TLS (e.g. from cert-manager trust-manager). Empty disables the feature | `""` |
+| `tls.trustedCABundle.key`                                 | Key in the ConfigMap that holds the PEM CA bundle | `ca-bundle.pem`                   |
+| `tls.trustedCABundle.mountPath`                           | Directory the bundle is mounted at (use for e.g. MongoDB `tlsCAFile`) | `/etc/regula/tls`             |
+| `tls.trustedCABundle.caStorePaths`                        | CA-store file(s) overlaid with the bundle (image-version-dependent; update on Python upgrade) | `[botocore, certifi, system]` |
 | `versionSha`                                              | Version SHA tag                                   | `latest`                          |
 | `image.repository`                                        | Image repository                                  | `regulaforensics/idv-coordinator` |
 | `image.pullPolicy`                                        | Image pull policy                                 | `Always`                          |
@@ -215,6 +221,8 @@ helm upgrade my-release regulaforensics/idv
 | `api.autoscaling.keda.maxReplicaCount`                    | KEDA maximum replica count for API                | `100`                             |
 | `api.autoscaling.keda.cooldownPeriod`                     | KEDA cooldown period (seconds) for API            | `300`                             |
 | `api.autoscaling.keda.pollingInterval`                    | KEDA polling interval (seconds) for API           | `30`                              |
+| `api.autoscaling.keda.advanced.scaleUp.stabilizationWindowSeconds` | Seconds the HPA observes metric before scaling up | `180`                    |
+| `api.autoscaling.keda.advanced.scaleDown.stabilizationWindowSeconds` | Seconds the HPA observes metric before scaling down | `300`                |
 | `api.autoscaling.keda.triggers`                           | KEDA triggers for API                             | `[]`                              |
 | `api.autoscaling.keda.TriggerAuthentication`              | KEDA TriggerAuthentication for API                | `null`                            |
 | `api.autoscaling.keda.fallback`                           | KEDA fallback config when metrics unavailable     | `null`                            |
@@ -257,6 +265,8 @@ helm upgrade my-release regulaforensics/idv
 | `workflow.autoscaling.keda.maxReplicaCount`               | KEDA maximum replica count for Workflow           | `100`                             |
 | `workflow.autoscaling.keda.cooldownPeriod`                | KEDA cooldown period (seconds) for Workflow       | `300`                             |
 | `workflow.autoscaling.keda.pollingInterval`               | KEDA polling interval (seconds) for Workflow      | `30`                              |
+| `workflow.autoscaling.keda.advanced.scaleUp.stabilizationWindowSeconds` | Seconds the HPA observes metric before scaling up | `180`               |
+| `workflow.autoscaling.keda.advanced.scaleDown.stabilizationWindowSeconds` | Seconds the HPA observes metric before scaling down | `300`           |
 | `workflow.autoscaling.keda.triggers`                      | KEDA triggers for Workflow                        | `[]`                              |
 | `workflow.autoscaling.keda.TriggerAuthentication`         | KEDA TriggerAuthentication for Workflow           | `null`                            |
 | `workflow.autoscaling.keda.fallback`                      | KEDA fallback config when metrics unavailable     | `null`                            |
@@ -494,6 +504,33 @@ helm upgrade my-release regulaforensics/idv
 > [!NOTE]
 > The subcharts are used for the demonstration and Dev/Test purposes.
 > We strongly recommend to deploying separate installations of required resources in Production.
+
+## In-cluster TLS (trusted CA bundle)
+
+When IDV connects to its backends (MongoDB, S3/object storage, OpenSearch, RabbitMQ) over TLS
+signed by an internal/private CA, IDV must trust that CA. Rather than rebuilding the image, set
+`tls.trustedCABundle.configMapName` to a ConfigMap containing a PEM CA bundle (for example one
+produced by [cert-manager trust-manager](https://cert-manager.io/docs/trust/trust-manager/),
+combining your private CA with the public CAs). For **all five** IDV deployments the chart then:
+
+- mounts the bundle as a directory at `tls.trustedCABundle.mountPath` (use this path for clients
+  that take an explicit CA file, e.g. a MongoDB URL `…&tls=true&tlsCAFile=/etc/regula/tls/ca-bundle.pem`);
+- overlays the bundle onto the image's CA store file(s) in `tls.trustedCABundle.caStorePaths`
+  (by default the `botocore`, `certifi` and system stores — covering boto3/S3, opensearch-py and
+  py-amqp/pymongo respectively); and
+- sets `SSL_CERT_FILE`, `REQUESTS_CA_BUNDLE`, and `AWS_CA_BUNDLE` environment variables as an
+  additional layer of coverage.
+
+```yaml
+tls:
+  trustedCABundle:
+    configMapName: my-ca-bundle   # ConfigMap with key `ca-bundle.pem`
+```
+
+The feature is disabled by default (`configMapName: ""`) and changes nothing in existing releases.
+`caStorePaths` defaults target the idv-coordinator image; update when the image changes Python
+version. For in-cluster TLS to RabbitMQ, set the broker URL scheme to `amqps://`; for OpenSearch
+set `config.faceSearch.database.opensearch.verifyCerts: true` (and the same for `textSearch`).
 
 ## Subchart parameters
 

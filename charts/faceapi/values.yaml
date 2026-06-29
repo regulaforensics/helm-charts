@@ -421,6 +421,23 @@ env: []
 extraVolumes: []
 extraVolumeMounts: []
 
+# Optional: trust an internal/private CA for in-cluster TLS (e.g. to MongoDB, S3/MinIO,
+# OpenSearch) without rebuilding the image. Point `configMapName` at a ConfigMap (e.g. produced
+# by cert-manager trust-manager) holding a CA bundle under `key`. When set, the chart mounts the
+# bundle at `mountPath`, overlays it onto the image's CA store(s) listed in `caStorePaths`, and
+# sets SSL_CERT_FILE / REQUESTS_CA_BUNDLE / AWS_CA_BUNDLE env vars so all Python TLS clients
+# trust certificates signed by that CA. Disabled by default.
+tls:
+  trustedCABundle:
+    configMapName: ""
+    key: ca-bundle.pem
+    # Directory the bundle is mounted at (use this path for e.g. MongoDB tlsCAFile).
+    mountPath: /etc/regula/tls
+    # CA-store files to overlay with the bundle. Defaults target this image's layout;
+    # update when the image changes Python version.
+    caStorePaths:
+      - /app/.venv/lib/python3.11/site-packages/certifi/cacert.pem
+
 service:
   type: ClusterIP
   port: 80
@@ -616,8 +633,16 @@ autoscaling:
     enabled: false
     minReplicaCount: 1
     maxReplicaCount: 10
-    pollingInterval: 15
+    pollingInterval: 30
     cooldownPeriod: 300
+    # Optional: HPA scaling behavior
+    # .stabilizationWindowSeconds prevents reacting to short CPU/metric spikes (e.g. during pod startup)
+    # by requiring the metric to stay above threshold for the full window before scaling up or down.
+    # advanced:
+    #   scaleUp:
+    #     stabilizationWindowSeconds: 180
+    #   scaleDown:
+    #     stabilizationWindowSeconds: 300
     # List of triggers that determine scaling behavior
     # See KEDA scalers: https://keda.sh/docs/scalers/
     triggers: []

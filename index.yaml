@@ -3,6 +3,32 @@ entries:
   docreader:
   - apiVersion: v2
     appVersion: 9.6.321281.2257
+    created: "2026-07-14T14:10:10.065676616Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 13.4.4
+    description: Fast and accurate data extraction from identity documents. On-premise
+      and cloud integration
+    digest: c3d6fe9f7b95e2dca9a661b9013fcaa1070a2e5222120c3ccc8ce79aa34041e5
+    home: https://api.regulaforensics.com/
+    icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
+    keywords:
+    - regula
+    - docreader
+    - regulaforensics
+    maintainers:
+    - email: support@regulaforensics.com
+      name: Regula Forensics Support
+      url: https://support.regulaforensics.com
+    name: docreader
+    type: application
+    urls:
+    - https://github.com/regulaforensics/helm-charts/releases/download/docreader-2.13.1/docreader-2.13.1.tgz
+    version: 2.13.1
+  - apiVersion: v2
+    appVersion: 9.6.321281.2257
     created: "2026-07-06T08:50:16.881916803Z"
     dependencies:
     - condition: postgresql.enabled
@@ -1195,6 +1221,36 @@ entries:
   faceapi:
   - apiVersion: v2
     appVersion: 8.2.694.1636-cpu
+    created: "2026-07-14T14:10:10.428183924Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 13.4.4
+    - condition: milvus.enabled
+      name: milvus
+      repository: https://zilliztech.github.io/milvus-helm/
+      version: 5.0.6
+    description: Face Recognition Service. On-premise and cloud integration
+    digest: 7ee212fdeda60fe7fb1f839571488ac718330d9a44b0b283654705968b1d5d67
+    home: https://faceapi.regulaforensics.com/
+    icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
+    keywords:
+    - regula
+    - faceapi
+    - face-api
+    - regulaforensics
+    maintainers:
+    - email: support@regulaforensics.com
+      name: Regula Forensics Support
+      url: https://support.regulaforensics.com
+    name: faceapi
+    type: application
+    urls:
+    - https://github.com/regulaforensics/helm-charts/releases/download/faceapi-3.6.1/faceapi-3.6.1.tgz
+    version: 3.6.1
+  - apiVersion: v2
+    appVersion: 8.2.694.1636-cpu
     created: "2026-06-29T08:36:58.538245539Z"
     dependencies:
     - condition: postgresql.enabled
@@ -2245,6 +2301,45 @@ entries:
     version: 0.1.0
   idv:
   - apiVersion: v2
+    appVersion: 3.8.1
+    created: "2026-07-14T14:10:10.762151632Z"
+    dependencies:
+    - alias: statsd
+      condition: statsd.enabled
+      name: prometheus-statsd-exporter
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 1.0.0
+    - condition: opensearch.enabled
+      name: opensearch
+      repository: https://opensearch-project.github.io/helm-charts
+      version: 2.35.1
+    - condition: mongodb.enabled
+      name: mongodb
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.5.45
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.0.14
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.min.io/
+      version: 5.4.0
+    description: IDV Platform. On-premise and cloud integration
+    digest: a42fa142fd9ada0ab8f283bf6f724c0236ae2bf92d0a7dafec488b51b2bf7d81
+    home: https://idv.regula.app/
+    icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
+    keywords:
+    - regula
+    - idv
+    - idv-platform
+    - regulaforensics
+    name: idv
+    type: application
+    urls:
+    - https://github.com/regulaforensics/helm-charts/releases/download/idv-1.13.1/idv-1.13.1.tgz
+    version: 1.13.1
+  - apiVersion: v2
     appVersion: 3.8.0
     created: "2026-07-10T13:07:24.962684085Z"
     dependencies:
@@ -3102,4 +3197,4 @@ entries:
     urls:
     - https://github.com/regulaforensics/helm-charts/releases/download/idv-1.0.3/idv-1.0.3.tgz
     version: 1.0.3
-generated: "2026-07-10T13:07:24.962950543Z"
+generated: "2026-07-14T14:10:10.763801158Z"

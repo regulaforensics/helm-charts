@@ -21,7 +21,7 @@ fullnameOverride: ""
 commonLabels: {}
 
 # Enable use of "app.kubernetes.io/component" label to distinguish Pods of different components.
-# Recommended: true (braking changes warning, see description below)
+# Recommended: true (breaking changes warning, see description below)
 # Default: false (for maximum backward compatibility and safe upgrades for all users)
 # Note: Enabling this on an existing release requires a one-time recreation of the Deployment
 # due to immutable selector fields.

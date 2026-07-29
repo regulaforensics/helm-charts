@@ -245,7 +245,10 @@ config:
       openapi: false
 
     workflow:
+      # Number of worker processes ("auto" derives from available CPUs)
       workers: auto
+      # Number of threads per worker
+      threads: 32
 
     scheduler:
       jobs:

@@ -31,6 +31,7 @@ services:
   workflow:
     enabled: true
     workers: {{ .Values.config.services.workflow.workers }}
+    threads: {{ .Values.config.services.workflow.threads }}
 
   scheduler:
     enabled: true

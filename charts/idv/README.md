@@ -313,6 +313,7 @@ helm upgrade my-release regulaforensics/idv
 | `config.services.api.maxBodySize`                         | Max body size                                     | `64Mi`                            |
 | `config.services.api.openapi`                             | Enable OpenAPI docs                               | `false`                           |
 | `config.services.workflow.workers`                        | Workflow service workers                          | `auto`                            |
+| `config.services.workflow.threads`                        | Workflow service threads per worker               | `32`                              |
 | `config.services.scheduler.jobs.reloadWorkflows.cron`     | Cron for reloading workflows                      | `"*/15 * * * * *"`                |
 | `config.services.scheduler.jobs.expireSessions.cron`      | Cron for expiring sessions                        | `"*/10 * * * * *"`                |
 | `config.services.scheduler.jobs.cleanSessions.cron`       | Cron for cleaning sessions                        | `null`                            |

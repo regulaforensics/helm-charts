@@ -2,6 +2,32 @@ apiVersion: v1
 entries:
   docreader:
   - apiVersion: v2
+    appVersion: 9.7.321852.2265
+    created: "2026-08-04T11:06:05.188894269Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 13.4.4
+    description: Fast and accurate data extraction from identity documents. On-premise
+      and cloud integration
+    digest: c56aa18477d3b253414fbed4843a20bafc05d527694b6296fbe86738a2507ad4
+    home: https://api.regulaforensics.com/
+    icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
+    keywords:
+    - regula
+    - docreader
+    - regulaforensics
+    maintainers:
+    - email: support@regulaforensics.com
+      name: Regula Forensics Support
+      url: https://support.regulaforensics.com
+    name: docreader
+    type: application
+    urls:
+    - https://github.com/regulaforensics/helm-charts/releases/download/docreader-2.14.0/docreader-2.14.0.tgz
+    version: 2.14.0
+  - apiVersion: v2
     appVersion: 9.6.321281.2257
     created: "2026-07-14T14:10:10.065676616Z"
     dependencies:
@@ -1220,6 +1246,36 @@ entries:
     version: 0.1.1
   faceapi:
   - apiVersion: v2
+    appVersion: 8.3.749.1905-cpu
+    created: "2026-08-04T11:06:05.434033804Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 13.4.4
+    - condition: milvus.enabled
+      name: milvus
+      repository: https://zilliztech.github.io/milvus-helm/
+      version: 5.0.6
+    description: Face Recognition Service. On-premise and cloud integration
+    digest: 94164927accf6074783316dad89e3e8db95dce82d73711da34626c1434db705b
+    home: https://faceapi.regulaforensics.com/
+    icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
+    keywords:
+    - regula
+    - faceapi
+    - face-api
+    - regulaforensics
+    maintainers:
+    - email: support@regulaforensics.com
+      name: Regula Forensics Support
+      url: https://support.regulaforensics.com
+    name: faceapi
+    type: application
+    urls:
+    - https://github.com/regulaforensics/helm-charts/releases/download/faceapi-3.7.0/faceapi-3.7.0.tgz
+    version: 3.7.0
+  - apiVersion: v2
     appVersion: 8.2.694.1636-cpu
     created: "2026-07-14T14:10:10.428183924Z"
     dependencies:
@@ -2301,6 +2357,45 @@ entries:
     version: 0.1.0
   idv:
   - apiVersion: v2
+    appVersion: 3.9.0
+    created: "2026-08-04T11:06:05.603731828Z"
+    dependencies:
+    - alias: statsd
+      condition: statsd.enabled
+      name: prometheus-statsd-exporter
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 1.0.0
+    - condition: opensearch.enabled
+      name: opensearch
+      repository: https://opensearch-project.github.io/helm-charts
+      version: 2.35.1
+    - condition: mongodb.enabled
+      name: mongodb
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.5.45
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.0.14
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.min.io/
+      version: 5.4.0
+    description: IDV Platform. On-premise and cloud integration
+    digest: 4985e5d27ef8b6ced695cf48fadf107394f0cf7f26e8dba18849a48771f28916
+    home: https://idv.regula.app/
+    icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
+    keywords:
+    - regula
+    - idv
+    - idv-platform
+    - regulaforensics
+    name: idv
+    type: application
+    urls:
+    - https://github.com/regulaforensics/helm-charts/releases/download/idv-1.15.0/idv-1.15.0.tgz
+    version: 1.15.0
+  - apiVersion: v2
     appVersion: 3.8.1
     created: "2026-07-29T13:46:48.662245481Z"
     dependencies:
@@ -3236,4 +3331,4 @@ entries:
     urls:
     - https://github.com/regulaforensics/helm-charts/releases/download/idv-1.0.3/idv-1.0.3.tgz
     version: 1.0.3
-generated: "2026-07-29T13:46:48.662489929Z"
+generated: "2026-08-04T11:06:05.604323861Z"

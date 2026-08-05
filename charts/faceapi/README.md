@@ -148,7 +148,7 @@ Disabled by default (`configMapName: ""`); changes nothing in existing releases.
 |---------------------------------------|-----------------------------------------------------------------------------------------------|-------------------------------|
 | `replicas`                            | Number of nodes                                                                               | `1`                           |
 | `image.repository`                    | Image repository                                                                              | `regulaforensics/face-api`    |
-| `image.tag`                           | Overrides the Face-API image tag                                                              | `"8.3-cpu"`                   |
+| `image.tag`                           | Overrides the Face-API image tag, whose default is the chart appVersion                       | `~`                           |
 | `image.pullPolicy`                    | Image pull policy                                                                             | `IfNotPresent`                |
 | `imagePullSecrets`                    | Image pull secrets                                                                            | `[]`                          |
 | `nameOverride`                        | String to partially override common.names.fullname template (will maintain the release name)  | `""`                          |

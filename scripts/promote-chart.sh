@@ -47,7 +47,7 @@ die()  { printf '\nerror: %s\n' "$*" >&2; exit 1; }
 
 usage() { sed -n '3,/^set -euo/p' "$0" | sed 's/^# \{0,1\}//;$d'; }
 
-# ---------------------------------------------------------------- arguments ---
+# --- arguments ---
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -63,7 +63,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# ---------------------------------------------------------------- preflight ---
+# --- preflight ---
 
 display_name() {
   case "$1" in
@@ -105,7 +105,7 @@ repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" || die "not inside a gi
 cd "$repo_root"
 [[ -d charts ]] || die "no charts/ directory in $repo_root — run this from the charts repository"
 
-# ------------------------------------------------------------------ helpers ---
+# --- helpers ---
 
 # Read a top-level scalar from a Chart.yaml, stripping quotes.
 chart_field() {
@@ -153,14 +153,23 @@ as_list() { # newline separated -> "a, b, c" or an em dash when empty
   [[ -n "$joined" ]] && printf '`%s`' "$joined" || printf '—'
 }
 
-# -------------------------------------------------------------------- setup ---
+# --- setup ---
 
 work_root="$(mktemp -d)"
 src_dir="$work_root/source"
 worktree=""
+branch=""
+branch_created=false
+committed=false
 
+# Leave nothing behind: drop the temporary worktree, and roll back the release
+# branch if we created it but never got as far as committing, so a failed run
+# can simply be retried.
 cleanup() {
   [[ -n "$worktree" && -d "$worktree" ]] && git worktree remove --force "$worktree" 2>/dev/null || true
+  if [[ "$branch_created" == true && "$committed" == false && -n "$branch" ]]; then
+    git branch -D "$branch" 2>/dev/null || true
+  fi
   rm -rf "$work_root"
 }
 trap cleanup EXIT
@@ -190,7 +199,7 @@ source_chart_dir="$src_dir/charts/$chart"
 [[ -d "$source_chart_dir" ]] || die "chart '$chart' does not exist upstream at ref '$source_ref'"
 source_sha="$(git -C "$src_dir" rev-parse HEAD)"
 
-# ----------------------------------------------------------------- versions ---
+# --- versions ---
 
 step "Resolving versions"
 upstream_version="$(chart_field "$source_chart_dir/Chart.yaml" version)"
@@ -218,7 +227,7 @@ if [[ -n "$published_version" ]] && ! version_gt "$new_version" "$published_vers
        version upstream, or pass --chart-version with a higher value."
 fi
 
-# -------------------------------------------------------- changelog anchor ----
+# --- changelog anchor ---
 
 step "Locating the last promoted upstream commit"
 anchor=""
@@ -241,7 +250,7 @@ elif [[ -n "$published_version" ]]; then
   fi
 fi
 
-# ------------------------------------------------------------------ copy in ---
+# --- copy in ---
 
 step "Building the promotion in a temporary worktree"
 worktree="$work_root/worktree"
@@ -252,6 +261,7 @@ else
   git rev-parse --verify --quiet "refs/heads/$branch" >/dev/null \
     && die "branch '$branch' already exists locally — delete it or pick another version"
   git worktree add --quiet -b "$branch" "$worktree" origin/main
+  branch_created=true
 fi
 
 mkdir -p "$worktree/charts/$chart"
@@ -273,7 +283,7 @@ if [[ -z "$(git -C "$worktree" status --porcelain -- "charts/$chart")" ]]; then
   die "nothing to promote: the upstream chart at '$source_ref' is already published as-is."
 fi
 
-# ----------------------------------------------------------------- validate ---
+# --- validate ---
 
 step "Validating the promoted chart"
 dep_status="$(helm dependency list "$worktree/charts/$chart" 2>/dev/null || true)"
@@ -290,7 +300,7 @@ helm template promote "$worktree/charts/$chart" --set licenseSecretName=promote-
   >"$work_root/rendered.yaml" || die "helm template failed"
 log "  helm template ok ($(grep -c '^kind:' "$work_root/rendered.yaml") resources)"
 
-# ------------------------------------------------------------------ summary ---
+# --- summary ---
 
 step "Summarising the change"
 old_templates="$work_root/old-templates"
@@ -323,7 +333,7 @@ if [[ -n "$anchor" ]]; then
     | sed 's/^/- /' || true)"
 fi
 
-# ------------------------------------------------------------------ PR body ---
+# --- PR body ---
 
 title="$(display_name "$chart"): Release chart ${new_version} (appVersion ${app_version})"
 body_file="$work_root/pr-body.md"
@@ -367,7 +377,7 @@ body_file="$work_root/pr-body.md"
   printf -- '- [ ] Mark ready for review\n'
 } >"$body_file"
 
-# -------------------------------------------------------------------- ship ----
+# --- ship ---
 
 if $dry_run; then
   step "Dry run — nothing was changed"
@@ -387,6 +397,7 @@ fi
 step "Committing"
 git -C "$worktree" add -- "charts/$chart"
 git -C "$worktree" commit --quiet -m "$title"
+committed=true
 log "  $branch"
 
 if ! $open_pr; then
@@ -402,3 +413,7 @@ pr_url="$( cd "$worktree" && gh pr create \
 
 step "Draft PR created"
 log "  $pr_url"
+
+# The URL is the script's only stdout output, so callers can capture it while
+# progress logging stays on stderr.
+printf '%s\n' "$pr_url"

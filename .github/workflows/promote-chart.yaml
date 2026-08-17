@@ -1,0 +1,94 @@
+name: Promote Chart
+
+# Opens a draft release PR for a chart. All of the work is done by
+# scripts/promote-chart.sh; this workflow only provides credentials and inputs.
+
+on:
+  workflow_dispatch:
+    inputs:
+      chart:
+        description: Chart to release
+        type: choice
+        required: true
+        options:
+          - docreader
+          - faceapi
+          - idv
+      app_version:
+        description: Released application image tag (e.g. 9.7.321852.2265)
+        type: string
+        required: true
+      chart_version:
+        description: Chart version override (leave empty to use the upstream chart version)
+        type: string
+        required: false
+
+# Writes are performed with a bot token, so the workflow token needs nothing
+# beyond reading this repository. Using a token other than GITHUB_TOKEN is also
+# what allows the resulting pull request to trigger CI.
+permissions:
+  contents: read
+
+concurrency:
+  group: promote-chart-${{ inputs.chart }}
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          # Full history: the script compares against origin/main and matches
+          # published chart content against upstream history.
+          fetch-depth: 0
+          # Persisted for the branch push performed by the script.
+          token: ${{ secrets.REGULA_BOT_TOKEN }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5
+        with:
+          # Keep in step with the helm_version default in lint-test.yml. The
+          # promotion pre-flight (lint/template) only has value if it renders
+          # the chart the same way CI will.
+          version: v3.21.4
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Promote chart
+        id: promote
+        shell: bash
+        # Inputs are passed through the environment rather than interpolated
+        # into the script body, so their contents cannot be executed.
+        env:
+          CHART: ${{ inputs.chart }}
+          APP_VERSION: ${{ inputs.app_version }}
+          CHART_VERSION: ${{ inputs.chart_version }}
+          SOURCE_REPO: ${{ secrets.SOURCE_REPO }}
+          SOURCE_TOKEN: ${{ secrets.REGULA_BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.REGULA_BOT_TOKEN }}
+        run: |
+          args=(--chart "$CHART" --app-version "$APP_VERSION")
+          if [[ -n "$CHART_VERSION" ]]; then
+            args+=(--chart-version "$CHART_VERSION")
+          fi
+          url="$(scripts/promote-chart.sh "${args[@]}")"
+          echo "url=$url" >>"$GITHUB_OUTPUT"
+
+      - name: Summary
+        env:
+          CHART: ${{ inputs.chart }}
+          APP_VERSION: ${{ inputs.app_version }}
+          PR_URL: ${{ steps.promote.outputs.url }}
+        run: |
+          {
+            printf '### Draft release PR opened\n\n'
+            printf '- chart: `%s`\n' "$CHART"
+            printf '- appVersion: `%s`\n' "$APP_VERSION"
+            printf '- %s\n\n' "$PR_URL"
+            printf 'Review the diff, then mark the pull request ready for review.\n'
+          } >>"$GITHUB_STEP_SUMMARY"

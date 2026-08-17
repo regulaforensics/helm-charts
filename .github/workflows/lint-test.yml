@@ -10,7 +10,7 @@ on:
         type: string
       helm_version:
         description: version of the helm binary
-        default: v3.18.2
+        default: v3.21.4
         required: false
         type: string
     secrets:

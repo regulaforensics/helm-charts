@@ -11,7 +11,8 @@
 # touched and a dirty working tree is fine.
 #
 # Required environment:
-#   SOURCE_REPO   owner/name of the upstream repository
+#   SOURCE_REPO   upstream repository as 'owner/name', or a bare 'name' whose
+#                 owner is taken from this repository
 #   SOURCE_TOKEN  token with read access to it (falls back to GH_TOKEN /
 #                 GITHUB_TOKEN, then to the local git credentials)
 #
@@ -178,22 +179,86 @@ step "Fetching origin/main"
 git fetch --quiet origin main
 git rev-parse --verify --quiet origin/main >/dev/null || die "origin/main not found"
 
+step "Checking access to the upstream repository"
+
+# SOURCE_REPO may be given as 'owner/name', or as a bare 'name' whose owner is
+# taken from this repository — the upstream source always lives alongside it.
+if [[ "$SOURCE_REPO" == */* ]]; then
+  source_repo="$SOURCE_REPO"
+else
+  if [[ -n "${GITHUB_REPOSITORY:-}" ]]; then
+    owner="${GITHUB_REPOSITORY%%/*}"
+  else
+    origin_url="$(git remote get-url origin 2>/dev/null || true)"
+    owner="$(sed -nE 's#^.*[:/]([^/:]+)/[^/]+$#\1#p' <<<"${origin_url%.git}")"
+  fi
+  [[ -n "$owner" ]] || die "SOURCE_REPO is a bare repository name and the owner could not
+       be inferred from this repository. Set it to 'owner/name'."
+  source_repo="${owner}/${SOURCE_REPO}"
+fi
+
+[[ "$source_repo" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || die \
+  "SOURCE_REPO must be 'owner/name' or a bare 'name' — no scheme, no trailing
+       '.git', no URL."
+
+# Probe with the API when a token is supplied: the status code distinguishes a
+# wrong repository name from a token that cannot read it, which a failed clone
+# cannot. Skipped without a token, since an unauthenticated probe reports any
+# private repository as absent and would mask working local credentials.
+if [[ -n "$source_token" ]]; then
+  command -v curl >/dev/null || die "required tool not found: curl"
+  probe="$(curl -sS -o /dev/null -w '%{http_code}' \
+    -H 'Accept: application/vnd.github+json' \
+    -H "Authorization: Bearer ${source_token}" \
+    "https://api.github.com/repos/${source_repo}" 2>/dev/null || echo 000)"
+
+  case "$probe" in
+    200) log "  readable with the supplied token (HTTP 200)" ;;
+    401) die "the token was rejected (HTTP 401): it is invalid or has expired." ;;
+    403) die "access forbidden (HTTP 403): the token may need SSO authorisation for the
+       organisation, or the request was rate limited." ;;
+    404) die "repository not found (HTTP 404). Either SOURCE_REPO does not name an
+       existing repository, or the token has no read access to it — at this status
+       code a private repository is indistinguishable from a missing one." ;;
+    000) die "could not reach api.github.com" ;;
+    *)   die "unexpected response from api.github.com (HTTP ${probe})" ;;
+  esac
+else
+  log "  no token supplied — using local git credentials"
+fi
+
 step "Fetching upstream chart source (ref: $source_ref)"
 clone_ok=false
+clone_err="$work_root/clone.err"
 if [[ -n "$source_token" ]]; then
-  if git clone --quiet --branch "$source_ref" --single-branch \
-       "https://x-access-token:${source_token}@github.com/${SOURCE_REPO}.git" "$src_dir" 2>/dev/null; then
-    clone_ok=true
-  fi
+  # Both forms are accepted by GitHub for token auth over HTTPS; which one works
+  # depends on the token type, so try each.
+  for userinfo in "x-access-token:${source_token}" "${source_token}"; do
+    if git clone --quiet --branch "$source_ref" --single-branch \
+         "https://${userinfo}@github.com/${source_repo}.git" "$src_dir" 2>"$clone_err"; then
+      clone_ok=true; break
+    fi
+  done
 else
-  for url in "https://github.com/${SOURCE_REPO}.git" "git@github.com:${SOURCE_REPO}.git"; do
-    if git clone --quiet --branch "$source_ref" --single-branch "$url" "$src_dir" 2>/dev/null; then
+  for url in "https://github.com/${source_repo}.git" "git@github.com:${source_repo}.git"; do
+    if git clone --quiet --branch "$source_ref" --single-branch "$url" "$src_dir" 2>"$clone_err"; then
       clone_ok=true; break
     fi
   done
 fi
-$clone_ok || die "could not read the upstream repository at ref '$source_ref'.
-       Check SOURCE_REPO and that the token or local credentials grant read access."
+
+if ! $clone_ok; then
+  # Surface git's own diagnosis, with the credential and the upstream repository
+  # path scrubbed out. The latter matters because CI masks the configured secret
+  # value, but not an owner/name resolved from it.
+  if [[ -s "$clone_err" ]]; then
+    scrub=(sed -e "s|${source_repo}|***|g")
+    [[ -n "$source_token" ]] && scrub+=(-e "s|${source_token}|***|g")
+    "${scrub[@]}" "$clone_err" >&2
+  fi
+  die "could not clone the upstream repository at ref '$source_ref'.
+       The repository is readable, so check that ref '$source_ref' exists."
+fi
 
 source_chart_dir="$src_dir/charts/$chart"
 [[ -d "$source_chart_dir" ]] || die "chart '$chart' does not exist upstream at ref '$source_ref'"

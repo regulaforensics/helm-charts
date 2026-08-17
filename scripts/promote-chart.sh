@@ -325,6 +325,12 @@ if $dry_run; then
 else
   git rev-parse --verify --quiet "refs/heads/$branch" >/dev/null \
     && die "branch '$branch' already exists locally — delete it or pick another version"
+  # Catch this here rather than letting the push fail as a non-fast-forward: a
+  # re-run produces a new commit, so an abandoned attempt blocks the next one.
+  git ls-remote --exit-code --heads origin "refs/heads/$branch" >/dev/null 2>&1 \
+    && die "branch '$branch' already exists on origin, probably from an earlier
+       attempt. Delete it (and close any pull request from it), or promote a
+       different chart version."
   git worktree add --quiet -b "$branch" "$worktree" origin/main
   branch_created=true
 fi

@@ -23,15 +23,6 @@ on:
         type: string
         required: false
 
-  # TEMPORARY — REMOVE BEFORE MERGING.
-  # workflow_dispatch only becomes available once this file is on the default
-  # branch, so there is no way to exercise the workflow from a feature branch.
-  # This trigger provides one. Push-triggered runs are forced into --dry-run
-  # below, so they never push a branch or open a pull request.
-  push:
-    # Quoted: an all-digit branch name would otherwise parse as an integer.
-    branches: ["59009"]
-
 # Writes are performed with a bot token, so the workflow token needs nothing
 # beyond reading this repository. Using a token other than GITHUB_TOKEN is also
 # what allows the resulting pull request to trigger CI.
@@ -45,6 +36,11 @@ concurrency:
 jobs:
   promote:
     runs-on: ubuntu-latest
+    # Resolved once here so every step sees the same values.
+    env:
+      CHART: ${{ inputs.chart }}
+      APP_VERSION: ${{ inputs.app_version }}
+      CHART_VERSION: ${{ inputs.chart_version }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -74,11 +70,6 @@ jobs:
         # Inputs are passed through the environment rather than interpolated
         # into the script body, so their contents cannot be executed.
         env:
-          # TEMPORARY: the fallbacks exist only because inputs are empty on the
-          # push trigger above. Drop them along with it.
-          CHART: ${{ inputs.chart || 'idv' }}
-          APP_VERSION: ${{ inputs.app_version || '0.0.0-smoke-test' }}
-          CHART_VERSION: ${{ inputs.chart_version }}
           SOURCE_REPO: ${{ secrets.SOURCE_REPO }}
           SOURCE_TOKEN: ${{ secrets.REGULA_BOT_TOKEN }}
           GH_TOKEN: ${{ secrets.REGULA_BOT_TOKEN }}
@@ -87,10 +78,6 @@ jobs:
           if [[ -n "$CHART_VERSION" ]]; then
             args+=(--chart-version "$CHART_VERSION")
           fi
-          # TEMPORARY: --dry-run is deliberately NOT added, so that one push
-          # exercises the push and pull-request-creation paths for real. The
-          # resulting branch and draft PR are throwaway and must be deleted.
-          # Pushing again while this is active will fail on the existing branch.
           url="$(scripts/promote-chart.sh "${args[@]}")"
           echo "url=$url" >>"$GITHUB_OUTPUT"
 
@@ -98,14 +85,9 @@ jobs:
         # No URL means no pull request was opened (a dry run).
         if: steps.promote.outputs.url != ''
         env:
-          CHART: ${{ inputs.chart }}
-          APP_VERSION: ${{ inputs.app_version }}
           PR_URL: ${{ steps.promote.outputs.url }}
+        # One format string, deliberately not starting with '-': bash printf
+        # would otherwise read a leading dash as an option.
         run: |
-          {
-            printf '### Draft release PR opened\n\n'
-            printf '- chart: `%s`\n' "$CHART"
-            printf '- appVersion: `%s`\n' "$APP_VERSION"
-            printf '- %s\n\n' "$PR_URL"
-            printf 'Review the diff, then mark the pull request ready for review.\n'
-          } >>"$GITHUB_STEP_SUMMARY"
+          printf '### Draft release PR opened\n\n- chart: `%s`\n- appVersion: `%s`\n- %s\n\nReview the diff, then mark the pull request ready for review.\n' \
+            "$CHART" "$APP_VERSION" "$PR_URL" >>"$GITHUB_STEP_SUMMARY"

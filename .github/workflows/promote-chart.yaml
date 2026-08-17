@@ -87,10 +87,10 @@ jobs:
           if [[ -n "$CHART_VERSION" ]]; then
             args+=(--chart-version "$CHART_VERSION")
           fi
-          # TEMPORARY: a push to this branch is a smoke test, never a release.
-          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
-            args+=(--dry-run)
-          fi
+          # TEMPORARY: --dry-run is deliberately NOT added, so that one push
+          # exercises the push and pull-request-creation paths for real. The
+          # resulting branch and draft PR are throwaway and must be deleted.
+          # Pushing again while this is active will fail on the existing branch.
           url="$(scripts/promote-chart.sh "${args[@]}")"
           echo "url=$url" >>"$GITHUB_OUTPUT"
 

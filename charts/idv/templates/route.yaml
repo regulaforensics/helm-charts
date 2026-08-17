@@ -1,6 +1,6 @@
 
-{{- $serviceName := printf "%s-api" (include "idv.fullname" .) -}}
-{{- $servicePort := .Values.api.service.port -}}
+{{- $serviceName := printf "%s-backoffice" (include "idv.fullname" .) -}}
+{{- $servicePort := .Values.backoffice.service.port -}}
 {{- range $name, $route := .Values.route }}
 {{- if $route.enabled }}
 ---

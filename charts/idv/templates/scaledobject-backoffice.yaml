@@ -1,0 +1,52 @@
+{{- if and .Values.backoffice.autoscaling.enabled .Values.backoffice.autoscaling.keda.enabled }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "idv.fullname" . }}-backoffice
+  labels:
+    {{- include "idv.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: {{ include "idv.fullname" . }}-backoffice
+  minReplicaCount: {{ .Values.backoffice.autoscaling.keda.minReplicaCount | default 1 }}
+  maxReplicaCount: {{ .Values.backoffice.autoscaling.keda.maxReplicaCount | default 100 }}
+  cooldownPeriod: {{ .Values.backoffice.autoscaling.keda.cooldownPeriod | default 300 }}
+  pollingInterval: {{ .Values.backoffice.autoscaling.keda.pollingInterval | default 30 }}
+  {{- if .Values.backoffice.autoscaling.keda.fallback }}
+  fallback:
+    failureThreshold: {{ .Values.backoffice.autoscaling.keda.fallback.failureThreshold | default 3 }}
+    replicas: {{ .Values.backoffice.autoscaling.keda.fallback.replicas | default 1 }}
+  {{- end }}
+  {{- if .Values.backoffice.autoscaling.keda.advanced }}
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        {{- if .Values.backoffice.autoscaling.keda.advanced.scaleUp }}
+        scaleUp:
+          stabilizationWindowSeconds: {{ .Values.backoffice.autoscaling.keda.advanced.scaleUp.stabilizationWindowSeconds | default 180 }}
+        {{- end }}
+        {{- if .Values.backoffice.autoscaling.keda.advanced.scaleDown }}
+        scaleDown:
+          stabilizationWindowSeconds: {{ .Values.backoffice.autoscaling.keda.advanced.scaleDown.stabilizationWindowSeconds | default 300 }}
+        {{- end }}
+  {{- end }}
+  triggers:
+  {{- range .Values.backoffice.autoscaling.keda.triggers }}
+  - type: {{ .type }}
+    metadata:
+      {{- toYaml .metadata | nindent 6 }}
+    {{- if .name }}
+    name: {{ .name }}
+    {{- end }}
+    {{- if .useCachedMetrics }}
+    useCachedMetrics: {{ .useCachedMetrics }}
+    {{- end }}
+    {{- if .authenticationRef }}
+    authenticationRef:
+      name: {{ .authenticationRef.name }}
+    {{- end }}
+    {{- if .metricType }}
+    metricType: {{ .metricType }}
+    {{- end }}
+  {{- end }}
+{{- end }}

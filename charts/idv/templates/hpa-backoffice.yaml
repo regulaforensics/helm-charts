@@ -1,0 +1,32 @@
+{{- if and .Values.backoffice.autoscaling.enabled (not .Values.backoffice.autoscaling.keda.enabled) }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "idv.fullname" . }}-backoffice
+  labels:
+    {{- include "idv.backoffice.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "idv.fullname" . }}-backoffice
+  minReplicas: {{ .Values.backoffice.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.backoffice.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.backoffice.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.backoffice.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.backoffice.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.backoffice.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}

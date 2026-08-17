@@ -1,0 +1,21 @@
+{{- if and .Values.backoffice.autoscaling.enabled .Values.backoffice.autoscaling.keda.enabled .Values.backoffice.autoscaling.keda.TriggerAuthentication }}
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ include "idv.fullname" . }}-backoffice
+  labels:
+    {{- include "idv.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.backoffice.autoscaling.keda.TriggerAuthentication.secretTargetRef }}
+  secretTargetRef:
+  {{- range .Values.backoffice.autoscaling.keda.TriggerAuthentication.secretTargetRef }}
+  - parameter: {{ .parameter }}
+    name: {{ .name }}
+    key: {{ .key }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.backoffice.autoscaling.keda.TriggerAuthentication.podIdentity }}
+  podIdentity:
+    provider: {{ .Values.backoffice.autoscaling.keda.TriggerAuthentication.podIdentity.provider }}
+  {{- end }}
+{{- end }}

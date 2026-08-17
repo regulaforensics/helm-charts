@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "idv.fullname" . }}-api
+  name: {{ include "idv.fullname" . }}-backoffice
   labels:
-    {{- include "idv.api.labels" . | nindent 4 }}
+    {{- include "idv.backoffice.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.api.autoscaling.enabled }}
-  replicas: {{ .Values.api.replicas }}
+  {{- if not .Values.backoffice.autoscaling.enabled }}
+  replicas: {{ .Values.backoffice.replicas }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "idv.api.selectorLabels" . | nindent 6 }}
+      {{- include "idv.backoffice.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
@@ -20,19 +20,19 @@ spec:
         {{- toYaml .Values.podAnnotations | nindent 8 }}
         {{- end }}
       labels:
-        {{- include "idv.api.labels" . | nindent 8 }}
+        {{- include "idv.backoffice.labels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "idv.serviceAccountName" . }}
-      {{- with .Values.api.nodeSelector }}
+      {{- with .Values.backoffice.nodeSelector }}
       nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.api.affinity }}
+      {{- with .Values.backoffice.affinity }}
       affinity: {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.api.tolerations }}
+      {{- with .Values.backoffice.tolerations }}
       tolerations: {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.api.topologySpreadConstraints }}
+      {{- with .Values.backoffice.topologySpreadConstraints }}
       topologySpreadConstraints: {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.imagePullSecrets }}
@@ -59,50 +59,50 @@ spec:
       {{- include "idv.extraVolumes" . | nindent 6 }}
       {{- end }}
       securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      {{- if .Values.api.terminationGracePeriodSeconds }}
-      terminationGracePeriodSeconds: {{ .Values.api.terminationGracePeriodSeconds }}
+      {{- if .Values.backoffice.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.backoffice.terminationGracePeriodSeconds }}
       {{- end }}
       {{- include "idv.minioInitContainer" . | nindent 6 }}
       containers:
-      - name: api
+      - name: backoffice
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        resources: {{- toYaml .Values.api.resources | nindent 10 }}
+        resources: {{- toYaml .Values.backoffice.resources | nindent 10 }}
         securityContext: {{- toYaml .Values.securityContext | nindent 10 }}
-        {{- if .Values.api.probes.livenessProbe.enabled }}
+        {{- if .Values.backoffice.probes.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
             path: /api/health
             port: api
-          initialDelaySeconds: {{ .Values.api.probes.livenessProbe.initialDelaySeconds }}
-          timeoutSeconds: {{ .Values.api.probes.livenessProbe.timeoutSeconds }}
-          periodSeconds: {{ .Values.api.probes.livenessProbe.periodSeconds }}
-          failureThreshold: {{ .Values.api.probes.livenessProbe.failureThreshold }}
-          successThreshold: {{ .Values.api.probes.livenessProbe.successThreshold }}
+          initialDelaySeconds: {{ .Values.backoffice.probes.livenessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.backoffice.probes.livenessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.backoffice.probes.livenessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.backoffice.probes.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.backoffice.probes.livenessProbe.successThreshold }}
         {{- end }}
-        {{- if .Values.api.probes.readinessProbe.enabled }}
+        {{- if .Values.backoffice.probes.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
             path: /api/health
             port: api
-          initialDelaySeconds: {{ .Values.api.probes.readinessProbe.initialDelaySeconds }}
-          timeoutSeconds: {{ .Values.api.probes.readinessProbe.timeoutSeconds }}
-          periodSeconds: {{ .Values.api.probes.readinessProbe.periodSeconds }}
-          failureThreshold: {{ .Values.api.probes.readinessProbe.failureThreshold }}
-          successThreshold: {{ .Values.api.probes.readinessProbe.successThreshold }}
+          initialDelaySeconds: {{ .Values.backoffice.probes.readinessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.backoffice.probes.readinessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.backoffice.probes.readinessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.backoffice.probes.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.backoffice.probes.readinessProbe.successThreshold }}
         {{- end }}
-        {{- if .Values.api.probes.startupProbe.enabled }}
+        {{- if .Values.backoffice.probes.startupProbe.enabled }}
         startupProbe:
           httpGet:
             path: /api/health
             port: api
-          initialDelaySeconds: {{ .Values.api.probes.startupProbe.initialDelaySeconds }}
-          timeoutSeconds: {{ .Values.api.probes.startupProbe.timeoutSeconds }}
-          periodSeconds: {{ .Values.api.probes.startupProbe.periodSeconds }}
-          failureThreshold: {{ .Values.api.probes.startupProbe.failureThreshold }}
-          successThreshold: {{ .Values.api.probes.startupProbe.successThreshold }}
+          initialDelaySeconds: {{ .Values.backoffice.probes.startupProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.backoffice.probes.startupProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.backoffice.probes.startupProbe.periodSeconds }}
+          failureThreshold: {{ .Values.backoffice.probes.startupProbe.failureThreshold }}
+          successThreshold: {{ .Values.backoffice.probes.startupProbe.successThreshold }}
         {{- end }}
-        lifecycle: {{- toYaml .Values.api.lifecycle | nindent 10 }}
+        lifecycle: {{- toYaml .Values.backoffice.lifecycle | nindent 10 }}
         ports:
         - name: api
           containerPort: {{ .Values.config.services.api.port }}
@@ -127,7 +127,7 @@ spec:
         {{- include "idv.extraVolumeMounts" . | nindent 8 }}
         {{- end }}
         command: ["idv"]
-        args: ["webserver", "start"]
+        args: ["webserver", "start"] # [TODO] Old style, change to "idv backoffice start" later
         {{- if .Values.tls.trustedCABundle.configMapName }}
         env: {{- tpl (include "idv.fullEnv" .) $ | nindent 10 }}
         {{- else }}

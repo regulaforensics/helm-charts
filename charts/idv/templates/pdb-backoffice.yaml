@@ -1,0 +1,17 @@
+{{- if or .Values.backoffice.podDisruptionBudget.enabled .Values.backoffice.autoscaling.enabled }}
+kind: PodDisruptionBudget
+apiVersion: policy/v1
+metadata:
+  name: {{ include "idv.fullname" . }}-backoffice
+  labels:
+    {{- include "idv.backoffice.labels" . | nindent 4 }}
+  {{- with .Values.backoffice.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "idv.backoffice.selectorLabels" . | nindent 6 }}
+  {{- toYaml .Values.backoffice.podDisruptionBudget.config | nindent 2 }}
+{{- end }}

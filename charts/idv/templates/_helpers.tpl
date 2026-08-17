@@ -43,20 +43,40 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
-API labels
+Backoffice labels
 */}}
-{{- define "idv.api.labels" -}}
+{{- define "idv.backoffice.labels" -}}
 {{ include "idv.labels" . }}
-{{ include "idv.api.selectorLabels" . }}
+{{ include "idv.backoffice.selectorLabels" . }}
 {{- end }}
 
 {{/*
-API Selector labels
+Backoffice Selector labels
 */}}
-{{- define "idv.api.selectorLabels" -}}
+{{- define "idv.backoffice.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "idv.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}-api
-app.kubernetes.io/component: api
+app.kubernetes.io/instance: {{ .Release.Name }}-backoffice
+app.kubernetes.io/component: backoffice
+{{- if .Values.commonLabels }}
+{{ toYaml .Values.commonLabels }}
+{{- end }}
+{{- end }}
+
+{{/*
+Frontoffice labels
+*/}}
+{{- define "idv.frontoffice.labels" -}}
+{{ include "idv.labels" . }}
+{{ include "idv.frontoffice.selectorLabels" . }}
+{{- end }}
+
+{{/*
+Frontoffice Selector labels
+*/}}
+{{- define "idv.frontoffice.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "idv.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}-frontoffice
+app.kubernetes.io/component: frontoffice
 {{- if .Values.commonLabels }}
 {{ toYaml .Values.commonLabels }}
 {{- end }}

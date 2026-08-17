@@ -8,7 +8,7 @@ podAnnotations: {}
 podSecurityContext: {}
 securityContext: {}
 
-# Extra volumes and volumeMounts added to every IDV deployment (api, workflow, scheduler,
+# Extra volumes and volumeMounts added to every IDV deployment (backoffice, workflow, scheduler,
 # audit, indexer). Empty by default (no change to existing deployments).
 extraVolumes: []
 extraVolumeMounts: []
@@ -46,7 +46,7 @@ imagePullSecrets: {}
 #
 licenseSecretName: null
 
-api:
+backoffice:
   replicas: 1
 
   nodeSelector: {}
@@ -103,7 +103,124 @@ api:
       #   scaleDown:
       #     stabilizationWindowSeconds: 300
 
-  # API pod disruption budget
+  # Backoffice pod disruption budget
+  podDisruptionBudget:
+    enabled: false
+    # PDB configuration
+    config:
+      # minAvailable and maxUnavailable cannot be both set
+      maxUnavailable: ~
+      minAvailable: 1
+
+  probes:
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+    startupProbe:
+      enabled: false
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+
+# Frontoffice component (public, internet-facing).
+# These resources are only rendered when `config.services.frontoffice.enabled: true`.
+frontoffice:
+  replicas: 1
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  resources: {}
+    # requests:
+    #   cpu: "1000m"
+    #   memory: "512Mi"
+  topologySpreadConstraints: []
+
+  terminationGracePeriodSeconds: 45
+
+  lifecycle: {}
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "sleep 30"]
+
+  service:
+    type: ClusterIP
+    port: 80
+    annotations: {}
+    loadBalancerSourceRanges: []
+
+  # Dedicated Ingress for the public frontoffice entrypoint. Kept separate from the top-level
+  # `ingress` (which fronts the backoffice/API) so the public service can use its own hostname,
+  # TLS certificate, ingressClass, and annotations. Requires `config.services.frontoffice.enabled`.
+  ingress:
+    # Enable a dedicated Ingress for the frontoffice service
+    enabled: false
+    # The Ingress Class for the frontoffice Ingress (Kubernetes v1.19+)
+    className: ""
+    annotations: {}
+    # The hostnames for the frontoffice Ingress
+    hosts: []
+      # - frontoffice.domain.com
+    # Paths default to the frontoffice service when no per-path service is given
+    paths: []
+      # - /
+      # - path: /
+      #   service:
+      #     name: my-frontoffice-service
+      #     port: 8080
+    pathType: Prefix
+    # TLS configuration for the frontoffice Ingress
+    tls: []
+    #  - secretName: frontoffice-example-tls
+    #    hosts:
+    #      - frontoffice.domain.com
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+    # Either HPA or KEDA can be enabled at a time for autoscaling
+    keda:
+      enabled: false
+      # KEDA-specific replica count settings (override autoscaling.minReplicas/maxReplicas)
+      # minReplicaCount: 1
+      # maxReplicaCount: 100
+      # cooldownPeriod: 300
+      # pollingInterval: 30
+      triggers: []
+      TriggerAuthentication: null
+      # Optional: fallback behavior when the metric source is unavailable
+      # (e.g. RabbitMQ queue not yet created in ephemeral PR environments).
+      # KEDA will hold `replicas` replicas after `failureThreshold` consecutive errors,
+      # then resume normal scaling once the metric source recovers.
+      # fallback:
+      #   failureThreshold: 3
+      #   replicas: 1
+      # Optional: HPA scaling behavior
+      # .stabilizationWindowSeconds prevents reacting to short CPU/metric spikes (e.g. during pod startup)
+      # by requiring the metric to stay above threshold for the full window before scaling up or down.
+      # advanced:
+      #   scaleUp:
+      #     stabilizationWindowSeconds: 180
+      #   scaleDown:
+      #     stabilizationWindowSeconds: 300
+
+  # Frontoffice pod disruption budget
   podDisruptionBudget:
     enabled: false
     # PDB configuration
@@ -243,6 +360,29 @@ config:
         maxAge: 0
       maxBodySize: 64Mi
       openapi: false
+
+    # Frontoffice is the public, internet-facing entrypoint. Disabled by default (opt-in).
+    # When enabled, the chart deploys a dedicated frontoffice Deployment/Service and (optionally)
+    # a dedicated Ingress under the `frontoffice` section below.
+    frontoffice:
+      # Enable the frontoffice service. When false, no frontoffice resources are rendered.
+      enabled: false
+      # Expose the OpenAPI docs for the frontoffice service
+      openapi: true
+      # Internal port the frontoffice process listens on (must match frontoffice.service targetPort)
+      port: 8001
+      # Bind host inside the container
+      host: "0.0.0.0"
+      # Number of worker processes ("auto" derives from available CPUs)
+      workers: auto
+      # Number of threads per worker ("auto" derives from available CPUs)
+      threads: auto
+      # Seconds to keep idle client connections open
+      keepalive: 120
+      # Request timeout in seconds
+      timeout: 30
+      # Maximum accepted request body size
+      maxBodySize: 64Mi
 
     workflow:
       # Number of worker processes ("auto" derives from available CPUs)

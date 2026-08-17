@@ -28,6 +28,17 @@ services:
     maxBodySize: {{ .Values.config.services.api.maxBodySize }}
     openapi: {{ .Values.config.services.api.openapi }}
 
+  frontoffice:
+    enabled: {{ .Values.config.services.frontoffice.enabled }}
+    port: {{ .Values.config.services.frontoffice.port }}
+    host: {{ quote .Values.config.services.frontoffice.host }}
+    workers: {{ .Values.config.services.frontoffice.workers }}
+    threads: {{ .Values.config.services.frontoffice.threads }}
+    keepalive: {{ .Values.config.services.frontoffice.keepalive }}
+    timeout: {{ .Values.config.services.frontoffice.timeout }}
+    maxBodySize: {{ .Values.config.services.frontoffice.maxBodySize }}
+    openapi: {{ .Values.config.services.frontoffice.openapi }}
+
   workflow:
     enabled: true
     workers: {{ .Values.config.services.workflow.workers }}

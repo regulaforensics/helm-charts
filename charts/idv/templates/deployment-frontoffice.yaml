@@ -1,0 +1,137 @@
+{{- if .Values.config.services.frontoffice.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "idv.fullname" . }}-frontoffice
+  labels:
+    {{- include "idv.frontoffice.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.frontoffice.autoscaling.enabled }}
+  replicas: {{ .Values.frontoffice.replicas }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "idv.frontoffice.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configs/idv-config.yaml") . | sha256sum }}
+        checksum/version: {{ .Values.versionSha | quote }}
+        {{- if .Values.podAnnotations }}
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "idv.frontoffice.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "idv.serviceAccountName" . }}
+      {{- with .Values.frontoffice.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.frontoffice.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.frontoffice.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.frontoffice.topologySpreadConstraints }}
+      topologySpreadConstraints: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      {{- if .Values.licenseSecretName }}
+      - name: license
+        secret:
+          secretName: {{ .Values.licenseSecretName }}
+      {{- end }}
+      - name: idv-config
+        configMap:
+          name: {{ include "idv.fullname" . }}-config
+          items:
+            - key: idv-config
+              path: idv-config.yaml
+      {{- if and (hasKey .Values.config.storage "gcs") .Values.config.storage.gcs.gcsKeyJsonSecretName }}
+      - name: gcs-credentials
+        secret:
+          secretName: {{ template "idv.gcs.credentials.secret" . }}
+      {{- end }}
+      {{- if or .Values.tls.trustedCABundle.configMapName .Values.extraVolumes }}
+      {{- include "idv.extraVolumes" . | nindent 6 }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.frontoffice.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.frontoffice.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- include "idv.minioInitContainer" . | nindent 6 }}
+      containers:
+      - name: frontoffice
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources: {{- toYaml .Values.frontoffice.resources | nindent 10 }}
+        securityContext: {{- toYaml .Values.securityContext | nindent 10 }}
+        {{- if .Values.frontoffice.probes.livenessProbe.enabled }}
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: frontoffice
+          initialDelaySeconds: {{ .Values.frontoffice.probes.livenessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.frontoffice.probes.livenessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.frontoffice.probes.livenessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.frontoffice.probes.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.frontoffice.probes.livenessProbe.successThreshold }}
+        {{- end }}
+        {{- if .Values.frontoffice.probes.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: frontoffice
+          initialDelaySeconds: {{ .Values.frontoffice.probes.readinessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.frontoffice.probes.readinessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.frontoffice.probes.readinessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.frontoffice.probes.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.frontoffice.probes.readinessProbe.successThreshold }}
+        {{- end }}
+        {{- if .Values.frontoffice.probes.startupProbe.enabled }}
+        startupProbe:
+          httpGet:
+            path: /api/health
+            port: frontoffice
+          initialDelaySeconds: {{ .Values.frontoffice.probes.startupProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.frontoffice.probes.startupProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.frontoffice.probes.startupProbe.periodSeconds }}
+          failureThreshold: {{ .Values.frontoffice.probes.startupProbe.failureThreshold }}
+          successThreshold: {{ .Values.frontoffice.probes.startupProbe.successThreshold }}
+        {{- end }}
+        lifecycle: {{- toYaml .Values.frontoffice.lifecycle | nindent 10 }}
+        ports:
+        - name: frontoffice
+          containerPort: {{ .Values.config.services.frontoffice.port }}
+          protocol: TCP
+        volumeMounts:
+        {{- if .Values.licenseSecretName }}
+        - name: license
+          mountPath: /app/extBin/unix/regula.license
+          subPath: regula.license
+          readOnly: true
+        {{- end }}
+        - name: idv-config
+          mountPath: /app/config.yaml
+          subPath: idv-config.yaml
+        {{- if and (hasKey .Values.config.storage "gcs") .Values.config.storage.gcs.gcsKeyJsonSecretName }}
+        - name: gcs-credentials
+          mountPath: /etc/credentials/gcs_key.json
+          subPath: gcs_key.json
+          readOnly: true
+        {{- end }}
+        {{- if or .Values.tls.trustedCABundle.configMapName .Values.extraVolumeMounts }}
+        {{- include "idv.extraVolumeMounts" . | nindent 8 }}
+        {{- end }}
+        command: ["idv"]
+        args: ["frontoffice", "start"]
+        {{- if .Values.tls.trustedCABundle.configMapName }}
+        env: {{- tpl (include "idv.fullEnv" .) $ | nindent 10 }}
+        {{- else }}
+        env: {{- tpl (toYaml .Values.env) . | nindent 10 }}
+        {{- end }}
+{{- end }}

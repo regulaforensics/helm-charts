@@ -1,23 +1,23 @@
-{{- if .Values.ingress.enabled -}}
-{{- $defaultServiceName := printf "%s-backoffice" (include "idv.fullname" .) -}}
-{{- $defaultServicePort := .Values.backoffice.service.port -}}
-{{- $paths := .Values.ingress.paths -}}
-{{- $pathType := .Values.ingress.pathType | default "Prefix" -}}
+{{- if and .Values.config.services.frontoffice.enabled .Values.frontoffice.ingress.enabled -}}
+{{- $defaultServiceName := printf "%s-frontoffice" (include "idv.fullname" .) -}}
+{{- $defaultServicePort := .Values.frontoffice.service.port -}}
+{{- $paths := .Values.frontoffice.ingress.paths -}}
+{{- $pathType := .Values.frontoffice.ingress.pathType | default "Prefix" -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "idv.fullname" . }}
-  labels: {{- include "idv.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+  name: {{ include "idv.fullname" . }}-frontoffice
+  labels: {{- include "idv.frontoffice.labels" . | nindent 4 }}
+  {{- with .Values.frontoffice.ingress.annotations }}
   annotations: {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if .Values.ingress.className }}
-  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.frontoffice.ingress.className }}
+  ingressClassName: {{ .Values.frontoffice.ingress.className }}
   {{- end }}
   rules:
-  {{- if .Values.ingress.hosts }}
-    {{- range $host := .Values.ingress.hosts }}
+  {{- if .Values.frontoffice.ingress.hosts }}
+    {{- range $host := .Values.frontoffice.ingress.hosts }}
     - host: {{ tpl $host $ }}
       http:
         paths:
@@ -76,7 +76,7 @@ spec:
           {{- end }}
         {{- end }}
   {{- end }}
-  {{- with .Values.ingress.tls }}
+  {{- with .Values.frontoffice.ingress.tls }}
   tls: {{- toYaml . | nindent 4 }}
   {{- end }}
 {{- end -}}

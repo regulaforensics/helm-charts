@@ -1,0 +1,17 @@
+{{- if and .Values.config.services.frontoffice.enabled (or .Values.frontoffice.podDisruptionBudget.enabled .Values.frontoffice.autoscaling.enabled) }}
+kind: PodDisruptionBudget
+apiVersion: policy/v1
+metadata:
+  name: {{ include "idv.fullname" . }}-frontoffice
+  labels:
+    {{- include "idv.frontoffice.labels" . | nindent 4 }}
+  {{- with .Values.frontoffice.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "idv.frontoffice.selectorLabels" . | nindent 6 }}
+  {{- toYaml .Values.frontoffice.podDisruptionBudget.config | nindent 2 }}
+{{- end }}

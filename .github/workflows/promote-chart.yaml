@@ -23,6 +23,15 @@ on:
         type: string
         required: false
 
+  # TEMPORARY — REMOVE BEFORE MERGING.
+  # workflow_dispatch only becomes available once this file is on the default
+  # branch, so there is no way to exercise the workflow from a feature branch.
+  # This trigger provides one. Push-triggered runs are forced into --dry-run
+  # below, so they never push a branch or open a pull request.
+  push:
+    # Quoted: an all-digit branch name would otherwise parse as an integer.
+    branches: ["59009"]
+
 # Writes are performed with a bot token, so the workflow token needs nothing
 # beyond reading this repository. Using a token other than GITHUB_TOKEN is also
 # what allows the resulting pull request to trigger CI.
@@ -65,8 +74,10 @@ jobs:
         # Inputs are passed through the environment rather than interpolated
         # into the script body, so their contents cannot be executed.
         env:
-          CHART: ${{ inputs.chart }}
-          APP_VERSION: ${{ inputs.app_version }}
+          # TEMPORARY: the fallbacks exist only because inputs are empty on the
+          # push trigger above. Drop them along with it.
+          CHART: ${{ inputs.chart || 'idv' }}
+          APP_VERSION: ${{ inputs.app_version || '0.0.0-smoke-test' }}
           CHART_VERSION: ${{ inputs.chart_version }}
           SOURCE_REPO: ${{ secrets.SOURCE_REPO }}
           SOURCE_TOKEN: ${{ secrets.REGULA_BOT_TOKEN }}
@@ -76,10 +87,16 @@ jobs:
           if [[ -n "$CHART_VERSION" ]]; then
             args+=(--chart-version "$CHART_VERSION")
           fi
+          # TEMPORARY: a push to this branch is a smoke test, never a release.
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            args+=(--dry-run)
+          fi
           url="$(scripts/promote-chart.sh "${args[@]}")"
           echo "url=$url" >>"$GITHUB_OUTPUT"
 
       - name: Summary
+        # No URL means no pull request was opened (a dry run).
+        if: steps.promote.outputs.url != ''
         env:
           CHART: ${{ inputs.chart }}
           APP_VERSION: ${{ inputs.app_version }}

@@ -10,9 +10,6 @@
   "labels": [
     "dependencies"
   ],
-  "prBodyNotes": [
-    "https://redmine.regulaforensics.com/issues/58096"
-  ],
   "packageRules": [
     {
       "description": "Update all GitHub Actions to latest, including major version bumps",

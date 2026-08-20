@@ -38,6 +38,9 @@ service:
     port: {{ .Values.config.service.webServer.port }}
     workers: {{ .Values.config.service.webServer.workers }}
     timeout: {{ .Values.config.service.webServer.timeout }}
+    {{- if .Values.config.service.webServer.maxBodySize }}
+    maxBodySize: {{ .Values.config.service.webServer.maxBodySize }}
+    {{- end }}
     maxRequests: {{ .Values.config.service.webServer.maxRequests }}
     maxRequestsJitter: {{ .Values.config.service.webServer.maxRequestsJitter }}
     gracefulTimeout: {{ .Values.config.service.webServer.gracefulTimeout }}

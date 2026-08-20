@@ -136,6 +136,7 @@ config:
       port: 8080
       workers: 1
       timeout: 30
+      maxBodySize: ~
       maxRequests: 0
       maxRequestsJitter: 0
       gracefulTimeout: 30

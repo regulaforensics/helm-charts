@@ -282,6 +282,7 @@ The feature is disabled by default (`configMapName: ""`) and changes nothing in 
 | `config.service.webServer.port`                           | Port server binding                                                               | `8080`                                                        |
 | `config.service.webServer.workers`                        | Number of workers per pod                                                         | `1`                                                           |
 | `config.service.webServer.timeout`                        | Number of seconds for the worker to process the request                           | `30`                                                          |
+| `config.service.webServer.maxBodySize`                    | Maximum request body size in Kb. Unset means unlimited                            | `~`                                                           |
 | `config.service.webServer.maxRequests`                    | The maximum number of requests a worker will process before restarting            | `0`                                                           |
 | `config.service.webServer.maxRequestsJitter`              | The maximum jitter to add to the `maxRequests` setting                            | `0`                                                           |
 | `config.service.webServer.gracefulTimeout`                | Timeout for graceful workers restart                                              | `30`                                                          |

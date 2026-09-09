@@ -261,3 +261,31 @@ environment variables (honored by clients that read them), then the user-provide
 {{- end -}}
 {{- toYaml $env -}}
 {{- end -}}
+
+{{/*
+Reports the state of the Fernet encryption key, for the install warning in NOTES.txt.
+An IDV_CONFIG__FERNETKEY entry in the top-level `env` list counts as properly set,
+since that overrides the config file at runtime.
+
+Returns:
+  "default" - the chart's publicly published default key is in use
+  "missing" - no key supplied at all
+  ""        - a key is set properly
+*/}}
+{{- define "idv.fernetKeyState" -}}
+{{- $publicDefault := "tton53xJw0QV6vfaOTNRP_YGnPc76ZJkXFdVFZSnaKQ=" -}}
+{{- $key := .Values.config.fernetKey | default "" -}}
+{{- $overridden := false -}}
+{{- range (.Values.env | default (list)) -}}
+{{- if eq (.name | default "") "IDV_CONFIG__FERNETKEY" -}}
+{{- $overridden = true -}}
+{{- end -}}
+{{- end -}}
+{{- if not $overridden -}}
+{{- if eq $key $publicDefault -}}
+default
+{{- else if eq $key "" -}}
+missing
+{{- end -}}
+{{- end -}}
+{{- end -}}

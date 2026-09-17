@@ -45,6 +45,46 @@ MIND: Metrics collection is configured to external statsd deployment
   kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
 {{- end }}
 
-{{- if eq .Values.config.fernetKey "tton53xJw0QV6vfaOTNRP_YGnPc76ZJkXFdVFZSnaKQ=" }}
-  * HELP: set a custom value with `config.fernetKey` or `IDV_CONFIG__FERNETKEY` env.
+{{- $fernetState := trim (include "idv.fernetKeyState" .) }}
+{{- if $fernetState }}
+
+#######################################################################
+##                                                                   ##
+{{- if eq $fernetState "default" }}
+##   WARNING: IDV is using the chart's DEFAULT encryption key         ##
+{{- else }}
+##   WARNING: no encryption key is configured                         ##
+{{- end }}
+##                                                                   ##
+#######################################################################
+{{ if eq $fernetState "default" }}
+`config.fernetKey` is still set to the chart's default. That value is published
+publicly in the Regula helm-charts repository, so sensitive fields in your
+database are being encrypted with a key anyone can read.
+{{- else }}
+`config.fernetKey` is empty and no IDV_CONFIG__FERNETKEY environment variable was
+supplied, so IDV has no key to encrypt sensitive database fields with.
+{{- end }}
+
+Generate your own key:
+
+  python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+
+Store it in a Secret:
+
+  kubectl create secret generic idv-secrets -n {{ .Release.Namespace }} \
+    --from-literal=fernetKey='<generated-key>'
+
+Then reference it from the top-level `env` list in your values:
+
+  env:
+    - name: IDV_CONFIG__FERNETKEY
+      valueFrom:
+        secretKeyRef:
+          name: idv-secrets
+          key: fernetKey
+
+Keep a backup of the key somewhere safe. Without it, encrypted data cannot be
+recovered. Note that changing the key later makes already-encrypted data
+unreadable, so set it before storing real data.
 {{- end }}

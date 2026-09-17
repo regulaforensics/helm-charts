@@ -1,181 +1,114 @@
 # IDV Helm Chart
 
-Identity Verification Plantform. On-premise and cloud integration.
+Regula Identity Verification Platform. On-premise and cloud deployment.
 
-## Add Chart
+> **Installation and configuration guides live in [`docs/idv/`](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/README.md).**
+>
+> This file is the parameter reference. If you are installing IDV for the first time, start with
+> the [documentation index](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/README.md) instead — it covers requirements, a demo quickstart, a
+> production install, integrations, and troubleshooting in order.
 
-First of all, you need to add the `regulaforensics` chart:
+| Guide | |
+|---|---|
+| [Requirements](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/01-requirements.md) | Dependencies, versions, sizing |
+| [Quickstart](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/02-quickstart.md) | Working demo in ~10 minutes |
+| [Production install](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/03-install-production.md) | External dependencies, secrets, TLS |
+| [Integrations](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/04-integrations.md) | Document Reader, Face API, search, metrics |
+| [Configuration](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/05-configuration.md) | Config pipeline and overrides |
+| [Authentication and users](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/06-auth-and-users.md) | First admin, SSO, roles |
+| [Operations](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/07-operations.md) | Upgrades, scaling, backups |
+| [Troubleshooting](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/08-troubleshooting.md) | Common failures |
+
+## Prerequisites
+
+- Helm >= 3.10
+- Kubernetes >= 1.23
+- A `regula.license` file from the [Client Portal](https://client.regulaforensics.com/), loaded
+  into a Secret
+
+## Quick reference
 
 ```console
 helm repo add regulaforensics https://regulaforensics.github.io/helm-charts
 helm repo update
+
+kubectl create namespace regula-idv
+kubectl create secret generic idv-license \
+  -n regula-idv --from-file=regula.license=./regula.license
+
+helm install idv regulaforensics/idv \
+  -n regula-idv \
+  --set licenseSecretName=idv-license \
+  -f values.yaml
 ```
 
-See the [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation.
+### Demo install, with bundled dependencies
 
-## Prerequisites
-> [!NOTE]
-> - Helm >=3.10
-> - Kubernetes version >=1.23-0
-
-## Installing the Chart
-
-### Licensing
-
-To install the chart, you need to obtain the `regula.license` file (at the [Client Portal](https://client.regulaforensics.com/), for example) and then create a Kubernetes Secret from that license file:
+For evaluation only. Deploys MongoDB, RabbitMQ, and MinIO alongside IDV and wires them up
+automatically, so no connection settings are needed:
 
 ```console
-kubectl create secret generic idv-license --from-file=regula.license=/path/to/file
-```
-
-Note that the `regula.license` file should be located in the same folder where the `kubectl create secret` command is executed.
-
-### Set config Fernet Encryption Key
-
-> [!WARNING]
->
-> We strongly recommend that you DO NOT USE the default `config.fernetKey` in production.
-
-An example fernetKey can be generated via python:
-```bash
-pip install cryptography
-python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
-```
-
-#### Option 1 - using the value
-
-You may set the fernet encryption key using the `config.fernetKey` value.
-```yaml
-config:
-  fernetKey: "tton53xJw0QV6vfaOTNRP_YGnPc76ZJkXFdVFZSnaKQ="
-```
-
-#### Option 2 - using a secret (recommended)
-
-You may set the fernet encryption key from a Kubernetes Secret by referencing it with the `config.env` value.
-
-For example, to use the `fernet-key` key from the existing Secret called `idv-fernet-key`:
-```bash
-pip install cryptography
-export IDV_FERNET_KEY=$(python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")
-kubectl create secret generic idv-fernet-key --from-literal=fernet-key=${IDV_FERNET_KEY}
-```
-
-```yaml
-config:
-  env:
-    - name: IDV_CONFIG__FERNETKEY
-      valueFrom:
-        secretKeyRef:
-          name: idv-fernet-key
-          key: fernet-key
-```
-
-### Configure LiveKit (Optional)
-
-To enable LiveKit integration for video/audio capabilities, you need to configure the LiveKit server details and credentials.
-
-#### Creating a Secret for LiveKit Credentials
-
-Since `apiKey` and `apiSecret` are sensitive values, it's recommended to store them in a Kubernetes Secret:
-
-```bash
-kubectl create secret generic idv-livekit \
-  --from-literal=IDV_CONFIG__SERVICES__LIVEKIT__APIKEY=your-api-key \
-  --from-literal=IDV_CONFIG__SERVICES__LIVEKIT__APISECRET=your-api-secret
-```
-
-#### Configuring LiveKit in values.yaml
-
-```yaml
-config:
-  services:
-    livekit:
-      enabled: true
-      url: https://livekit.your-domain.com
-      egress:
-        enabled: false
-
-env:
-  - name: IDV_CONFIG__SERVICES__LIVEKIT__APIKEY
-    valueFrom:
-      secretKeyRef:
-        name: idv-livekit
-        key: IDV_CONFIG__SERVICES__LIVEKIT__APIKEY
-  - name: IDV_CONFIG__SERVICES__LIVEKIT__APISECRET
-    valueFrom:
-      secretKeyRef:
-        name: idv-livekit
-        key: IDV_CONFIG__SERVICES__LIVEKIT__APISECRET
-```
-
-### Configure Sentry (Optional)
-
-To enable Sentry integration for error tracking and monitoring, you can configure the Sentry portal settings.
-
-#### Configuring Sentry in values.yaml
-
-```yaml
-config:
-  sentry:
-    portal:
-      enabled: true
-      dsn: "https://your-sentry-key@o0000.ingest.sentry.io/project-id"
-      environment: "production"
-```
-
-To use sensitive values like DSN from Kubernetes Secrets (recommended):
-
-```bash
-kubectl create secret generic idv-sentry \
-  --from-literal=IDV_CONFIG__SENTRY__PORTAL__DSN=your-sentry-dsn
-```
-
-```yaml
-config:
-  sentry:
-    portal:
-      enabled: true
-      dsn: null
-      environment: "production"
-
-env:
-  - name: IDV_CONFIG__SENTRY__PORTAL__DSN
-    valueFrom:
-      secretKeyRef:
-        name: idv-sentry
-        key: IDV_CONFIG__SENTRY__PORTAL__DSN
-```
-
-### Installation
-
-To install the chart with the release name `my-release`:
-
-```console
-helm install my-release regulaforensics/idv \
+helm install idv regulaforensics/idv \
+  -n regula-idv \
   --set licenseSecretName=idv-license \
   --set mongodb.enabled=true \
   --set rabbitmq.enabled=true \
-  --set minio.enabled=true
+  --set minio.enabled=true \
+  --wait --timeout 10m
 ```
 
-## Uninstalling the Chart
+These bundled data stores are single-node, use well-known passwords, and are not backed up. **Do not
+use them in production** — see [Quickstart](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/02-quickstart.md) for the full walkthrough and
+[Production install](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/03-install-production.md) for a real deployment.
 
-To uninstall/delete the `my-release` deployment:
+### First user
+
+A fresh install has **no users**. Create the first admin before you can log in:
 
 ```console
-helm delete my-release
+kubectl exec -n regula-idv deploy/idv-api -- \
+  idv user create --name admin --password '<password>' --email admin@example.com --roles admin
 ```
 
-The command removes all the Kubernetes components associated with the chart and deletes the release.
-
-## Upgrading the Chart
-
-To upgrade the `my-release` deployment:
+Upgrade and uninstall:
 
 ```console
-helm upgrade my-release regulaforensics/idv
+helm upgrade idv regulaforensics/idv -n regula-idv -f values.yaml
+helm uninstall idv -n regula-idv
 ```
+
+## Things to get right before production
+
+- **Override `config.fernetKey`.** The default is a real, working key published in this
+  repository, so data encrypted with it is not protected. The chart prints a warning after install
+  if the default is still in use, or if no key is set at all. Back the key up: without it,
+  encrypted database fields are unrecoverable, and changing it later makes existing data unreadable.
+- **Set `config.baseUrl`** to the URL clients actually reach. It is embedded in QR codes and
+  redirects; a mismatch breaks capture flows while the portal still loads.
+- **Pass credentials through the top-level `env` list**, not through `config`. Anything under
+  `config` is rendered into a ConfigMap in plain text. See
+  [Configuration](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/05-configuration.md#passing-secrets).
+- **Keep the bundled data stores disabled** (`mongodb`, `rabbitmq`, `minio`, `opensearch`). The
+  `statsd` exporter is stateless and safe to enable.
+
+### Injecting a secret value
+
+Set any config field from a Secret using the top-level `env` list. The variable name is
+`IDV_CONFIG__` plus the config path, uppercased, with double underscores between levels:
+
+```yaml
+env:
+  - name: IDV_CONFIG__FERNETKEY
+    valueFrom:
+      secretKeyRef:
+        name: idv-secrets
+        key: fernetKey
+```
+
+> `config.env` is **not** the same thing. It is an application config field holding an environment
+> *name* (such as `prod`) and is rendered into `config.yaml` as a string. A `valueFrom` block placed
+> there creates no environment variable and silently corrupts the config file. Always use the
+> top-level `env`.
 
 ## Chart parameters
 
@@ -298,7 +231,7 @@ helm upgrade my-release regulaforensics/idv
 | `config.fernetKey`                                        | Fernet encryption key                             | `""`                              |
 | `config.tenant`                                           | Tenant name/id used for named broker topics       | `null`                            |
 | `config.identifier`                                       | Instance identifier                               | `null`                            |
-| `config.basicAuth.enabled`                                | Enable basic authentication                       | `false`                           |
+| `config.basicAuth.enabled`                                | Enable username/password sign-in                  | `true`                            |
 | `config.services.api.port`                                | Internal API port                                 | `8000`                            |
 | `config.services.api.host`                                | API bind host                                     | `0.0.0.0`                         |
 | `config.services.api.workers`                             | API worker count                                  | `auto`                            |
@@ -389,7 +322,7 @@ helm upgrade my-release regulaforensics/idv
 | `config.faceSearch.database.opensearch.username`          | OpenSearch username                               | `admin`                           |
 | `config.faceSearch.database.opensearch.password`          | OpenSearch password                               | `""`                              |
 | `config.faceSearch.database.opensearch.dimension`         | Vector dimension                                  | `512`                             |
-| `config.faceSearch.database.opensearch.indexName`         | Index name                                        | `hnsw`                            |
+| `config.faceSearch.database.opensearch.method`            | Vector index method                               | `hnsw`                            |
 | `config.faceSearch.database.opensearch.awsAuth.enabled`   | Enable AWS auth for OpenSearch                    | `false`                           |
 | `config.faceSearch.database.opensearch.awsAuth.region`    | AWS auth region                                   | `""`                              |
 | `config.faceSearch.database.opensearch.awsAuth.accessKey` | AWS auth access key                               | `""`                              |
@@ -397,7 +330,6 @@ helm upgrade my-release regulaforensics/idv
 | |
 | `config.textSearch.enabled`                               | Enable Text search                                | `false`                           |
 | `config.textSearch.limit`                                 | Max Text search results                           | `1000`                            |
-| `config.textSearch.threshold`                             | Text match threshold                              | `0.75`                            |
 | `config.textSearch.database.type`                         | Text DB type                                      | `opensearch`                      |
 | `config.textSearch.database.opensearch.host`              | OpenSearch host                                   | `opensearch`                      |
 | `config.textSearch.database.opensearch.port`              | OpenSearch port                                   | `9200`                            |
@@ -405,8 +337,6 @@ helm upgrade my-release regulaforensics/idv
 | `config.textSearch.database.opensearch.verifyCerts`       | Verify OpenSearch certs                           | `false`                           |
 | `config.textSearch.database.opensearch.username`          | OpenSearch username                               | `admin`                           |
 | `config.textSearch.database.opensearch.password`          | OpenSearch password                               | `""`                              |
-| `config.textSearch.database.opensearch.dimension`         | Vector dimension                                  | `512`                             |                           
-| `config.textSearch.database.opensearch.indexName`         | Index name                                        | `hnsw`                            |
 | `config.textSearch.database.opensearch.awsAuth.enabled`   | Enable AWS auth for OpenSearch                    | `false`                           |
 | `config.textSearch.database.opensearch.awsAuth.region`    | AWS auth region                                   | `""`                              |
 | `config.textSearch.database.opensearch.awsAuth.accessKey` | AWS auth access key                               | `""`                              |
@@ -504,7 +434,7 @@ helm upgrade my-release regulaforensics/idv
 
 > [!NOTE]
 > The subcharts are used for the demonstration and Dev/Test purposes.
-> We strongly recommend to deploying separate installations of required resources in Production.
+> We strongly recommend deploying separate installations of the required resources in Production.
 
 ## In-cluster TLS (trusted CA bundle)
 
@@ -535,14 +465,32 @@ set `config.faceSearch.database.opensearch.verifyCerts: true` (and the same for 
 
 ## Subchart parameters
 
-| Parameter             | Description                                 | Default |
-|-----------------------|---------------------------------------------|---------|
-| `statsd.enabled`      | Enable Prometheus StatsD exporter subchart  | `false` |
-| `mongodb.enabled`     | Enable MongoDB subchart                     | `false` |
-| `rabbitmq.enabled`    | Enable RabbitMQ subchart                    | `false` |
-| `minio.enabled`       | Enable Minio subchart                       | `false` |
-| `opensearch.enabled`  | Enable OpenSearch subchart                  | `false` |
+Each switch also **overrides the matching `config` settings** you supplied. If a connection setting
+seems to be ignored, check these first.
 
+| Parameter             | Description                                                                             | Default |
+|-----------------------|------------------------------------------------------------------------------------------|---------|
+| `mongodb.enabled`     | Deploy MongoDB subchart. Overrides `config.mongo.url`                                    | `false` |
+| `rabbitmq.enabled`    | Deploy RabbitMQ subchart. Overrides `config.messageBroker.url`                           | `false` |
+| `minio.enabled`       | Deploy MinIO subchart. Overrides all of `config.storage.s3.*`                            | `false` |
+| `opensearch.enabled`  | Deploy OpenSearch subchart. Overrides all `faceSearch`/`textSearch` OpenSearch settings   | `false` |
+| `statsd.enabled`      | Deploy Prometheus StatsD exporter. Overrides `config.metrics.statsd.host`/`port`          | `false` |
+
+## Deployed components
+
+All components share one image, one ConfigMap, and one license Secret. Only the API is exposed via
+`ingress`/`route`; the rest communicate through the message broker.
+
+| Component | Deployment | Command | Scales out | Deployed when |
+|---|---|---|---|---|
+| API | `<release>-idv-api` | `idv webserver start` | Yes | Always |
+| Workflow | `<release>-idv-workflow` | `idv workflow start` | Yes | Always |
+| Scheduler | `<release>-idv-scheduler` | `idv scheduler start` | No | Always |
+| Audit | `<release>-idv-audit` | `idv audit start` | No | Always |
+| Indexer | `<release>-idv-indexer` | `idv indexer start` | No | `config.textSearch.enabled` or `config.faceSearch.enabled` |
+
+The Indexer builds the search indexes and is deployed when either `config.textSearch.enabled` or
+`config.faceSearch.enabled` is `true`.
 
 ## KEDA Autoscaling
 

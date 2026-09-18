@@ -57,7 +57,7 @@ jobs:
           # Keep in step with the helm_version default in lint-test.yml. The
           # promotion pre-flight (lint/template) only has value if it renders
           # the chart the same way CI will.
-          version: v3.22.0
+          version: v4.3.0
 
       - name: Configure Git
         run: |

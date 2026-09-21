@@ -4,13 +4,14 @@
 
 ## Cluster
 
-| | |
-| Component | Version | Requirement | 
-| Kubernetes | 1.23 or newer | **Required** |
-| Helm | 3.10 or newer | **Required** |
-| Ingress controller | Your cloud provider's native controller (for example, AWS ALB or GKE Ingress) or an actively maintained third-party alternative | **Required** to reach IDV from outside the cluster |
-| KEDA | Your KEDA operator version matches your Kubernetes cluster version according to the [official KEDA compatibility matrix](https://keda.sh/docs/latest/operate/cluster/) | Optional - needed only for queue-based autoscaling |
-| Gateway API | Gateway API CRDs (Standard Channel) v1.0.0 or higher must be pre-installed in the cluster | Optional - needed only if you prefer it to Ingress |
+| Component          | Version                                                                                                                                                                | Requirement                                        |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Kubernetes         | 1.23 or newer                                                                                                                                                          | **Required**                                       |
+| Helm               | 3.10 or newer                                                                                                                                                          | **Required**                                       |
+| Ingress controller | Your cloud provider's native controller (for example, AWS ALB or GKE Ingress) or an actively maintained third-party alternative                                        | **Required** to reach IDV from outside the cluster |
+| KEDA               | Your KEDA operator version matches your Kubernetes cluster version according to the [official KEDA compatibility matrix](https://keda.sh/docs/latest/operate/cluster/) | Optional — needed only for queue-based autoscaling |
+| Gateway API        | Gateway API CRDs (Standard Channel) v1.0.0 or higher must be pre-installed in the cluster                                                                              | Optional — needed only if you prefer it to Ingress |
+
 
 ## Services you provide
 

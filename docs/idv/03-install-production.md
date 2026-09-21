@@ -1,21 +1,15 @@
 # Production install
 
-Installs IDV against MongoDB, a message broker, and object storage that you run yourself.
+The [Quickstart](02-quickstart.md) is an all-in-one installation that installs IDV together with bundled MongoDB, RabbitMQ, and MinIO services. It is designed for getting IDV up and running quickly.
+
+The production installation integrates IDV into your existing infrastructure, connecting to MongoDB, a message broker, and object storage that you run yourself outside the IDV Helm deployment.
 
 Before you start, make sure those three are reachable from the cluster and that you have
 credentials for each. See [Requirements](01-requirements.md).
 
-Seven steps:
-
-1. Namespace and license
-2. Encryption key
-3. Credentials
-4. Address and HTTPS
-5. `values.yaml`
-6. Install
-7. First user
-
 ## 1. Namespace and license
+
+Create the namespace where IDV will be installed, then add the license. The key inside the Secret must be exactly `regula.license`.
 
 ```bash
 kubectl create namespace regula-idv
@@ -24,8 +18,6 @@ kubectl create secret generic idv-license \
   --namespace regula-idv \
   --from-file=regula.license=./regula.license
 ```
-
-The key inside the Secret must be exactly `regula.license`.
 
 ## 2. Encryption key
 
@@ -46,7 +38,7 @@ python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().
 
 ## 3. Credentials
 
-Put every password and connection string into a Secret:
+Store passwords, connection strings, and other sensitive connection details in a Kubernetes Secret:
 
 ```bash
 kubectl create secret generic idv-secrets \
@@ -58,24 +50,20 @@ kubectl create secret generic idv-secrets \
   --from-literal=s3AccessSecret='<access-secret>'
 ```
 
-Step 5 connects these to IDV through the `env:` list. Anything you put under `config:` instead is
-stored in plain text, so credentials always go here.
+Step 5 below connects these values to IDV through the `env:` list. Do not put credentials directly under config:, where they would be stored as plain-text configuration values.
 
-> Use the **top-level `env:`**, never `config.env:` — they are unrelated, and the second one fails
-> silently. See [Configuration](05-configuration.md#watch-out-env-and-configenv-are-different).
+> Use the **top-level `env:`**, never `config.env:`. They are separate configuration options. See [Configuration](05-configuration.md#watch-out-env-and-configenv-are-different).
 
 ## 4. Address and HTTPS
 
 Two requirements that cause most first-install problems:
 
-**`config.baseUrl` must be the address your users actually visit**, matching the hostname on your
-Ingress. IDV puts this address into QR codes, emails, and login redirects. Get it wrong and the
-portal still loads, but phone and browser scanning silently fail.
+**`config.baseUrl` must be the address your users actually visit**. It should match the hostname configured on your Ingress. IDV uses this address in QR codes, emails, and login redirects. If it is incorrect, the portal may still load, but phone-based and browser-based scanning can fail.
 
 **HTTPS is required** for document and face capture. Browsers block camera access over plain HTTP.
 Terminate TLS at your Ingress or load balancer.
 
-Also note the Ingress needs **both** `hosts` and `paths`. A host with no paths routes nothing:
+Your Ingress configuration needs **both** `hosts` and `paths`. A host without a path does not route traffic to IDV:
 
 ```yaml
 ingress:
@@ -93,7 +81,7 @@ ingress:
 
 This sends traffic to the API service. Expose only the API; the other four services stay internal.
 
-Using Gateway API instead? Configure `route.main` and leave `ingress.enabled: false`.
+If you use Gateway API instead, configure `route.main` and keep `ingress.enabled: false`.
 
 ## 5. values.yaml
 
@@ -215,21 +203,28 @@ statsd:
   enabled: false
 ```
 
-Create the bucket before installing. The chart does not create it for you.
+Create the bucket before installing IDV. The chart does not create it for you. FFollow the instructions for your cloud provider:
+- AWS - https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html
+- GCP - https://docs.cloud.google.com/storage/docs/creating-buckets
+- Azure - https://learn.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal
 
 ## 6. Install
 
-Preview first — this catches most mistakes before they reach the cluster:
+Preview first. This helps catch configuration mistakes before they are applied to the cluster:
 
 ```bash
 helm template idv regulaforensics/idv \
-  --namespace regula-idv -f values.yaml > preview.yaml
+  --namespace regula-idv \
+  -f values.yaml > preview.yaml
 ```
 
-In `preview.yaml`, check that `baseUrl` is right, the Ingress has a path, and the default Fernet
-key is gone.
+In `preview.yaml`, verify that:
 
-Then install:
+* `baseUrl` is set to the address users will access
+* Ingress has both a host and a path
+* The default Fernet key is not present
+
+If everything looks correct, install IDV:
 
 ```bash
 helm install idv regulaforensics/idv \
@@ -238,17 +233,23 @@ helm install idv regulaforensics/idv \
   --wait --timeout 10m
 ```
 
-Check it started:
+Check that the pods have started:
 
 ```bash
 kubectl get pods -n regula-idv
 kubectl exec -n regula-idv deploy/idv-api -- curl -sf localhost:8000/api/health
 ```
 
-You should see four services running: `api`, `workflow`, `scheduler`, and `audit`. There is no
-`indexer` unless you enable search.
+A healthy installation should have these four IDV components running:
 
-Something wrong? → [Troubleshooting](08-troubleshooting.md)
+* `api`
+* `workflow`
+* `scheduler`
+* `audit`
+
+There is no `indexer` component unless you enable search.
+
+If something went wrong, see [Troubleshooting](08-troubleshooting.md)
 
 ## 7. First user
 
@@ -268,8 +269,8 @@ kubectl exec -n regula-idv deploy/idv-api -- \
 unset IDV_ADMIN_PW
 ```
 
-Reading the password into a variable keeps it out of your shell history. See
-[Authentication and users](06-auth-and-users.md) for SSO and roles.
+The password is read without displaying it on screen and is stored temporarily in the `IDV_ADMIN_PW` shell variable instead of being written directly in the command. Run `unset IDV_ADMIN_PW` after the account is created to remove the variable.
+See [Authentication and users](06-auth-and-users.md) for SSO and roles.
 
 You can now open `https://idv.example.com` and sign in.
 

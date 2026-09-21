@@ -1,29 +1,28 @@
 # Requirements
 
-What to have ready before installing. IDV depends on services you provide — the chart does not set
-up production-ready versions of them for you.
+ IDV depends on the services you provide. The included Helm chart does not configure production-ready versions of these dependent services for you. So before you begin, make sure your system meets the requirements described in this section.
 
 ## Cluster
 
 | | |
-|---|---|
-| Kubernetes | 1.23 or newer |
-| Helm | 3.10 or newer |
-| Ingress controller | Needed to reach IDV from outside the cluster |
-| KEDA | Optional, only for queue-based autoscaling |
-| Gateway API | Optional, only if you prefer it to Ingress |
+| Component | Version | Requirement | 
+| Kubernetes | 1.23 or newer | **Required** |
+| Helm | 3.10 or newer | **Required** |
+| Ingress controller | Your cloud provider's native controller (for example, AWS ALB or GKE Ingress) or an actively maintained third-party alternative | **Required** to reach IDV from outside the cluster |
+| KEDA | Your KEDA operator version matches your Kubernetes cluster version according to the [official KEDA compatibility matrix](https://keda.sh/docs/latest/operate/cluster/) | Optional - needed only for queue-based autoscaling |
+| Gateway API | Gateway API CRDs (Standard Channel) v1.0.0 or higher must be pre-installed in the cluster | Optional - needed only if you prefer it to Ingress |
 
 ## Services you provide
 
-| What | Used for | Options | Required |
+| What | Used for | Options | Requirement |
 |---|---|---|---|
-| **Database** | All records | MongoDB 8.0+, or MongoDB Atlas (recommended) | **Yes** |
-| **Message queue** | Passing work between services | RabbitMQ, AmazonMQ 3.x+ | **Yes** |
-| **File storage** | Images, documents, results | S3 or compatible (incl. MinIO), Azure Blob, Google Cloud Storage | **Yes** |
-| **Search database** | Face and text search | OpenSearch 2.19.0+, or MongoDB Atlas | No |
-| **Document Reader** | Reading identity documents | [`docreader`](../../charts/docreader/README.md) 8.1+ | No |
-| **Face API** | Face matching and liveness | [`faceapi`](../../charts/faceapi/README.md) 7.1+ | No |
-| **Metrics collector** | Monitoring | Prometheus with statsd_exporter | No |
+| **Database** | All records | MongoDB 8.0+, or MongoDB Atlas (recommended) | **Required** |
+| **Message queue** | Passing work between services | RabbitMQ, AmazonMQ 3.x+ | **Required** |
+| **File storage** | Images, documents, results | S3 or compatible (incl. MinIO), Azure Blob, Google Cloud Storage | **Required** |
+| **Search database** | Face and text search | OpenSearch 2.19.0+, or MongoDB Atlas | Optional |
+| **Document Reader** | Reading identity documents | [`docreader`](../../charts/docreader/README.md) 8.1+ | Optional |
+| **Face API** | Face matching and liveness | [`faceapi`](../../charts/faceapi/README.md) 7.1+ | Optional |
+| **Metrics collector** | Monitoring | Prometheus with statsd_exporter | Optional |
 
 Worth knowing:
 
@@ -46,7 +45,7 @@ Minimum hardware per service instance:
 | Audit | 1 vCPU | 1 GiB |
 
 Use these figures to size the nodes that will host IDV. They describe the machine running a service,
-not the pod's resource request — set requests from the values in the next section instead.
+not the pod's resource request. Refer to the next section fot the instructions on how to set requests from the values.
 
 ### Requests and limits
 
@@ -87,28 +86,29 @@ Three conventions to keep:
 - **No CPU limits**, so a busy service bursts instead of being throttled.
 - **Limits above requests**, giving headroom for spikes without reserving it permanently.
 
-Together these request roughly **1.5 CPU and 2.7 GiB** for one replica of each service, plus about
-0.2 CPU and 0.5 GiB for the second Workflow replica. Your database, message queue, and storage need
-capacity on top, wherever they run.
+Total resource requirements:
 
-Handle higher load by scaling out rather than up — the API and Workflow both support autoscaling. See
+- Single replica of each service requires roughly **1.5 CPU and 2.7 GiB**.
+- The second Workflow replica requires an additional 0.2 CPU and 0.5 GiB.
+- External dependencies: additional capacity must be provisioned for your database, message queue, and storage, regardless of where they are hosted.
+
+To handle higher traffic, scale horizontally instead of vertically; both the API and Workflow are designed to autoscale. See
 [Operations](07-operations.md#scaling).
 
-### Tune to your load
+### Memory adjustments
 
-These values suit moderate verification volume. Requirements grow with the number of verifications,
+The values in the section above suit moderate verification volume. Requirements grow with the number of verifications,
 the complexity of your workflows, and whether search is enabled. Check actual consumption and adjust:
 
 ```bash
 kubectl top pods -n regula-idv
 ```
 
-If memory use sits close to a limit, raise the limit before the pod starts being restarted.
+If memory usage is near the limit, raise the limit before the pod triggers a restart.
 
 ### Face API and GPU
 
-If you run Face API, use GPU nodes in production. GPU memory matters more than processing speed — a
-16 GB card such as an NVIDIA Tesla T4 handles roughly four parallel workers. Configure this in the
+If you run Face API, use GPU nodes in production. GPU memory matters more than processing speed. A 16 GB card such as an NVIDIA Tesla T4 handles roughly four parallel workers. Configure this in the
 [`faceapi` chart](../../charts/faceapi/README.md), not in IDV.
 
 ## Licence
@@ -126,7 +126,7 @@ set up, but they are single-copy, use well-known passwords, and are not backed u
 passwords, and monitoring.
 
 The bundled StatsD exporter is the exception. It stores nothing and is fine to use in production if
-you collect metrics — see [Integrations](04-integrations.md#metrics).
+you collect metrics (see [Integrations](04-integrations.md#metrics)).
 
 The [Quickstart](02-quickstart.md) uses them. The
 [Production install](03-install-production.md) does not.

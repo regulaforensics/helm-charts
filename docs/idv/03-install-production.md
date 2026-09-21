@@ -85,7 +85,7 @@ If you use Gateway API instead, configure `route.main` and keep `ingress.enabled
 
 ## 5. values.yaml
 
-A complete starting file. Adjust hostnames, buckets, and sizing.
+A complete starting configuration. Adjust hostnames, buckets, and sizing.
 
 ```yaml
 licenseSecretName: idv-license

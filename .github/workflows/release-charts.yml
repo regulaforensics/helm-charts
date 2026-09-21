@@ -7,6 +7,9 @@ on:
 
 jobs:
   release-chart:
+    permissions:
+      contents: write
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -32,6 +35,54 @@ jobs:
           helm repo add prometheus-statsd-exporter https://prometheus-community.github.io/helm-charts
 
       - name: Run chart-releaser
+        id: chart_releaser
         uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f # v1.7.0
+        with:
+          skip_existing: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Configure AWS credentials for ECR Public
+        if: github.ref == 'refs/heads/main' && steps.chart_releaser.outputs.changed_charts != ''
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ vars.ECR_PUBLIC_HELM_PUBLISH_ROLE_ARN }}
+          role-session-name: HelmChartPublisher
+          role-duration-seconds: 900
+
+      - name: Log in to Amazon ECR Public
+        if: github.ref == 'refs/heads/main' && steps.chart_releaser.outputs.changed_charts != ''
+        run: |
+          aws ecr-public get-login-password --region us-east-1 \
+            | helm registry login --username AWS --password-stdin public.ecr.aws
+
+      - name: Push released charts to Amazon ECR Public
+        if: github.ref == 'refs/heads/main' && steps.chart_releaser.outputs.changed_charts != ''
+        env:
+          ECR_PUBLIC_REGISTRY_ALIAS: ${{ vars.ECR_PUBLIC_REGISTRY_ALIAS }}
+        run: |
+          set -euo pipefail
+          : "${ECR_PUBLIC_REGISTRY_ALIAS:?ECR_PUBLIC_REGISTRY_ALIAS GitHub Actions variable is required}"
+
+          shopt -s nullglob
+          packages=(.cr-release-packages/*.tgz)
+
+          if (( ${#packages[@]} == 0 )); then
+            echo "No chart packages were created by chart-releaser."
+            exit 0
+          fi
+
+          for package in "${packages[@]}"; do
+            chart_name=$(helm show chart "$package" | awk '/^name:/ { print $2; exit }')
+
+            case "$chart_name" in
+              docreader|faceapi|idv) ;;
+              *)
+                echo "Refusing to publish unexpected chart: $chart_name" >&2
+                exit 1
+                ;;
+            esac
+
+            helm push "$package" "oci://public.ecr.aws/${ECR_PUBLIC_REGISTRY_ALIAS}/charts"
+          done

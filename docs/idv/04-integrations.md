@@ -2,6 +2,14 @@
 
 On its own, IDV can run workflows but cannot read a document or match a face. These capabilities are provided by two separate Regula services: Document Reader and Face API. Search, metrics, and email are optional. All optional services described on this page are disabled by default.
 
+| Integration | Required when | Default |
+|---|---|---|
+| Document Reader | A workflow reads identity documents | Disabled |
+| Face API | A workflow uses face detection, comparison, or liveness | Disabled |
+| OpenSearch / Atlas | Using face or text search | Disabled |
+| StatsD | Metrics collection is needed | Disabled |
+| SMTP | User invitations or email notifications are needed | Disabled |
+
 ## Document Reader
 
 Document Reader reads and extracts data from identity documents. Install the
@@ -52,7 +60,7 @@ config:
 
 ### Running on GPU
 
-Recommended for production. Configure GPU support in the `faceapi` chart, not in the IDV configuration. **Both** of the following are required:
+GPU is recommended for production workloads using Face API. Configure GPU support in the `faceapi` chart, not in the IDV configuration. **Both** of the following are required:
 
 ```yaml
 image:
@@ -124,7 +132,7 @@ config:
           region: "eu-central-1"
 ```
 
-For MongoDB Atlas Vector Search, set `config.faceSearch.database.type: atlas`.
+For MongoDB Atlas Vector Search, set `config.faceSearch.database.type: atlas` or `config.textSearch.database.type: atlas`.
 
 ### The Indexer
 
@@ -188,7 +196,7 @@ Make sure the two enabled settings are configured consistently. The chart warns 
 
 ## Email
 
-Needed for user invitations and notifications:
+Without SMTP, user invitations and email notifications are not available. To enable them, configure the following:
 
 ```yaml
 config:

@@ -7,7 +7,19 @@ The production installation integrates IDV into your existing infrastructure, co
 Before you start, make sure those three are reachable from the cluster and that you have
 credentials for each. See [Requirements](01-requirements.md).
 
-## 1. Namespace and license
+Main steps: 
+
+- [Step 1. Create the namespace and license secret](#1-create-the-namespace-and-license)
+- [Step 2. Generate the encryption key](#2-generate-the-encryption-key)
+- [Step 3. Configure credentials](#3-configure-credentials)
+- [Step 4. Configure the address and HTTPS](#4-configure-the-address-and-https)
+- [Step 5. Configure `values.yaml`](#5-configure-valuesyaml)
+- [Step 6. Install IDV](#6-install-idv)
+- [Step 7. Create the first user](#7-create-the-first-user)
+- [Check before going live](#check-before-going-live)
+- [Next](#next)
+
+## 1. Create the namespace and license
 
 Create the namespace where IDV will be installed, then add the license. The key inside the Secret must be exactly `regula.license`.
 
@@ -19,7 +31,7 @@ kubectl create secret generic idv-license \
   --from-file=regula.license=./regula.license
 ```
 
-## 2. Encryption key
+## 2. Generate the encryption key
 
 IDV encrypts sensitive database fields with a "Fernet key". Generate one:
 
@@ -36,9 +48,9 @@ python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().
 >   place, or if no key is set at all.
 > - Set it before storing real data. Changing it later makes existing encrypted data unreadable.
 
-## 3. Credentials
+## 3. Configure credentials
 
-Store passwords, connection strings, and other sensitive connection details in a Kubernetes Secret:
+Create the credentials Secret. Store passwords, connection strings, and other sensitive connection details in a Kubernetes Secret:
 
 ```bash
 kubectl create secret generic idv-secrets \
@@ -50,17 +62,22 @@ kubectl create secret generic idv-secrets \
   --from-literal=s3AccessSecret='<access-secret>'
 ```
 
-Step 5 below connects these values to IDV through the `env:` list. Do not put credentials directly under config:, where they would be stored as plain-text configuration values.
+- `<your-generated-key>` → key from step 2
+- `mongoUrl` → your MongoDB connection string
+- `messageBrokerUrl` → your RabbitMQ connection string
+- `<access-key>` / `<access-secret>` → your object-storage credentials
+
+Step 5 below connects these values to IDV through the `env:` list. Do not put credentials directly under `config:`, where they would be stored as plain-text configuration values.
 
 > Use the **top-level `env:`**, never `config.env:`. They are separate configuration options. See [Configuration](05-configuration.md#watch-out-env-and-configenv-are-different).
 
-## 4. Address and HTTPS
+## 4. Configure the address and HTTPS
 
 Two requirements that cause most first-install problems:
 
-**`config.baseUrl` must be the address your users actually visit**. It should match the hostname configured on your Ingress. IDV uses this address in QR codes, emails, and login redirects. If it is incorrect, the portal may still load, but phone-based and browser-based scanning can fail.
+- - **`config.baseUrl` must be the URL your users will enter in their browser to access your IDV instance.** Use your own domain, not `idv.example.com` from this example. The same domain must be configured in the Ingress `hosts` section below. IDV uses this address in QR codes, emails, and login redirects. If it is incorrect, the portal may still load, but phone-based and browser-based scanning can fail.
 
-**HTTPS is required** for document and face capture. Browsers block camera access over plain HTTP.
+- **HTTPS is required** for document and face capture. Browsers block camera access over plain HTTP.
 Terminate TLS at your Ingress or load balancer.
 
 Your Ingress configuration needs **both** `hosts` and `paths`. A host without a path does not route traffic to IDV:
@@ -79,11 +96,11 @@ ingress:
         - idv.example.com
 ```
 
-This sends traffic to the API service. Expose only the API; the other four services stay internal.
+This sends traffic to the API service. Expose only the API; the other services stay internal.
 
 If you use Gateway API instead, configure `route.main` and keep `ingress.enabled: false`.
 
-## 5. values.yaml
+## 5. Configure `values.yaml`
 
 A complete starting configuration. Adjust hostnames, buckets, and sizing.
 
@@ -96,6 +113,9 @@ image:
   pullPolicy: IfNotPresent
 
 config:
+  
+  # The URL users will enter in their browser to access your IDV instance.
+  # Replace idv.example.com with your own domain.
   # Must match the Ingress hostname below.
   baseUrl: "https://idv.example.com"
 
@@ -112,7 +132,9 @@ config:
       endpoint: "s3.eu-central-1.amazonaws.com"
       region: "eu-central-1"
       secure: true
-    # Eight data types sharing one bucket, separated by prefix.
+    # Eight data types sharing one bucket (idv-prod), separated by prefix.
+    # Replace idv-prod with the name of your bucket.
+    # It's recommended to keep the prefixes unchanged.
     sessions:  { location: { bucket: "idv-prod", prefix: "sessions" } }
     persons:   { location: { bucket: "idv-prod", prefix: "persons" } }
     workflows: { location: { bucket: "idv-prod", prefix: "workflows" } }
@@ -127,7 +149,8 @@ config:
     console: true
     file: false
 
-# Credentials from the Secret created in step 3.
+# Sensitive credentials are loaded from the `idv-secrets` Secret.
+# Do not put passwords, connection strings, or keys directly under `config:`.
 env:
   - name: IDV_CONFIG__FERNETKEY
     valueFrom:
@@ -179,6 +202,7 @@ audit:
 ingress:
   enabled: true
   className: nginx
+ # Must match config.baseUrl above.
   hosts:
     - idv.example.com
   paths:
@@ -203,12 +227,12 @@ statsd:
   enabled: false
 ```
 
-Create the bucket before installing IDV. The chart does not create it for you. FFollow the instructions for your cloud provider:
-- AWS - https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html
-- GCP - https://docs.cloud.google.com/storage/docs/creating-buckets
-- Azure - https://learn.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal
+Create the bucket before installing IDV. The chart does not create it for you. Follow the instructions for your cloud provider:
+- <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html" target="_blank" rel="noopener noreferrer">AWS</a>
+- <a href="https://docs.cloud.google.com/storage/docs/creating-buckets" target="_blank" rel="noopener noreferrer">GCP</a>
+- <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal" target="_blank" rel="noopener noreferrer">Azure</a>
 
-## 6. Install
+## 6. Install IDV
 
 Preview first. This helps catch configuration mistakes before they are applied to the cluster:
 
@@ -247,14 +271,16 @@ A healthy installation should have these four IDV components running:
 * `scheduler`
 * `audit`
 
+A successful request returns 200. 
+
 There is no `indexer` component unless you enable search.
 
 If something went wrong, see [Troubleshooting](08-troubleshooting.md)
 
-## 7. First user
+## 7. Create the first user
 
 **A new installation has no accounts and no default password.** Nobody can log in until you create
-the first one:
+the first account:
 
 ```bash
 printf 'New admin password: '; read -rs IDV_ADMIN_PW; echo
@@ -274,7 +300,7 @@ See [Authentication and users](06-auth-and-users.md) for SSO and roles.
 
 You can now open `https://idv.example.com` and sign in.
 
-## Before going live
+## Check before going live
 
 - [ ] Fernet key generated, passed via Secret, and backed up somewhere safe
 - [ ] HTTPS everywhere, using TLS 1.2 or newer
@@ -285,7 +311,7 @@ You can now open `https://idv.example.com` and sign in.
 - [ ] Resource requests set on every service
 - [ ] Disruption budgets on API and Workflow
 - [ ] Only the API reachable from outside
-- [ ] `networkPolicy.enabled: true`
+- [ ] `networkPolicy.enabled` is disabled b default. 
 - [ ] Backups running for the database and storage
 
 Using your own certificate authority for internal connections? See

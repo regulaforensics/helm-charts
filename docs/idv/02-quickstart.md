@@ -13,12 +13,12 @@ Make sure you have:
 
 - A Kubernetes cluster (1.23 or newer) and `kubectl` connected to it
 - Helm 3.10 or newer
-- A `regula.license` file from the [Client Portal](https://client.regulaforensics.com/)
+- The `regula.license` file from the [Client Portal](https://client.regulaforensics.com/)
 - About 4 CPU cores and 8 GB free in the cluster
 
 ## 1. Add the chart repository
 
-First, add the regulaforensics Helm chart repository: 
+First, add the `regulaforensics` Helm chart repository: 
 
 ```bash
 helm repo add regulaforensics https://regulaforensics.github.io/helm-charts
@@ -37,8 +37,7 @@ kubectl create secret generic idv-license \
   --from-file=regula.license=./regula.license
 ```
 
-!!! note "RBAC permissions"
-    If your organization uses strict RBAC policies and you cannot create namespaces, request your Kubernetes administrator to provision the regula-idv namespace for you with appropriate deployment permissions.
+> **Note:** If your organization uses strict RBAC policies and you cannot create namespaces, request your Kubernetes administrator to provision the `regula-idv` namespace for you with appropriate deployment permissions.
 
 ## 3. Install
 
@@ -53,7 +52,7 @@ helm install idv regulaforensics/idv \
   --set minio.enabled=true \
   --wait --timeout 10m
 ```
-The `--set licenseSecretName=idv-license` option tells IDV to use the idv-license Kubernetes Secret created in the previous step.
+The `--set licenseSecretName=idv-license` option tells IDV to use the `idv-license` Kubernetes Secret created in the previous step.
 
 The following options enable the dependencies bundled with the IDV chart:
 
@@ -71,7 +70,7 @@ When these bundled dependencies (MongoDB/RabbitMQ/MinIO) are enabled, the chart 
 kubectl get pods -n regula-idv
 ```
 
-A healthy installation should show the IDV and bundled dependency pods in Running state, for example:
+A healthy installation should show the IDV and bundled dependency pods in the Running state, for example:
 
 ```
 idv-api-...              1/1  Running
@@ -135,7 +134,7 @@ codes point nowhere and browsers block camera access. That is the
 
 ## Remove it
 
-To remove IV and bundled dependencies, run:
+To remove IDV and bundled dependencies, run:
 
 ```bash
 helm uninstall idv -n regula-idv

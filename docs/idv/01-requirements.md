@@ -110,11 +110,11 @@ If memory usage is near the limit, raise the limit before the pod triggers a res
 ### Face API and GPU
 
 If you run Face API, use GPU nodes in production. GPU memory matters more than processing speed. A 16 GB card such as an NVIDIA Tesla T4 handles roughly four parallel workers. Configure this in the
-[`faceapi` chart](../../charts/faceapi/README.md), not in IDV.
+[`faceapi`](../../charts/faceapi/README.md) charts, not in IDV.
 
 ## Licence
 
-IDV needs a `regula.license` file, available from the
+IDV needs the `regula.license` file, available from the
 [Client Portal](https://client.regulaforensics.com/). You load it into a Kubernetes Secret during
 installation; it is never included in the chart.
 

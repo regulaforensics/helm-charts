@@ -1,20 +1,19 @@
 # Configuration
 
-Where settings live and how to change them.
+This section describes configuration settings: where they are kept, how they are applied, and which settings should be configured through `values.yaml`.
 
 ## How it works
 
 IDV reads one file, `config.yaml`. You never write it directly. Instead:
 
 1. You set values under `config:` in your `values.yaml`.
-2. The chart turns them into a ConfigMap.
+2. The chart turns them into the ConfigMap.
 3. The ConfigMap is mounted into all five services as `/app/config.yaml`.
 4. Environment variables can override any single field at startup.
 
 Two things follow from this:
 
-- **Anything under `config:` is stored in plain text** and readable by anyone with access to the
-  namespace. Credentials go in a Secret instead — see below.
+- **Anything under `config:` is stored in plain text** in the ConfigMap and can be read by anyone with access to the namespace. Do not put credentials there. Use a Secret instead (see below [Passing secrets](#passing-secrets)).
 - **All five services share one config.** Changing it restarts all of them.
 
 To see the config your cluster is actually using:
@@ -50,21 +49,22 @@ between each level:
 | `smtp.password` | `IDV_CONFIG__SMTP__PASSWORD` |
 | `faceSearch.database.opensearch.password` | `IDV_CONFIG__FACESEARCH__DATABASE__OPENSEARCH__PASSWORD` |
 
-Items in a list are numbered from zero, so the first OAuth2 provider's secret is
+Items in the list are numbered from zero, so the first OAuth2 provider's secret is
 `IDV_CONFIG__OAUTH2__PROVIDERS__0__SECRET`.
 
-The variable wins over the config file. The placeholder you left under `config:` stays visible in
-the ConfigMap — that is normal.
+The variable overrides the value in the config file. It's expected that the placeholder you left under `config:` remains visible in
+the ConfigMap.
 
-### Watch out: `env` and `config.env` are different
+### `env` vs `config.env`
+
+Watch out: `env` and `config.env` are different.
 
 | | What it is |
 |---|---|
 | `env:` (top level) | Kubernetes environment variables. **Use this for secrets.** |
 | `config.env:` | A label for the environment, such as `prod`. Nothing else. |
 
-Putting a `valueFrom` block under `config.env` does **not** create a variable. It silently writes
-nonsense into the config file and leaves your original setting unchanged, with no error:
+Putting a `valueFrom` block under `config.env` does **not** create the variable you intended. It may write something unexpected into the config file and keeps your original setting unchanged, with no error:
 
 ```yaml
 # WRONG — does nothing
@@ -83,7 +83,7 @@ env:
       secretKeyRef: { name: idv-secrets, key: fernetKey }
 ```
 
-Check that a variable arrived:
+Check that the variable is added to the deployment:
 
 ```bash
 kubectl set env deploy/idv-api --list -n regula-idv | grep IDV_CONFIG
@@ -97,7 +97,7 @@ filesystem storage (`fs`) is not available.
 Through this chart, IDV stores eight kinds of data: `sessions`, `persons`, `workflows`, `userFiles`,
 `locales`, `assets`, `tempFiles`, and `banlists`. Each needs a location that already exists. They can
 share one bucket using different prefixes, which is what the
-[production example](03-install-production.md#5-valuesyaml) does.
+[production example](03-install-production.md#5-configure-valuesyaml) does. For S3-compatible storage, replace the example bucket name with your bucket name. Keep the prefixes unchanged unless you have a specific reason to customize them.
 
 The chart does not create buckets for you, except when using the MinIO subchart.
 
@@ -119,8 +119,8 @@ kubectl create secret generic gcs-credentials \
 
 ## Scheduled clean-up jobs
 
-The Scheduler runs housekeeping tasks on a timer. **Most timers have six fields, starting with
-seconds** — so `*/10 * * * * *` means every ten seconds, not every ten minutes. When changing one,
+The Scheduler runs housekeeping tasks on a timer. **Most timers use six fields and start with
+seconds**, so `*/10 * * * * *` means every ten seconds, not every ten minutes. When changing one,
 copy the shape of the existing default.
 
 By default, **session data is kept forever.** If you have a retention policy, set `cleanSessions`:
@@ -139,8 +139,7 @@ config:
 
 ## Careful: subchart switches overwrite your settings
 
-Turning on a bundled dependency replaces the matching settings you supplied. Handy for a demo,
-confusing everywhere else. **If a connection setting seems to be ignored, check these first.**
+Turning on a bundled dependency replaces the matching settings you supplied. This is useful for demo but can be confusing for other environments. **If a connection setting seems to be ignored, check these first.**
 
 | Switch | Overwrites |
 |---|---|
@@ -150,14 +149,16 @@ confusing everywhere else. **If a connection setting seems to be ignored, check 
 | `opensearch.enabled` | all face and text search connection settings |
 | `statsd.enabled` | `config.metrics.statsd.host` and `port` |
 
-Keep the first four off in production — they hold your data and the bundled versions are not built
-for it. `statsd` is different: it is a stateless metrics exporter with nothing to lose, and enabling
+For production deployments, keep the first four disabled and use externally managed services instead. The bundled MongoDB, RabbitMQ, MinIO, and OpenSearch instances are intended for development and testing, not as production data stores. 
+
+`statsd` is different: it is a stateless metrics exporter with nothing to lose, and enabling
 it is a reasonable choice in production.
 
 ## Settings configured outside the chart
 
-Chart `1.16.0` covers the settings needed for a standard Kubernetes deployment. A few application
-features are configured separately, so adding them under `config:` has no effect:
+Chart `1.16.0` covers the settings needed for a standard Kubernetes deployment. 
+
+> **Important:** These settings are not supported through `config:` in the Helm chart. Adding them there has no effect:
 
 | Setting | Feature |
 |---|---|
@@ -171,7 +172,7 @@ features are configured separately, so adding them under `config:` has no effect
 | Advanced `saml.providers[].security` options | Signature and digest algorithms, assertion signing |
 
 Contact Regula support if your deployment needs one of these. Editing the ConfigMap directly is not a
-workaround — Helm replaces it on the next upgrade.
+workaround, Helm replaces it on the next upgrade.
 
 ## Next
 

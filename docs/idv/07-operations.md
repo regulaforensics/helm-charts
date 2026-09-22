@@ -1,6 +1,6 @@
 # Operations
 
-Running IDV day to day.
+This section covers day-to-day operations of a production IDV deployment, including upgrades, scaling, health checks, backups, disaster recovery, and removal.
 
 ## Upgrades
 
@@ -14,14 +14,13 @@ helm upgrade idv regulaforensics/idv \
   --wait --timeout 10m
 ```
 
-Three things to know:
+Before upgrading:
 
-- **Pin `image.tag`.** Otherwise the application version changes whenever you update the chart
-  repository.
+- **Set `image.tag` to a specific application version**. This prevents the application version from changing unexpectedly when you update the Helm chart.
 - **`--version` controls the chart version.** An upgrade can change the chart as well as the app.
 - **Any config change restarts all services**, because they share one configuration.
 
-Going back:
+Rolling back:
 
 ```bash
 helm history idv -n regula-idv
@@ -34,7 +33,7 @@ if the encryption key changed.
 ## Scaling
 
 Only **API** and **Workflow** can run multiple copies. Scheduler, Audit, and Indexer must stay at
-one — two schedulers would run every scheduled job twice.
+one. Two schedulers would run every scheduled job twice.
 
 Fixed number:
 
@@ -62,7 +61,7 @@ Requires metrics-server in the cluster. Once enabled, the autoscaler controls th
 
 ### Automatic scaling on queue length (KEDA)
 
-Better suited to Workflow, whose load shows up as a queue rather than as CPU. Requires the KEDA
+KEDA is recommended for Workflow when workload is driven by queue depth. Requires the KEDA
 operator. Cannot be combined with the CPU autoscaler above.
 
 ```yaml
@@ -93,7 +92,7 @@ Scale the API on request volume and Workflow on queue length. See
 
 ## Disruption budgets
 
-These stop Kubernetes taking all copies of a service down at once during maintenance:
+It's recommended to enable `podDisruptionBudget` for production environments. It will prevent Kubernetes from stopping all copies of a service at the same time during maintenance:
 
 ```yaml
 api:
@@ -103,10 +102,12 @@ api:
       minAvailable: 1
 ```
 
-Set `minAvailable` **or** `maxUnavailable`, never both. Only use these with two or more replicas —
-on a single copy, the budget blocks routine node maintenance entirely.
+Set `minAvailable` **or** `maxUnavailable`, never both. Only use these with two or more replicas. 
+With a single replica, the budget blocks routine node maintenance entirely.
 
 ## Checking health
+
+To check the status of the IDV services, run the commands as in the example:
 
 ```bash
 kubectl get pods -n regula-idv
@@ -114,9 +115,11 @@ kubectl exec -n regula-idv deploy/idv-api -- curl -sf localhost:8000/api/health
 kubectl logs -n regula-idv deploy/idv-workflow --tail=100 -f
 ```
 
-Only the API has a health address. Judge the others by pod status, logs, and queue length.
+The API provides a health endpoint. Port 8000 is fixed and must not be changed. 
 
-For more detail temporarily:
+For other components (`workflow`, `scheduler`, `audit`), check pod status and logs. For `workflow`, also check the queue length. The commands are the same as in the example above. In the example, `--tail=100` option will show the last 100 lines of the log for `workflow`. 
+
+For more detailed logs, temporarily set the logging level to `DEBUG`:
 
 ```yaml
 config:
@@ -129,7 +132,7 @@ container.
 
 ## Data retention
 
-**Session data is kept forever unless you say otherwise.** If you have a retention policy, see
+By default, session data is kept forever. If your organization has a data retention policy, configure the `cleanSessions` scheduled job to remove older session data. If you have a retention policy, see
 [Configuration](05-configuration.md#scheduled-clean-up-jobs).
 
 ## Backups
@@ -150,9 +153,8 @@ Search indexes can be rebuilt, so backing them up is optional.
 
 ## Disaster recovery
 
-Every IDV service can run in more than one place, so any standard approach works — from simple
-backup and restore through to two live sites. IDV is not a cloud service, so this is set up in your
-own infrastructure.
+IDV is not a cloud service, so this is set up in your
+own infrastructure. Every IDV service can run in more than one place, so any standard approach works that depends on your recovery objectives and infrastructure. Options range from backup and restore to running IDV across two sites. 
 
 Beyond basic backups, the parts holding data need copying between sites: database replica sets,
 storage replication, search replication, and broker clustering. The remaining services are
@@ -166,8 +168,7 @@ The trade-offs between approaches are covered in the
 ```bash
 helm uninstall idv -n regula-idv
 ```
-
-This leaves your Secrets and any storage claims behind. Deleting the namespace removes them —
+It removes the IDV application resources but does not delete your Secrets and data in object storage. Deleting the namespace removes them so
 **make sure the encryption key is saved elsewhere first.**
 
 ---

@@ -1,11 +1,13 @@
 # Authentication and users
 
-## There is no default login
+This section explains how to create and manage users, configure sign-in methods, and control access through roles and permissions. 
+
+## Create the first user
 
 A new IDV installation has **no accounts and no default password.** Nobody can sign in until you
 create the first user.
 
-Run this once, after installing:
+Run the following command once after installing IDV to create the first administrator account:
 
 ```bash
 printf 'New admin password: '; read -rs IDV_ADMIN_PW; echo
@@ -30,13 +32,12 @@ User: admin
         Active: True
 ```
 
-The name must be unique. After this, add people through the portal or the API — you should not need
-this command again.
+The `--name` value must be unique. After you create the first administrator account, add additional users through the portal or API. You do not need to run the `idv user create` command again unless you specifically want to create another user from the command line.
 
 > The password is briefly visible inside the pod while the command runs. In stricter environments,
 > use this account only to create the real ones, then delete it.
 
-## Ways to sign in
+## Sign-in methods
 
 | Method | Setting | Default |
 |---|---|---|
@@ -44,12 +45,11 @@ this command again.
 | OAuth 2.0 (Google, Microsoft, Cognito) | `config.oauth2.enabled` | Off |
 | SAML | `config.saml.enabled` | Off |
 
-`config.basicAuth.enabled` controls username and password sign-in. It is on by default, and the
+`config.basicAuth.enabled` controls username and password sign-in. It is enabled by default, and the
 first admin account you create relies on it.
 
 > If you intend to use SSO exclusively, configure and test your provider before turning this off,
-> and make the change in a test environment first. Username and password sign-in is your fallback if
-> the provider is misconfigured.
+> and make the change in a test environment first. Username and password sign-in remains available as a backup if the SSO provider is misconfigured.
 
 ## OAuth 2.0
 
@@ -134,9 +134,16 @@ A role is a bundle of permissions. Four come ready to use:
 | `device` | Used by devices connecting to the platform, not people |
 | `demo` | Demonstrations only |
 
-Permissions are written as `scope:operation`, for example `session:read`. The operations are `read`,
-`write`, `delete`, and `subscribe`. A scope ending in `_all` covers everyone's records rather than
-just the user's own.
+Permissions use the format `scope:operation`, where `scope` is the resource and `operation` defines what the user can do with it. For example, `session:read` allows the user to read their own sessions. 
+
+Available operations are: 
+- `read` - view data
+- `write` - create or update data
+-  `delete` - delete data
+- `subscribe` - receive updates
+
+A scope ending in `_all` covers everyone's records rather than
+just the user's own. For example, `session:read_all`  allows the user to read sessions belonging to all users.
 
 Create a custom role:
 
@@ -147,7 +154,7 @@ curl -X POST "https://idv.example.com/api/security/roles" \
   -d '{"name": "Session Observer", "permissions": ["session:read", "session:subscribe"]}'
 ```
 
-Changing someone's roles **replaces** their whole list, so include the ones they should keep:
+> **Note:** Changing someone's roles **replaces** their entire list of roles. Include all roles the user should keep when updating them:
 
 ```bash
 curl -X PATCH "https://idv.example.com/api/security/users/<user_id>" \
@@ -167,5 +174,5 @@ portal, under **Settings**. The complete permission list is in the
 
 ---
 
-Roles and permissions summarised from the
+Roles and permissions summarized from the
 [Regula IDV user management documentation](https://docs.regulaforensics.com/develop/idv/administration/user-management/).

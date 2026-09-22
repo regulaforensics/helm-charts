@@ -2,9 +2,7 @@
 
 The [Quickstart](02-quickstart.md) is an all-in-one installation that installs IDV together with bundled MongoDB, RabbitMQ, and MinIO services. It is designed for getting IDV up and running quickly.
 
-The production installation integrates IDV into your existing infrastructure, connecting to MongoDB, a message broker, and object storage that you run yourself outside the IDV Helm deployment.
-
-Before you start, make sure those three are reachable from the cluster and that you have
+The production installation integrates IDV into your existing infrastructure, connecting to MongoDB, a message broker, and object storage that you run yourself outside the IDV Helm deployment. Before you start, make sure those three are reachable from the cluster and that you have
 credentials for each. See [Requirements](01-requirements.md).
 
 Main steps: 
@@ -311,7 +309,7 @@ You can now open `https://idv.example.com` and sign in.
 - [ ] Resource requests set on every service
 - [ ] Disruption budgets on API and Workflow
 - [ ] Only the API reachable from outside
-- [ ] `networkPolicy.enabled` is disabled by default. Enable it with caution. It is intended for advanced users who understand Kubernetes network policies and can configure them appropriately for their environment. 
+- [ ] `networkPolicy.enabled` is disabled by default. Enable it with caution via `values.yaml`. It is intended for advanced users who understand Kubernetes network policies and can configure them appropriately for their environment. 
 - [ ] Backups running for the database and storage
 
 Using your own certificate authority for internal connections? See

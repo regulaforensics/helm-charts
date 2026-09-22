@@ -13,7 +13,7 @@ On its own, IDV can run workflows but cannot read a document or match a face. Th
 ## Document Reader
 
 Document Reader reads and extracts data from identity documents. Install the
-[`docreader` chart](../../charts/docreader/README.md) first.
+[`docreader`](../../charts/docreader/README.md) chart first.
 
 **IDV needs Document Reader's Session API, which is off by default.** Workflows that require document reading fail without it.
 

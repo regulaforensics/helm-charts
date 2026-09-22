@@ -75,7 +75,7 @@ Step 5 below connects these values to IDV through the `env:` list. Do not put cr
 
 Two requirements that cause most first-install problems:
 
-- - **`config.baseUrl` must be the URL your users will enter in their browser to access your IDV instance.** Use your own domain, not `idv.example.com` from this example. The same domain must be configured in the Ingress `hosts` section below. IDV uses this address in QR codes, emails, and login redirects. If it is incorrect, the portal may still load, but phone-based and browser-based scanning can fail.
+- **`config.baseUrl` must be the URL your users will enter in their browser to access your IDV instance.** Use your own domain, not `idv.example.com` from this example. The same domain must be configured in the Ingress `hosts` section below. IDV uses this address in QR codes, emails, and login redirects. If it is incorrect, the portal may still load, but phone-based and browser-based scanning can fail.
 
 - **HTTPS is required** for document and face capture. Browsers block camera access over plain HTTP.
 Terminate TLS at your Ingress or load balancer.
@@ -115,7 +115,7 @@ image:
 config:
   
   # The URL users will enter in their browser to access your IDV instance.
-  # Replace idv.example.com with your own domain.
+  # Replace `idv.example.com` with your own domain.
   # Must match the Ingress hostname below.
   baseUrl: "https://idv.example.com"
 
@@ -132,8 +132,8 @@ config:
       endpoint: "s3.eu-central-1.amazonaws.com"
       region: "eu-central-1"
       secure: true
-    # Eight data types sharing one bucket (idv-prod), separated by prefix.
-    # Replace idv-prod with the name of your bucket.
+    # Eight data types sharing one bucket (`idv-prod`), separated by prefix.
+    # Replace `idv-prod` with the name of your bucket.
     # It's recommended to keep the prefixes unchanged.
     sessions:  { location: { bucket: "idv-prod", prefix: "sessions" } }
     persons:   { location: { bucket: "idv-prod", prefix: "persons" } }
@@ -311,7 +311,7 @@ You can now open `https://idv.example.com` and sign in.
 - [ ] Resource requests set on every service
 - [ ] Disruption budgets on API and Workflow
 - [ ] Only the API reachable from outside
-- [ ] `networkPolicy.enabled` is disabled b default. 
+- [ ] `networkPolicy.enabled` is disabled by default. Enable it with caution. It is intended for advanced users who understand Kubernetes network policies and can configure them appropriately for their environment. 
 - [ ] Backups running for the database and storage
 
 Using your own certificate authority for internal connections? See

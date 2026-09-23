@@ -7,10 +7,14 @@ in [`docs/idv/`](README.md) in this repo — use it as the source when updating 
 
 ## Page: `/develop/idv/overview/installation-example/`
 
+In progress
+
 - Replace the Docker Compose walkthrough with the Kubernetes quickstart. Use
   [`02-quickstart.md`](02-quickstart.md) as the source. Keep the same URL (it's linked/indexed).
 
 ## Page: `/develop/idv/administration/deployment/`
+
+`DONE`
 
 - Add a Kubernetes/Helm install procedure. Use [`03-install-production.md`](03-install-production.md)
   and link the chart repo: `https://github.com/regulaforensics/helm-charts`.
@@ -21,6 +25,8 @@ in [`docs/idv/`](README.md) in this repo — use it as the source when updating 
   used separately for the multi-site `replicationBus` feature. Split these into two rows.
 
 ## Page: `/develop/idv/administration/configuration/`
+
+`DONE`
 
 | Field | Change |
 |---|---|
@@ -35,16 +41,22 @@ in [`docs/idv/`](README.md) in this repo — use it as the source when updating 
 
 ## Missing from the docs entirely
 
+`Done`
+
 Add these somewhere in the Kubernetes install/config pages — each is a real support-ticket source:
 
-- No default login. First admin account must be created via `idv user create` after install.
-- The Fernet encryption key has a public default value that must be changed before production use.
-- `baseUrl` must equal the externally reachable address, or QR/mobile capture silently fails.
-- Document Reader's Session API must be enabled for IDV integration to work.
-- Session data is kept forever unless retention (`cleanSessions`) is explicitly configured.
-- Most Scheduler cron expressions are 6-field (seconds first), not standard 5-field cron.
+- No default login. First admin account must be created via `idv user create` after install. [Production install](03-install-production.md) ->  step 7. create the first user
+- The Fernet encryption key has a public default value that must be changed before production use. [Production install](03-install-production.md) → step 2. Generate the encryption key
+- `baseUrl` must equal the externally reachable address, or QR/mobile capture silently fails. [Production install](03-install-production.md) -> step 4. Configure the address and HTTPS
+- Document Reader's Session API must be enabled for IDV integration to work. [Integrations](04-integrations.md) → Document Reader — explicitly says Session API is off by default and workflows requiring document reading fail without it.
+- Session data is kept forever unless retention (`cleanSessions`) is explicitly configured. [Configuration](05-configuration.md#scheduled-clean-up-jobs) -> Scheduled clean-up jobs
+- Most Scheduler cron expressions are 6-field (seconds first), not standard 5-field cron. [Configuration](05-configuration.md#scheduled-clean-up-jobs) -> Scheduled clean-up jobs
 
 ## Open question for the platform team
+
+`DONE`
+
+[Sign-in methods](06-auth-and-users.md#sign-in-methods)
 
 What does `basicAuth.enabled: false` actually do — is local login fully disabled, and is there a
 recovery path if SSO is misconfigured? Not documented anywhere; no known deployment runs it `false`.

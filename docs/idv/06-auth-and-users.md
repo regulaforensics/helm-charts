@@ -41,17 +41,35 @@ The `--name` value must be unique. After you create the first administrator acco
 
 | Method | Setting | Default |
 |---|---|---|
-| Username and password | `config.basicAuth.enabled` | On |
-| OAuth 2.0 (Google, Microsoft, Cognito) | `config.oauth2.enabled` | Off |
-| SAML | `config.saml.enabled` | Off |
+| Username and password | `config.basicAuth.enabled` | true |
+| OAuth 2.0 (Google, Microsoft, Cognito) | `config.oauth2.enabled` | false|
+| SAML | `config.saml.enabled` | false |
 
-`config.basicAuth.enabled` controls the username and password sign-in. It is enabled by default, and the
-first admin account you create relies on it.
 
-> If you intend to use SSO exclusively, configure and test your provider before turning this off,
-> and make the change in a test environment first. The username and password sign-in remains available as a backup if the SSO provider is misconfigured.
+### `config.basicAuth.enabled`
 
-## OAuth 2.0
+`config.basicAuth.enabled` controls the username and password sign-in method.
+
+`config.basicAuth.enabled: true`
+
+This is the default setting which enables username and password sign-in. The first administrator account created with `idv user create` uses this sign-in method. 
+
+If SSO is also configured, users can sign in through SSO or with username and password. The local username/password login remains available as a backup if the SSO provider is misconfigured or temporarily unavailable.
+
+`config.basicAuth.enabled: false`
+
+Setting `config.basicAuth.enabled` to `false` disables the username and password sign-in completely, including for users created with `idv user create`. SSO remains the only available sign-in method.
+
+If you want to use SSO exclusively, configure and verify SSO **before disabling Basic Auth**:
+
+1. Create the local administrator with `idv user create`.
+2. Configure SSO.
+3. Verify that SSO login works.
+4. Set `config.basicAuth.enabled: false`.
+
+> **Important:** If `config.basicAuth.enabled` is set to `false` before SSO is ready, or if SSO stops working, there is no alternative sign-in method. To restore access, set `config.basicAuth.enabled: true` and run `helm upgrade`.
+
+### OAuth 2.0
 
 Get a client ID and secret from your provider first. `type` must be `google`, `microsoft`, or
 `cognito`.
@@ -94,7 +112,7 @@ Two things to get right:
 `defaultRoles` and `defaultGroups` apply to people signing in for the first time. Missing groups are
 created automatically.
 
-## SAML
+### SAML
 
 ```yaml
 config:

@@ -73,7 +73,7 @@ Step 5 below connects these values to IDV through the `env:` list. Do not put cr
 
 Two requirements that cause most first-install problems:
 
-- **`config.baseUrl` must be the URL your users will enter in their browser to access your IDV instance.** Use your own domain, not `idv.example.com` from this example. The same domain must be configured in the Ingress `hosts` section below. IDV uses this address in QR codes, emails, and login redirects. If it is incorrect, the portal may still load, but phone-based and browser-based scanning can fail.
+- **`config.baseUrl` must be the public URL your users will enter in their browser to access your IDV instance.** Use your own domain, not `idv.example.com` from this example. The same domain must be configured in the Ingress `hosts` section below. IDV uses this address in QR codes, emails, and login redirects. If it is incorrect, the portal may still load, but phone-based and browser-based scanning can fail.
 
 - **HTTPS is required** for document and face capture. Browsers block camera access over plain HTTP.
 Terminate TLS at your Ingress or load balancer.

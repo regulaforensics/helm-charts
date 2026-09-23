@@ -16,7 +16,7 @@ Two things follow from this:
 - **Anything under `config:` is stored in plain text** in the ConfigMap and can be read by anyone with access to the namespace. Do not put credentials there. Use a Secret instead (see below [Passing secrets](#passing-secrets)).
 - **All five services share one config.** Changing it restarts all of them.
 
-To see the config your cluster is actually using:
+To see the config your cluster is actually using, run the following command:
 
 ```bash
 kubectl get configmap idv-config -n regula-idv -o jsonpath='{.data.idv-config}'
@@ -59,7 +59,7 @@ the ConfigMap.
 
 Watch out: `env` and `config.env` are different.
 
-| | What it is |
+| Configuration field | When to use |
 |---|---|
 | `env:` (top level) | Kubernetes environment variables. **Use this for secrets.** |
 | `config.env:` | A label for the environment, such as `prod`. Nothing else. |

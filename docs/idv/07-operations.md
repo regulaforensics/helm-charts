@@ -141,10 +141,10 @@ IDV itself stores nothing. Back up what it depends on:
 
 | What | Why |
 |---|---|
-| Database | All records live here. Encrypt the backups |
-| Object storage | Images and documents |
-| Encryption key | Without it, a database backup is unreadable |
-| `values.yaml` | So the installation can be rebuilt |
+| Database | Stores IDV records. Encrypt backups to protect the data |
+| Object storage | Stores images, documents, and other persistent files |
+| Encryption key | Required to decrypt data restored from a database backup |
+| `values.yaml` | Contains the configuration needed to recreate the deployment |
 
 Search indexes can be rebuilt, so backing them up is optional.
 
@@ -153,8 +153,7 @@ Search indexes can be rebuilt, so backing them up is optional.
 
 ## Disaster recovery
 
-IDV is not a cloud service, so this is set up in your
-own infrastructure. Every IDV service can run in more than one place, so any standard approach works that depends on your recovery objectives and infrastructure. Options range from backup and restore to running IDV across two sites. 
+IDV is deployed in your own infrastructure, so you are responsible for setting up disaster recovery. The appropriate approach depends on your recovery objectives and infrastructure. Options range from backup and restore to running IDV across two sites.
 
 Beyond basic backups, the parts holding data need copying between sites: database replica sets,
 storage replication, search replication, and broker clustering. The remaining services are

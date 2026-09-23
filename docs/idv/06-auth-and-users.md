@@ -45,11 +45,11 @@ The `--name` value must be unique. After you create the first administrator acco
 | OAuth 2.0 (Google, Microsoft, Cognito) | `config.oauth2.enabled` | Off |
 | SAML | `config.saml.enabled` | Off |
 
-`config.basicAuth.enabled` controls username and password sign-in. It is enabled by default, and the
+`config.basicAuth.enabled` controls the username and password sign-in. It is enabled by default, and the
 first admin account you create relies on it.
 
 > If you intend to use SSO exclusively, configure and test your provider before turning this off,
-> and make the change in a test environment first. Username and password sign-in remains available as a backup if the SSO provider is misconfigured.
+> and make the change in a test environment first. The username and password sign-in remains available as a backup if the SSO provider is misconfigured.
 
 ## OAuth 2.0
 
@@ -127,7 +127,7 @@ Certificates and keys are base64-encoded. The private key must come from a Secre
 
 A role is a bundle of permissions. Four come ready to use:
 
-| Role | Who it is for |
+| Role | Intended use |
 |---|---|
 | `admin` | Full access to all data and settings |
 | `verifier` | Can view and verify, but not administer |

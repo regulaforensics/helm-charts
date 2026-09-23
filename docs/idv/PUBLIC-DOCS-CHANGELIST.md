@@ -45,12 +45,12 @@ In progress
 
 Add these somewhere in the Kubernetes install/config pages — each is a real support-ticket source:
 
-- No default login. First admin account must be created via `idv user create` after install. [Production install](03-install-production.md) ->  step 7. create the first user
-- The Fernet encryption key has a public default value that must be changed before production use. [Production install](03-install-production.md) → step 2. Generate the encryption key
-- `baseUrl` must equal the externally reachable address, or QR/mobile capture silently fails. [Production install](03-install-production.md) -> step 4. Configure the address and HTTPS
+- No default login. First admin account must be created via `idv user create` after install. [Production install](03-install-production.md#7-create-the-firstu-user
+- The Fernet encryption key has a public default value that must be changed before production use. [Production install](03-install-production.md#2-generate-the-encryption-key
+- `baseUrl` must equal the externally reachable address, or QR/mobile capture silently fails. [Production install](03-install-production.md#configure-the-address-and-HTTPS
 - Document Reader's Session API must be enabled for IDV integration to work. [Integrations](04-integrations.md) → Document Reader — explicitly says Session API is off by default and workflows requiring document reading fail without it.
-- Session data is kept forever unless retention (`cleanSessions`) is explicitly configured. [Configuration](05-configuration.md#scheduled-clean-up-jobs) -> Scheduled clean-up jobs
-- Most Scheduler cron expressions are 6-field (seconds first), not standard 5-field cron. [Configuration](05-configuration.md#scheduled-clean-up-jobs) -> Scheduled clean-up jobs
+- Session data is kept forever unless retention (`cleanSessions`) is explicitly configured. [Configuration](05-configuration.md#scheduled-clean-up-jobs#scheduled- clean-up-jobs
+- Most Scheduler cron expressions are 6-field (seconds first), not standard 5-field cron. [Configuration](05-configuration.md#scheduled-clean-up-jobs) 
 
 ## Open question for the platform team
 

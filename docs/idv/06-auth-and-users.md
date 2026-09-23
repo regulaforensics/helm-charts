@@ -50,15 +50,11 @@ The `--name` value must be unique. After you create the first administrator acco
 
 `config.basicAuth.enabled` controls the username and password sign-in method.
 
-`config.basicAuth.enabled: true`
-
-This is the default setting which enables username and password sign-in. The first administrator account created with `idv user create` uses this sign-in method. 
+`config.basicAuth.enabled: true`: this is the default setting which enables username and password sign-in. The first administrator account created with `idv user create` uses this sign-in method. 
 
 If SSO is also configured, users can sign in through SSO or with username and password. The local username/password login remains available as a backup if the SSO provider is misconfigured or temporarily unavailable.
 
-`config.basicAuth.enabled: false`
-
-Setting `config.basicAuth.enabled` to `false` disables the username and password sign-in completely, including for users created with `idv user create`. SSO remains the only available sign-in method.
+`config.basicAuth.enabled: false`: disables the username and password sign-in completely, including for users created with `idv user create`. SSO remains the only available sign-in method.
 
 If you want to use SSO exclusively, configure and verify SSO **before disabling Basic Auth**:
 

@@ -1,7 +1,5 @@
 # Troubleshooting
 
-Find your symptom below. All examples assume the namespace `regula-idv` and release name `idv`.
-
 ## Start here
 
 Run these commands first:
@@ -13,14 +11,16 @@ kubectl logs -n regula-idv <pod> --tail=200
 kubectl logs -n regula-idv <pod> --previous             
 ```
 
-| Command                                       | What it tells you                                                               |
+| Command                                       | Purpose                                                               |
 | --------------------------------------------- | ------------------------------------------------------------------------------- |
 | `kubectl get pods -n regula-idv`              | Shows which components are running, pending, or failing.                        |
 | `kubectl describe pod -n regula-idv <pod>`    | Shows why a Pod is not starting, including events and configuration errors.     |
 | `kubectl logs -n regula-idv <pod> --tail=200` | Shows recent application errors from the container.                             |
 | `kubectl logs -n regula-idv <pod> --previous` | Shows logs from the previous container instance if the container has restarted. |
 
-Common issues:
+## Find your symptom
+
+Find your symptom below. All examples assume the namespace `regula-idv` and release name `idv`.
 
 - [A Pod never starts (`ContainerCreating`)](#a-pod-never-starts-containercreating)
 - [Licence errors in the logs](#licence-errors-in-the-logs)

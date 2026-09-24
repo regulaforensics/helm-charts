@@ -1,10 +1,9 @@
 # Quickstart
 
 This guide will help you get a working IDV Platform in about ten minutes, using a bundled database, message queue, and file
-storage. This setup is intended for evaluation and smaller deployments rather than high production loads. 
+storage. This setup is intended for evaluation and smaller deployments, not production workloads.
 
-> **For demos only.** The bundled dependencies use well-known passwords, store nothing safely, and
-> the encryption key is the public default. Do not put real data in it. For anything real, use the
+> **For demos only.** The bundled dependencies use default credentials, and the default encryption key is publicly known. Do not use this setup with real or sensitive data. For production deployment, use the
 > [Production install](03-install-production.md).
 
 ## Prerequisites 
@@ -27,7 +26,7 @@ helm repo update
 
 ## 2. Create a namespace and add the license
 
-Create the namespace where IDV will be installed, then add the license. The name inside the Secret must be exactly `regula.license`.
+Create the namespace where IDV will be installed, then add the license. The key inside the Secret must be exactly `regula.license`.
 
 ```bash
 kubectl create namespace regula-idv
@@ -107,7 +106,7 @@ The command should confirm the created account:
 
 ```
 User: regula-idv
-        User ID: 6a8d73f54e4d7a8bc485207f
+        User ID: <USER_ID>
         Email: <YOUR_EMAIL>
         Roles: ['admin']
         Active: True
@@ -121,20 +120,19 @@ Keep the password in single quotes so characters like `@` are not misread by you
 kubectl port-forward -n regula-idv svc/idv-api 8080:80
 ```
 
-Go to <http://127.0.0.1:8080> and sign in with the account you created above.
+Go to http://127.0.0.1:8080 and sign in with the account you created above.
 
-## What will not work yet
+## Limitations of this setup
 
-**Verifying documents or faces.** IDV is running, but the services that read documents and match
-faces are separate and not installed. See [Integrations](04-integrations.md).
+**Document and face verification**. IDV is running, but the services required to read documents and match faces are separate and are not installed. See [Integrations](04-integrations.md).
 
-**Scanning with a phone.** This needs a real web address with HTTPS. The demo has neither, so QR
+**Phone scanning.** It requires a real HTTPS web address.This setup does not provide a public HTTPS address, so QR
 codes point nowhere and browsers block camera access. That is the
 [Production install](03-install-production.md).
 
 ## Remove it
 
-To remove IDV and bundled dependencies, run:
+To remove IDV and its bundled dependencies, run:
 
 ```bash
 helm uninstall idv -n regula-idv

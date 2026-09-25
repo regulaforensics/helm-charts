@@ -190,7 +190,7 @@ The bundled StatsD exporter is safe to use in production because it does not sto
 `statsd.enabled` overrides the `host` and `port` you set above.
 
 The bundled exporter converts raw metrics into Prometheus ones, including
-`idv_api_http_duration` and `idv_api_http_request_total`, which are both recommended for scaling the `backoffice` service.
+`idv_backoffice_http_duration` and `idv_backoffice_http_request_total`, which are both recommended for scaling the `backoffice` service. TBD!!!!!
 
 Make sure the two enabled settings are configured consistently. The chart warns you at installation time if only one is enabled.
 

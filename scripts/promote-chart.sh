@@ -7,6 +7,11 @@
 # and `appVersion` in Chart.yaml. Everything else (templates, values, README,
 # vendored subcharts) is taken as-is, and files removed upstream are removed here.
 #
+# Only charts/<chart>/ is written. Guides under docs/<chart>/ live outside the chart
+# directory and are never touched, so they must be updated by hand when values or
+# component names change. Note this also means charts/<chart>/README.md is owned
+# upstream: edits made only in this repository are overwritten on the next promotion.
+#
 # All work happens in a throwaway git worktree, so the current checkout is never
 # touched and a dirty working tree is fine.
 #
@@ -445,6 +450,7 @@ body_file="$work_root/pr-body.md"
   printf -- '- [ ] appVersion `%s` matches the published image tag\n' "$app_version"
   printf -- '- [ ] README parameter tables match values.yaml\n'
   printf -- '- [ ] Renamed or removed values called out for upgraders\n'
+  printf -- '- [ ] `docs/%s/` still matches the chart — promotion does not copy it\n' "$chart"
   printf -- '- [ ] Mark ready for review\n'
 } >"$body_file"
 

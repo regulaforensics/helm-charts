@@ -18,7 +18,7 @@ production installation.
 |---|---|
 | **[1. Requirements](01-requirements.md)** | What you need before installing |
 | **[2. Quickstart](02-quickstart.md)** | A working demo in about 10 minutes |
-| **[3. Production install](03-install-production.md)** | The real thing, step by step |
+| **[3. Production install](03-install-production.md)** | 	Production installation, step by step |
 | **[4. Integrations](04-integrations.md)** | Document scanning, face matching, search, email |
 | **[5. Configuration](05-configuration.md)** | Where settings live and how to change them |
 | **[6. Users and sign-in](06-auth-and-users.md)** | First account, SSO, roles |

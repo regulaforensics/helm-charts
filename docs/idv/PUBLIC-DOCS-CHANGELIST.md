@@ -7,7 +7,7 @@ in [`docs/idv/`](README.md) in this repo — use it as the source when updating 
 
 ## Page: `/develop/idv/overview/installation-example/`
 
-In progress
+`DONE`
 
 - Replace the Docker Compose walkthrough with the Kubernetes quickstart. Use
   [`02-quickstart.md`](02-quickstart.md) as the source. Keep the same URL (it's linked/indexed).

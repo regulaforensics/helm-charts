@@ -57,14 +57,14 @@ the ConfigMap.
 
 ### `env` vs `config.env`
 
-Watch out: `env` and `config.env` are different.
+`env` and `config.env` are different.
 
 | Configuration field | When to use |
 |---|---|
 | `env:` (top level) | Kubernetes environment variables. **Use this for secrets.** |
 | `config.env:` | A label for the environment, such as `prod`. Nothing else. |
 
-Putting a `valueFrom` block under `config.env` does **not** create the variable you intended. It may write something unexpected into the config file and keeps your original setting unchanged, with no error:
+Putting the `valueFrom` block under `config.env` does **not** create the variable you intended. It may write something unexpected into the config file and keeps your original setting unchanged, with no error:
 
 ```yaml
 # WRONG — does nothing
@@ -86,7 +86,7 @@ env:
 Check that the variable is added to the deployment:
 
 ```bash
-kubectl set env deploy/idv-api --list -n regula-idv | grep IDV_CONFIG
+kubectl set env deploy/idv-backoffice --list -n regula-idv | grep IDV_CONFIG
 ```
 
 ## Storage
@@ -166,7 +166,7 @@ Chart `1.16.0` covers the settings needed for a standard Kubernetes deployment.
 | `storage.type: fs` | Local filesystem storage |
 | `storage.<location>.folder` | Folder paths, available for `tempFiles` |
 | `metrics.alerts`, `metrics.database` | Prometheus alert access and database-backed metrics |
-| `services.audit.api.keepFor` | API audit retention, separate from `user.keepFor` |
+| `services.audit.backoffice.keepFor` | `backoffice` audit retention, separate from `user.keepFor` |
 | `deviceMessageTracking` | Device message history |
 | `replicationBus`, `services.mongoReplicator`, `services.searchReplicator` | Multi-site replication |
 | Advanced `saml.providers[].security` options | Signature and digest algorithms, assertion signing |

@@ -12,7 +12,7 @@ Run the following command once after installing IDV to create the first administ
 ```bash
 printf 'New admin password: '; read -rs IDV_ADMIN_PW; echo
 
-kubectl exec -n regula-idv deploy/idv-api -- \
+kubectl exec -n regula-idv deploy/idv-backoffice -- \
   idv user create \
     --name admin \
     --password "$IDV_ADMIN_PW" \

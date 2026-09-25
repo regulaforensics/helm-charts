@@ -75,7 +75,7 @@ The license file may be missing, expired, cover different features, or be corrup
 Check that the file arrived:
 
 ```bash
-kubectl exec -n regula-idv deploy/idv-api -- ls -l /app/extBin/unix/regula.license
+kubectl exec -n regula-idv deploy/idv-backoffice -- ls -l /app/extBin/unix/regula.license
 ```
 
 ### Fix
@@ -125,7 +125,7 @@ If the credentials look right but clearly are not being used, see
 Create one:
 
 ```bash
-kubectl exec -n regula-idv deploy/idv-api -- \
+kubectl exec -n regula-idv deploy/idv-backoffice -- \
   idv user create --name admin --password '<password>' --email admin@example.com --roles admin
 ```
 
@@ -252,7 +252,7 @@ Check whether the variable reached
 the pod:
 
 ```bash
-kubectl set env deploy/idv-api --list -n regula-idv | grep IDV_CONFIG
+kubectl set env deploy/idv-backoffice --list -n regula-idv | grep IDV_CONFIG
 ```
 
 Nothing listed means it was never created. 
@@ -306,7 +306,7 @@ This is expected behavior not a problem to diagnose.
 ### Fix
 
 Run two or more
-API and Workflow replicas with disruption budgets if you need no interruption. See
+`backoffice` and `workflow` replicas with disruption budgets if you need no interruption. See
 [Operations](07-operations.md#disruption-budgets).
 
 ## Information to send to support
@@ -316,7 +316,7 @@ If the issue persists, collect the following information:
 ```bash
 kubectl get all -n regula-idv
 kubectl describe pods -n regula-idv
-kubectl logs -n regula-idv deploy/idv-api --tail=500
+kubectl logs -n regula-idv deploy/idv-backoffice --tail=500
 kubectl get configmap idv-config -n regula-idv -o jsonpath='{.data.idv-config}'
 helm get values idv -n regula-idv
 ```

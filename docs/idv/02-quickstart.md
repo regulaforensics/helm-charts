@@ -61,7 +61,7 @@ The following options enable the dependencies bundled with the IDV chart:
 
 When these bundled dependencies (MongoDB/RabbitMQ/MinIO) are enabled, the chart configures IDV to use them automatically. You do not need to provide their addresses or passwords separately.
 
-`idv` is the Helm release name. Using `idv` keeps the generated service names short, such as `idv-api`.
+`idv` is the Helm release name. Using `idv` keeps the generated service names short, such as `idv-workflow`.
 
 ## 4. Check it started
 
@@ -72,7 +72,7 @@ kubectl get pods -n regula-idv
 A healthy installation should show the IDV and bundled dependency pods in the Running state, for example:
 
 ```
-idv-api-...              1/1  Running
+idv-backoffice-...              1/1  Running
 idv-audit-...            1/1  Running
 idv-scheduler-...        1/1  Running
 idv-workflow-...         1/1  Running
@@ -92,7 +92,7 @@ If anything is not running as expected, see [Troubleshooting](08-troubleshooting
 **A new installation has no user accounts**. Create the first administrator account:
 
 ```bash
-kubectl exec -n regula-idv deploy/idv-api -- \
+kubectl exec -n regula-idv deploy/idv-backoffice -- \
   idv user create \
     --name regula-idv \
     --password '<YOUR_PASSWORD>' \
@@ -117,7 +117,7 @@ Keep the password in single quotes so characters like `@` are not misread by you
 ## 6. Open the portal
 
 ```bash
-kubectl port-forward -n regula-idv svc/idv-api 8080:80
+kubectl port-forward -n regula-idv svc/idv-backoffice 8080:80
 ```
 
 Go to http://127.0.0.1:8080 and sign in with the account you created above.
@@ -130,7 +130,7 @@ Go to http://127.0.0.1:8080 and sign in with the account you created above.
 codes point nowhere and browsers block camera access. That is the
 [Production install](03-install-production.md).
 
-## Remove it
+## Uninstall IDV
 
 To remove IDV and its bundled dependencies, run:
 

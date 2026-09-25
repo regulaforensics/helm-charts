@@ -73,7 +73,7 @@ Step 5 below connects these values to IDV through the `env:` list. Do not put cr
 
 Two requirements that cause most first-install problems:
 
-- **`config.baseUrl` must be the public URL your users will enter in their browser to access your IDV instance.** Use your own domain, not `idv.example.com` from this example. The same domain must be configured in the Ingress `hosts` section below. IDV uses this address in QR codes, emails, and login redirects. If it is incorrect, the portal may still load, but phone-based and browser-based scanning can fail.
+- **`config.baseUrl` must be the public URL your users will enter in their browser to access your IDV instance.** Use your own domain, not `idv.example.com` from this example. The same domain must be configured in the Ingress `hosts` section below. IDV uses this address in QR codes, emails, and login redirects. If `baseUrl` is incorrect, the portal may still load, but phone-based and browser-based scanning can fail.
 
 - **HTTPS is required** for document and face capture. Browsers block camera access over plain HTTP.
 Terminate TLS at your Ingress or load balancer.
@@ -94,7 +94,7 @@ ingress:
         - idv.example.com
 ```
 
-This sends traffic to the API service. Expose only the API; the other services stay internal.
+This sends traffic to the `backoffice` service. Expose only the `backoffice`; the other services stay internal.
 
 If you use Gateway API instead, configure `route.main` and keep `ingress.enabled: false`.
 
@@ -167,7 +167,7 @@ env:
       secretKeyRef: { name: idv-secrets, key: s3AccessSecret }
 
 # Recommended values. Tune to your load — see 01-requirements.md.
-api:
+backoffice:
   replicas: 2
   resources:
     requests: { cpu: "650m", memory: "1200Mi" }
@@ -259,12 +259,12 @@ Check that the pods have started:
 
 ```bash
 kubectl get pods -n regula-idv
-kubectl exec -n regula-idv deploy/idv-api -- curl -sf localhost:8000/api/health
+kubectl exec -n regula-idv deploy/idv-backoffice -- curl -sf localhost:8000/api/health
 ```
 
 A healthy installation should have these four IDV components running:
 
-* `api`
+* `backoffice`
 * `workflow`
 * `scheduler`
 * `audit`
@@ -283,7 +283,7 @@ the first account:
 ```bash
 printf 'New admin password: '; read -rs IDV_ADMIN_PW; echo
 
-kubectl exec -n regula-idv deploy/idv-api -- \
+kubectl exec -n regula-idv deploy/idv-backoffice -- \
   idv user create \
     --name admin \
     --password "$IDV_ADMIN_PW" \
@@ -307,8 +307,8 @@ You can now open `https://idv.example.com` and sign in.
 - [ ] All credentials in Secrets, none under `config:`
 - [ ] Image version pinned
 - [ ] Resource requests set on every service
-- [ ] Disruption budgets on API and Workflow
-- [ ] Only the API reachable from outside
+- [ ] Disruption budgets on `backoffice` and `workflow`
+- [ ] Only the `backoffice` service is reachable from outside
 - [ ] `networkPolicy.enabled` is disabled by default. Enable it with caution via `values.yaml`. It is intended for advanced users who understand Kubernetes network policies and can configure them appropriately for their environment. 
 - [ ] Backups running for the database and storage
 

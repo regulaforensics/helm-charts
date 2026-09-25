@@ -54,7 +54,7 @@ The chart ships without requests or limits, so nothing is reserved or capped unt
 Recommended values:
 
 ```yaml
-api:
+backoffice:
   resources:
     requests: { cpu: "650m", memory: "1200Mi" }
     limits:   { memory: "2Gi" }
@@ -90,10 +90,10 @@ Three conventions to keep:
 Total resource requirements:
 
 - Single replica of each service requires roughly **1.5 CPU and 2.7 GiB**.
-- The second Workflow replica requires an additional 0.2 CPU and 0.5 GiB.
+- The second `workflow` replica requires an additional 0.2 CPU and 0.5 GiB.
 - External dependencies: additional capacity must be provisioned for your database, message queue, and storage, regardless of where they are hosted.
 
-To handle higher traffic, scale horizontally instead of vertically; both the API and Workflow are designed to autoscale. See
+To handle higher traffic, scale horizontally instead of vertically; both the `backoffice` and `workflow` are designed to autoscale. See
 [Operations](07-operations.md#scaling).
 
 ### Memory adjustments

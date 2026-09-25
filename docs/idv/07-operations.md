@@ -32,13 +32,13 @@ if the encryption key changed.
 
 ## Scaling
 
-Only **API** and **Workflow** can run multiple copies. Scheduler, Audit, and Indexer must stay at
+Only `backoffice` and `workflow*` can run multiple copies. `scheduler`, `audit`, and `indexer` must stay at
 one. Two schedulers would run every scheduled job twice.
 
 Fixed number:
 
 ```yaml
-api:
+backoffice:
   replicas: 3
 workflow:
   replicas: 4
@@ -47,7 +47,7 @@ workflow:
 ### Automatic scaling on CPU and memory
 
 ```yaml
-api:
+backoffice:
   autoscaling:
     enabled: true
     minReplicas: 2
@@ -87,7 +87,7 @@ workflow:
         replicas: 2
 ```
 
-Scale the API on request volume and Workflow on queue length. See
+Scale the `backoffice` on request volume and `workflow` on queue length. See
 [Integrations](04-integrations.md#metrics).
 
 ## Disruption budgets
@@ -95,7 +95,7 @@ Scale the API on request volume and Workflow on queue length. See
 It's recommended to enable `podDisruptionBudget` for production environments. It will prevent Kubernetes from stopping all copies of a service at the same time during maintenance:
 
 ```yaml
-api:
+backoffice:
   podDisruptionBudget:
     enabled: true
     config:
@@ -111,11 +111,11 @@ To check the status of the IDV services, run the commands as in the example:
 
 ```bash
 kubectl get pods -n regula-idv
-kubectl exec -n regula-idv deploy/idv-api -- curl -sf localhost:8000/api/health
+kubectl exec -n regula-idv deploy/idv-backoffice -- curl -sf localhost:8000/api/health
 kubectl logs -n regula-idv deploy/idv-workflow --tail=100 -f
 ```
 
-The API provides a health endpoint. Port 8000 is fixed and must not be changed. 
+The `backoffice` provides a health endpoint. Port 8000 is fixed and must not be changed. 
 
 For other components (`workflow`, `scheduler`, `audit`), check pod status and logs. For `workflow`, also check the queue length. The commands are the same as in the example above. In the example, `--tail=100` option will show the last 100 lines of the log for `workflow`. 
 

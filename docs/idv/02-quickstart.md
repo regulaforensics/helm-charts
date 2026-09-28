@@ -15,7 +15,7 @@ Make sure you have:
 - The `regula.license` file from the [Client Portal](https://client.regulaforensics.com/)
 - About 4 CPU cores and 8 GB free in the cluster
 
-## 1. Add the chart repository
+## 1. Add the Chart Repository
 
 First, add the `regulaforensics` Helm chart repository: 
 
@@ -24,7 +24,7 @@ helm repo add regulaforensics https://regulaforensics.github.io/helm-charts
 helm repo update
 ```
 
-## 2. Create a namespace and add the license
+## 2. Create a Namespace and Add the License
 
 Create the namespace where IDV will be installed, then add the license. The key inside the Secret must be exactly `regula.license`.
 
@@ -63,7 +63,7 @@ When these bundled dependencies (MongoDB/RabbitMQ/MinIO) are enabled, the chart 
 
 `idv` is the Helm release name. Using `idv` keeps the generated service names short, such as `idv-workflow`.
 
-## 4. Check it started
+## 4. Check It Started
 
 ```bash
 kubectl get pods -n regula-idv
@@ -87,7 +87,7 @@ idv-minio-post-job-...   0/1  Completed
 
 If anything is not running as expected, see [Troubleshooting](08-troubleshooting.md)
 
-## 5. Create your login
+## 5. Create a Login
 
 **A new installation has no user accounts**. Create the first administrator account:
 
@@ -114,7 +114,7 @@ User: regula-idv
 
 Keep the password in single quotes so characters like `@` are not misread by your shell.
 
-## 6. Open the portal
+## 6. Open the Portal
 
 ```bash
 kubectl port-forward -n regula-idv svc/idv-backoffice 8080:80
@@ -122,7 +122,7 @@ kubectl port-forward -n regula-idv svc/idv-backoffice 8080:80
 
 Go to http://127.0.0.1:8080 and sign in with the account you created above.
 
-## Limitations of this setup
+## Limitations of This Setup
 
 **Document and face verification**. IDV is running, but the services required to read documents and match faces are separate and are not installed. See [Integrations](04-integrations.md).
 

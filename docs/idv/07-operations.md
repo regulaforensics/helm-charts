@@ -90,7 +90,7 @@ workflow:
 Scale the `backoffice` on request volume and `workflow` on queue length. See
 [Integrations](04-integrations.md#metrics).
 
-## Disruption budgets
+## Disruption Budgets
 
 It's recommended to enable `podDisruptionBudget` for production environments. It will prevent Kubernetes from stopping all copies of a service at the same time during maintenance:
 
@@ -105,7 +105,7 @@ backoffice:
 Set `minAvailable` **or** `maxUnavailable`, never both. Only use these with two or more replicas. 
 With a single replica, the budget blocks routine node maintenance entirely.
 
-## Checking health
+## Checking Health
 
 To check the status of the IDV services, run the commands as in the example:
 
@@ -130,7 +130,7 @@ config:
 Leave `console: true` and `file: false` so logs go to `kubectl logs` rather than inside the
 container.
 
-## Data retention
+## Data Retention
 
 By default, session data is kept forever. If your organization has a data retention policy, configure the `cleanSessions` scheduled job to remove older session data. If you have a retention policy, see
 [Configuration](05-configuration.md#scheduled-clean-up-jobs).
@@ -151,7 +151,7 @@ Search indexes can be rebuilt, so backing them up is optional.
 > A database backup and the encryption key are only useful together. Store both, and check you can
 > actually restore them.
 
-## Disaster recovery
+## Disaster Recovery
 
 IDV is deployed in your own infrastructure, so you are responsible for setting up disaster recovery. The appropriate approach depends on your recovery objectives and infrastructure. Options range from backup and restore to running IDV across two sites.
 

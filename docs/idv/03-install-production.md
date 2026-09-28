@@ -1,4 +1,4 @@
-# Production install
+# Production Installation
 
 The [Quickstart](02-quickstart.md) is an all-in-one installation that installs IDV together with bundled MongoDB, RabbitMQ, and MinIO services. It is designed for getting IDV up and running quickly.
 
@@ -17,7 +17,7 @@ Main steps:
 - [Check before going live](#check-before-going-live)
 - [Next](#next)
 
-## 1. Create the namespace and license
+## 1. Create a Namespace and Add the License
 
 Create the namespace where IDV will be installed, then add the license. The key inside the Secret must be exactly `regula.license`.
 
@@ -29,7 +29,7 @@ kubectl create secret generic idv-license \
   --from-file=regula.license=./regula.license
 ```
 
-## 2. Generate the encryption key
+## 2. Generate the Encryption Key
 
 IDV encrypts sensitive database fields with a "Fernet key". Generate one:
 
@@ -46,7 +46,7 @@ python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().
 >   place, or if no key is set at all.
 > - Set it before storing real data. Changing it later makes existing encrypted data unreadable.
 
-## 3. Configure credentials
+## 3. Configure Credentials
 
 Create the credentials Secret. Store passwords, connection strings, and other sensitive connection details in a Kubernetes Secret:
 
@@ -69,7 +69,7 @@ Step 5 below connects these values to IDV through the `env:` list. Do not put cr
 
 > Use the **top-level `env:`**, never `config.env:`. They are separate configuration options. See [Configuration](05-configuration.md#watch-out-env-and-configenv-are-different).
 
-## 4. Configure the address and HTTPS
+## 4. Configure the Address and HTTPS
 
 Two requirements that cause most first-install problems:
 
@@ -275,7 +275,7 @@ There is no `indexer` component unless you enable search.
 
 If something went wrong, see [Troubleshooting](08-troubleshooting.md)
 
-## 7. Create the first user
+## 7. Create the First User
 
 **A new installation has no accounts and no default password.** Nobody can log in until you create
 the first account:
@@ -298,7 +298,7 @@ See [Authentication and users](06-auth-and-users.md) for SSO and roles.
 
 You can now open `https://idv.example.com` and sign in.
 
-## Check before going live
+## Check Before Going Live
 
 - [ ] Fernet key generated, passed via Secret, and backed up somewhere safe
 - [ ] HTTPS everywhere, using TLS 1.2 or newer

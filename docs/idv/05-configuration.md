@@ -2,7 +2,7 @@
 
 This section describes configuration settings: where they are kept, how they are applied, and which settings should be configured through `values.yaml`.
 
-## How it works
+## How It Works
 
 IDV reads one file, `config.yaml`. You never write it directly. Instead:
 
@@ -22,7 +22,7 @@ To see the config your cluster is actually using, run the following command:
 kubectl get configmap idv-config -n regula-idv -o jsonpath='{.data.idv-config}'
 ```
 
-## Passing secrets
+## Passing Secrets
 
 Never put passwords, keys, or connection strings under `config:`. Put them in a Secret and
 reference them from the top-level `env:` list:
@@ -117,7 +117,7 @@ kubectl create secret generic gcs-credentials \
   -n regula-idv --from-file=gcs_key.json=./key.json
 ```
 
-## Scheduled clean-up jobs
+## Scheduled Clean-Up Jobs
 
 The Scheduler runs housekeeping tasks on a timer. **Most timers use six fields and start with
 seconds**, so `*/10 * * * * *` means every ten seconds, not every ten minutes. When changing one,
@@ -137,9 +137,9 @@ config:
 
 `keepFor` accepts values like `30d`, `1w`, `1y`.
 
-## Careful: subchart switches overwrite your settings
+## Check Settings
 
-Turning on a bundled dependency replaces the matching settings you supplied. This is useful for demo but can be confusing for other environments. **If a connection setting seems to be ignored, check these first.**
+Subchart switches overwrite your settings. Turning on a bundled dependency replaces the matching settings you supplied. This is useful for demo but can be confusing for other environments. **If a connection setting seems to be ignored, check these first.**
 
 | Switch | Overwrites |
 |---|---|
@@ -154,7 +154,7 @@ For production deployments, keep the first four disabled and use externally mana
 `statsd` is different: it is a stateless metrics exporter with nothing to lose, and enabling
 it is a reasonable choice in production.
 
-## Settings configured outside the chart
+## Settings Outside the Chart
 
 Chart `1.16.0` covers the settings needed for a standard Kubernetes deployment. 
 

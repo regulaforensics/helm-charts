@@ -74,7 +74,7 @@ resources:
 Your cluster also needs the
 [NVIDIA device plugin](https://github.com/NVIDIA/k8s-device-plugin). GPU memory is more important than faster CPU cores. See [Requirements](01-requirements.md#face-api-and-gpu).
 
-## Face and text search
+## Face and Text Search
 
 Face and text search require OpenSearch 2.19.0 or later or MongoDB Atlas. Face search is also used by the Profile module.
 
@@ -134,7 +134,7 @@ config:
 
 For MongoDB Atlas Vector Search, set `config.faceSearch.database.type: atlas` or `config.textSearch.database.type: atlas`.
 
-### The Indexer
+### Indexer
 
 A background service called the Indexer builds the search indexes. It is deployed automatically when
 either `faceSearch.enabled` or `textSearch.enabled` is `true`. No separate setting is needed:
@@ -190,7 +190,7 @@ The bundled StatsD exporter is safe to use in production because it does not sto
 `statsd.enabled` overrides the `host` and `port` you set above.
 
 The bundled exporter converts raw metrics into Prometheus ones, including
-`idv_backoffice_http_duration` and `idv_backoffice_http_request_total`, which are both recommended for scaling the `backoffice` service. TBD!!!!!
+`idv_backoffice_http_duration` and `idv_backoffice_http_request_total`, which are both recommended for scaling the `backoffice` service. 
 
 Make sure the two enabled settings are configured consistently. The chart warns you at installation time if only one is enabled.
 

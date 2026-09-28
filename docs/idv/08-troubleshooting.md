@@ -1,6 +1,6 @@
 # Troubleshooting
 
-## Start here
+## Start Here
 
 Run these commands first:
 
@@ -18,7 +18,7 @@ kubectl logs -n regula-idv <pod> --previous
 | `kubectl logs -n regula-idv <pod> --tail=200` | Shows recent application errors from the container.                             |
 | `kubectl logs -n regula-idv <pod> --previous` | Shows logs from the previous container instance if the container has restarted. |
 
-## Find your symptom
+## Find Your Symptom
 
 Find your symptom below. All examples assume the namespace `regula-idv` and release name `idv`.
 
@@ -36,7 +36,7 @@ Find your symptom below. All examples assume the namespace `regula-idv` and rele
 - [Everything restarted after I changed a setting](#everything-restarted-after-i-changed-a-setting)
 
 
-## A pod never starts (`ContainerCreating`)
+## A Pod Never Starts (`ContainerCreating`)
 
 ### Likely cause
 
@@ -64,7 +64,7 @@ kubectl get secret idv-license -n regula-idv -o jsonpath='{.data}' | tr ',' '\n'
 
 `--from-file=regula.license=./regula.license` gets this right. `--from-file=license=...` does not.
 
-## Licence errors in the logs
+## License Errors in the Logs
 
 ### Likely cause
 
@@ -86,7 +86,7 @@ a fresh copy and recreate the Secret.
 If you use
 `networkPolicy`, allow outbound access to `lic.regulaforensics.com`; [`values.yaml`](../../charts/idv/values.yaml) has a commented example.
 
-## Pods keep restarting (`CrashLoopBackOff`)
+## Pods Keep Restarting (`CrashLoopBackOff`)
 
 ### Likely cause
 
@@ -114,7 +114,7 @@ verification rather than at startup.
 If the credentials look right but clearly are not being used, see
 [subchart switches](05-configuration.md#careful-subchart-switches-overwrite-your-settings).
 
-## The portal loads but I cannot sign in
+## The Portal Loads but I Cannot Sign In
 
 ### Likely cause
 
@@ -141,7 +141,7 @@ kubectl get configmap idv-config -n regula-idv -o jsonpath='{.data.idv-config}' 
 
 See [Authentication and users](06-auth-and-users.md).
 
-## QR codes or phone scanning do not work
+## QR Codes or Phone Scanning Do Not Work
 
 ### Likely cause
 
@@ -164,7 +164,7 @@ The chart default, `http://idv.example.com`, points nowhere.
 **Using `port-forward`.** It only works on your own machine; a phone cannot reach `127.0.0.1`.
   Phone capture needs a real hostname, DNS, and a certificate.
 
-## The address works but returns 404
+## The Address Works but Returns 404
 
 ### Likely cause
 
@@ -189,7 +189,7 @@ kubectl get ingress -n regula-idv -o yaml | grep -A6 paths
 
 Add the `/` path if it is missing.
 
-## Search finds nothing / no Indexer running
+## Search Finds Nothing / No Indexer Running
 
 ### Likely cause
 
@@ -207,7 +207,7 @@ If `faceSearch` or `textSearch` is enabled but the Indexer is still not running,
 
 Enable `config.faceSearch` or `config.textSearch` if search is required. And see about the Indexer in [Integrations](05-integrations.md#the-indexer).
 
-## My search settings are being ignored
+## My Search Settings are Ignored
 
 ### Likely cause
 
@@ -225,7 +225,7 @@ Check whether the bundled [subchart](05-configuration.md#careful-subchart-switch
 See
 [subchart switches](05-configuration.md#careful-subchart-switches-overwrite-your-settings).
 
-## Nothing is being saved to storage
+## Nothing Is Saved to Storage
 
 ### Likely cause
 
@@ -240,7 +240,7 @@ Check that `config.storage.type` is `s3`, `az`, or `gcs`.
 Local filesystem storage (`fs`) is not available
 for Kubernetes deployments and will not work if set.
 
-## A setting from a Secret has no effect
+## A Setting from the Secret Has No Effect
 
 ### Likely cause
 
@@ -262,7 +262,7 @@ Nothing listed means it was never created.
 Use the top-level `env` setting. See
 [Configuration](05-configuration.md#watch-out-env-and-configenv-are-different).
 
-## Certificate errors on internal connections
+## Certificate Errors on Internal Connections
 
 ### Likely cause
 
@@ -293,7 +293,7 @@ mongodb://…?tls=true&tlsCAFile=/etc/regula/tls/ca-bundle.pem
 
 For OpenSearch set `verifyCerts: true`; for the broker use `amqps://`.
 
-## Everything restarted after I changed a setting
+## Everything Restarted After I Changed a Setting
 
 ### Likely cause
 
@@ -309,7 +309,7 @@ Run two or more
 `backoffice` and `workflow` replicas with disruption budgets if you need no interruption. See
 [Operations](07-operations.md#disruption-budgets).
 
-## Information to send to support
+## Information to Share with Support
 
 If the issue persists, collect the following information:
 

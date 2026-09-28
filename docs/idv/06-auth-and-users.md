@@ -1,8 +1,8 @@
-# Authentication and users
+# Authentication and Users
 
 This section explains how to create and manage users, configure sign-in methods, and control access through roles and permissions. 
 
-## Create the first user
+## Create the First User
 
 A new IDV installation has **no accounts and no default password.** Nobody can sign in until you
 create the first user.
@@ -37,7 +37,7 @@ The `--name` value must be unique. After you create the first administrator acco
 > The password is briefly visible inside the pod while the command runs. In stricter environments,
 > use this account only to create the real ones, then delete it.
 
-## Sign-in methods
+## Sign-In Methods
 
 | Method | Setting | Default |
 |---|---|---|

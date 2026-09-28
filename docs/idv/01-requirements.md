@@ -13,7 +13,9 @@
 | Gateway API        | Gateway API CRDs (Standard Channel) v1.0.0 or higher must be pre-installed in the cluster                                                                              | Optional — needed only if you prefer it to Ingress |
 
 
-## Services you provide
+## Services 
+
+Services you provide:
 
 | What | Used for | Options | Requirement |
 |---|---|---|---|
@@ -118,9 +120,9 @@ IDV needs the `regula.license` file, available from the
 [Client Portal](https://client.regulaforensics.com/). You load it into a Kubernetes Secret during
 installation; it is never included in the chart.
 
-## The bundled dependencies are for demos only
+## Bundled Dependencies
 
-The chart can install MongoDB, RabbitMQ, MinIO, and OpenSearch for you. This makes a demo quick to
+The bundled dependencies are for demos only. The chart can install MongoDB, RabbitMQ, MinIO, and OpenSearch for you. This makes a demo quick to
 set up, but they are single-copy, use well-known passwords, and are not backed up.
 
 **Do not use these four in production.** Run each dependency properly, with its own backups,

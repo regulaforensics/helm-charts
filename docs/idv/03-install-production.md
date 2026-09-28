@@ -71,7 +71,7 @@ Step 5 below connects these values to IDV through the `env:` list. Do not put cr
 
 ## 4. Configure the Address and HTTPS
 
-Two requirements that cause most first-install problems:
+Pay particular attention to the following requirements:
 
 - **`config.baseUrl` must be the public URL your users will enter in their browser to access your IDV instance.** Use your own domain, not `idv.example.com` from this example. The same domain must be configured in the Ingress `hosts` section below. IDV uses this address in QR codes, emails, and login redirects. If `baseUrl` is incorrect, the portal may still load, but phone-based and browser-based scanning can fail.
 
@@ -100,7 +100,7 @@ If you use Gateway API instead, configure `route.main` and keep `ingress.enabled
 
 ## 5. Configure `values.yaml`
 
-A complete starting configuration. Adjust hostnames, buckets, and sizing.
+Use the following configuration as a starting point. Adjust the hostnames, buckets, and resource values for your environment.
 
 ```yaml
 licenseSecretName: idv-license
@@ -232,7 +232,7 @@ Create the bucket before installing IDV. The chart does not create it for you. F
 
 ## 6. Install IDV
 
-Preview first. This helps catch configuration mistakes before they are applied to the cluster:
+You should preview first. This helps catch configuration mistakes before they are applied to the cluster:
 
 ```bash
 helm template idv regulaforensics/idv \
@@ -242,9 +242,9 @@ helm template idv regulaforensics/idv \
 
 In `preview.yaml`, verify that:
 
-* `baseUrl` is set to the address users will access
-* Ingress has both a host and a path
-* The default Fernet key is not present
+- `baseUrl` is set to the address users will access
+- Ingress has both a host and a path
+- The default Fernet key is not present
 
 If everything looks correct, install IDV:
 
@@ -264,20 +264,20 @@ kubectl exec -n regula-idv deploy/idv-backoffice -- curl -sf localhost:8000/api/
 
 A healthy installation should have these four IDV components running:
 
-* `backoffice`
-* `workflow`
-* `scheduler`
-* `audit`
+- `backoffice`
+- `workflow`
+- `scheduler`
+- `audit`
 
-A successful request returns 200. 
+A successful health check returns HTTP status code `200`.
 
 There is no `indexer` component unless you enable search.
 
-If something went wrong, see [Troubleshooting](08-troubleshooting.md)
+If something goes wrong, see [Troubleshooting](08-troubleshooting.md)
 
 ## 7. Create the First User
 
-**A new installation has no accounts and no default password.** Nobody can log in until you create
+A new installation has no accounts and no default password. Nobody can log in until you create
 the first account:
 
 ```bash

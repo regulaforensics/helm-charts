@@ -31,7 +31,7 @@ Worth knowing:
 
 - **Files are stored in object storage**, not on local disk. Use S3 or an S3-compatible service, or
   MinIO if you need something inside the cluster.
-- **The message queue must speak AMQP**, such as RabbitMQ or AmazonMQ.
+- **The message queue must speak AMQP**, such as RabbitMQ or Amazon MQ.
 - **Search is needed for the Profile module**, as well as for face and text search.
 
 ## Resources

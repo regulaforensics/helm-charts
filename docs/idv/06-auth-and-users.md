@@ -22,7 +22,7 @@ kubectl exec -n regula-idv deploy/idv-backoffice -- \
 unset IDV_ADMIN_PW
 ```
 
-It confirms the new account:
+The command returns the new account details:
 
 ```
 User: admin
@@ -34,15 +34,16 @@ User: admin
 
 The `--name` value must be unique. After you create the first administrator account, add additional users through the portal or API. You do not need to run the `idv user create` command again unless you specifically want to create another user from the command line.
 
-> The password is briefly visible inside the pod while the command runs. In stricter environments,
-> use this account only to create the real ones, then delete it.
+> **Warning**
+>
+> The password is briefly visible inside the pod while the command runs. In environments with stricter security requirements, use this account only to create the required administrator accounts, then delete it.
 
 ## Sign-In Methods
 
 | Method | Setting | Default |
 |---|---|---|
 | Username and password | `config.basicAuth.enabled` | true |
-| OAuth 2.0 (Google, Microsoft, Cognito) | `config.oauth2.enabled` | false|
+| OAuth 2.0 (Google, Microsoft, Cognito) | `config.oauth2.enabled` | false |
 | SAML | `config.saml.enabled` | false |
 
 
@@ -63,11 +64,13 @@ If you want to use SSO exclusively, configure and verify SSO **before disabling 
 3. Verify that SSO login works.
 4. Set `config.basicAuth.enabled: false`.
 
-> **Important:** If `config.basicAuth.enabled` is set to `false` before SSO is ready, or if SSO stops working, there is no alternative sign-in method. To restore access, set `config.basicAuth.enabled: true` and run `helm upgrade`.
+> **Important**
+>
+> If `config.basicAuth.enabled` is set to `false` before SSO is ready, or if SSO stops working, there is no alternative sign-in method. To restore access, set `config.basicAuth.enabled: true` and run `helm upgrade`.
 
 ### OAuth 2.0
 
-Get a client ID and secret from your provider first. `type` must be `google`, `microsoft`, or
+Obtain a client ID and client secret from your OAuth 2.0 provider. `type` must be `google`, `microsoft`, or
 `cognito`.
 
 ```yaml
@@ -100,10 +103,10 @@ env:
 Leave `secret: ""` — anything written there is stored in plain text. Providers are numbered from
 zero in the order listed above.
 
-Two things to get right:
+Make sure the following settings are correct:
 
-- `name` becomes part of the sign-in return address, so register the same value with your provider.
-- `config.baseUrl` must be correct, or the return redirect fails.
+- `name` becomes part of the sign-in return address. Register the same value with your provider.
+- `config.baseUrl` must contain the correct public URL. Otherwise, the return redirect fails.
 
 `defaultRoles` and `defaultGroups` apply to people signing in for the first time. Missing groups are
 created automatically.
@@ -139,7 +142,7 @@ Certificates and keys are base64-encoded. The private key must come from a Secre
 
 ## Roles
 
-A role is a bundle of permissions. Four come ready to use:
+A role is a set of permissions. IDV provides four predefined roles:
 
 | Role | Intended use |
 |---|---|
@@ -150,14 +153,14 @@ A role is a bundle of permissions. Four come ready to use:
 
 Permissions use the format `scope:operation`, where `scope` is the resource and `operation` defines what the user can do with it. For example, `session:read` allows the user to read their own sessions. 
 
-Available operations are: 
-- `read` - view data
-- `write` - create or update data
--  `delete` - delete data
-- `subscribe` - receive updates
+Available operations are:
 
-A scope ending in `_all` covers everyone's records rather than
-just the user's own. For example, `session:read_all`  allows the user to read sessions belonging to all users.
+- `read` — view data
+- `write` — create or update data
+- `delete` — delete data
+- `subscribe` — receive updates
+
+A scope ending in `_all` grants access to records belonging to all users rather than only the current user's records. For example, `session:read_all`  allows the user to read sessions belonging to all users.
 
 Create a custom role:
 

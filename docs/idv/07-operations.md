@@ -20,7 +20,7 @@ Before upgrading:
 - **`--version` controls the chart version.** An upgrade can change the chart as well as the app.
 - **Any config change restarts all services**, because they share one configuration.
 
-Rolling back:
+To roll back an upgrade, run:
 
 ```bash
 helm history idv -n regula-idv
@@ -32,10 +32,10 @@ if the encryption key changed.
 
 ## Scaling
 
-Only `backoffice` and `workflow*` can run multiple copies. `scheduler`, `audit`, and `indexer` must stay at
-one. Two schedulers would run every scheduled job twice.
+Only `backoffice` and `workflow` can run multiple copies. `scheduler`, `audit`, and `indexer` must stay at
+one. Running multiple `scheduler` replicas causes each scheduled job to run multiple times.
 
-Fixed number:
+To configure a fixed number of replicas:
 
 ```yaml
 backoffice:
@@ -56,13 +56,12 @@ backoffice:
     targetMemoryUtilizationPercentage: 80
 ```
 
-Requires metrics-server in the cluster. Once enabled, the autoscaler controls the replica count and
+Requires `metrics-server` in the cluster. Once enabled, the autoscaler controls the replica count and
 `replicas` is ignored.
 
 ### Automatic scaling on queue length (KEDA)
 
-KEDA is recommended for Workflow when workload is driven by queue depth. Requires the KEDA
-operator. Cannot be combined with the CPU autoscaler above.
+KEDA is recommended for `workflow` when workload is driven by queue depth. Queue-based automatic scaling requires the KEDA operator and cannot be combined with the CPU and memory autoscaler described above. 
 
 ```yaml
 workflow:
@@ -92,7 +91,7 @@ Scale the `backoffice` on request volume and `workflow` on queue length. See
 
 ## Disruption Budgets
 
-It's recommended to enable `podDisruptionBudget` for production environments. It will prevent Kubernetes from stopping all copies of a service at the same time during maintenance:
+It's recommended to enable `podDisruptionBudget` in production environments to prevent Kubernetes from stopping all replicas of a service during maintenance:
 
 ```yaml
 backoffice:
@@ -102,10 +101,10 @@ backoffice:
       minAvailable: 1
 ```
 
-Set `minAvailable` **or** `maxUnavailable`, never both. Only use these with two or more replicas. 
+Set `minAvailable` or `maxUnavailable`, never both. Only use these with two or more replicas. 
 With a single replica, the budget blocks routine node maintenance entirely.
 
-## Checking Health
+## Check Health
 
 To check the status of the IDV services, run the commands as in the example:
 
@@ -115,9 +114,9 @@ kubectl exec -n regula-idv deploy/idv-backoffice -- curl -sf localhost:8000/api/
 kubectl logs -n regula-idv deploy/idv-workflow --tail=100 -f
 ```
 
-The `backoffice` provides a health endpoint. Port 8000 is fixed and must not be changed. 
+The `backoffice` provides a health endpoint. Port 8000 is fixed and must not be changed.
 
-For other components (`workflow`, `scheduler`, `audit`), check pod status and logs. For `workflow`, also check the queue length. The commands are the same as in the example above. In the example, `--tail=100` option will show the last 100 lines of the log for `workflow`. 
+For `workflow`, `scheduler`, and `audit`, check the pod status and logs. For `workflow`, also check the queue length. The `--tail=100` option displays the last 100 log lines.
 
 For more detailed logs, temporarily set the logging level to `DEBUG`:
 
@@ -132,7 +131,7 @@ container.
 
 ## Data Retention
 
-By default, session data is kept forever. If your organization has a data retention policy, configure the `cleanSessions` scheduled job to remove older session data. If you have a retention policy, see
+By default, session data is kept indefinitely. If your organization has a data retention policy, configure the `cleanSessions` scheduled job to remove older session data. Also see
 [Configuration](05-configuration.md#scheduled-clean-up-jobs).
 
 ## Backups
@@ -148,16 +147,15 @@ IDV itself stores nothing. Back up what it depends on:
 
 Search indexes can be rebuilt, so backing them up is optional.
 
-> A database backup and the encryption key are only useful together. Store both, and check you can
-> actually restore them.
+> **Important**
+>
+> A database backup and its encryption key are required together for recovery. Store both securely and regularly verify that you can restore them.
 
 ## Disaster Recovery
 
 IDV is deployed in your own infrastructure, so you are responsible for setting up disaster recovery. The appropriate approach depends on your recovery objectives and infrastructure. Options range from backup and restore to running IDV across two sites.
 
-Beyond basic backups, the parts holding data need copying between sites: database replica sets,
-storage replication, search replication, and broker clustering. The remaining services are
-stateless and simply run in both places behind a load balancer.
+For multi-site deployments, replicate stateful components between sites, including database replica sets, object storage, search indexes, and the message broker. The remaining IDV services are stateless and can run at both sites behind a load balancer.
 
 The trade-offs between approaches are covered in the
 [platform disaster recovery guide](https://docs.regulaforensics.com/develop/idv/administration/disaster-recovery/).
@@ -167,8 +165,10 @@ The trade-offs between approaches are covered in the
 ```bash
 helm uninstall idv -n regula-idv
 ```
-It removes the IDV application resources but does not delete your Secrets and data in object storage. Deleting the namespace removes them so
+The command removes the IDV application resources but does not delete your Secrets and data in object storage. Deleting the namespace removes them so
 **make sure the encryption key is saved elsewhere first.**
+
+The command removes the IDV application resources but does not delete data stored in external object storage.
 
 ---
 

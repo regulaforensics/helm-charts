@@ -12,7 +12,7 @@ image:
   # Please mind, setting a '-gpu' tag also requires adding 'nvidia.com/gpu: 1' at the 'resources' section.
   # Overrides the image tag whose default is the chart appVersion.
   tag: ~
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 imagePullSecrets: []
 
 nameOverride: ""
@@ -670,14 +670,57 @@ autoscaling:
 # ref: https://github.com/zilliztech/milvus-helm/tree/master/charts/milvus
 milvus:
   enabled: false
+  # Standalone, on local disk. The bundled MinIO subchart pins container images MinIO no longer
+  # publishes, and no drop-in replacement exists, so it stays disabled and Milvus keeps its data on
+  # its own PersistentVolume instead. `cluster`/`pulsarv3` disabled since standalone doesn't use them.
+  cluster:
+    enabled: false
+  pulsarv3:
+    enabled: false
+  minio:
+    enabled: false
+    # Required: disabling the subchart above prunes this value, which config.tpl still reads.
+    tls:
+      enabled: false
+  # Woodpecker (standalone's write-ahead log) defaults to object storage independently of
+  # common.storageType below.
+  streaming:
+    woodpecker:
+      storage:
+        type: local
+  # Sets common.storageType: local (no values.yaml field exists for it).
+  extraConfigFiles:
+    user.yaml: |+
+      common:
+        storageType: local
+  standalone:
+    # Upstream's emptyDir here would shadow the PersistentVolume below at the same path, discarding
+    # data on every restart.
+    disk:
+      enabled: false
+    persistence:
+      persistentVolumeClaim:
+        size: 10Gi  # upstream default is 50Gi
 
 # Configuration for postgresql subchart
 # For the advanced PostgreSQL configuration, please referer to the official documentation.
 # ref: https://github.com/bitnami/charts/tree/main/bitnami/postgresql
 postgresql:
   enabled: false
+  # Images are pinned to the `bitnamilegacy` repositories because Bitnami moved its public
+  # container catalogue to a commercial registry. `bitnamilegacy` is a frozen mirror that is still
+  # anonymously pullable but receives no updates - adequate for Dev/Test only.
   image:
     repository: bitnamilegacy/postgresql
+  # Only used when `volumePermissions.enabled` is set (it is off by default), but pinned so that
+  # enabling it does not fail to pull.
+  volumePermissions:
+    image:
+      repository: bitnamilegacy/os-shell
+  # Only used when `metrics.enabled` is set (off by default), pinned for the same reason.
+  metrics:
+    image:
+      repository: bitnamilegacy/postgres-exporter
   auth:
     username: "regula"
     password: "Regulapasswd#1"

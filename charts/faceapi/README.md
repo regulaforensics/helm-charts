@@ -244,6 +244,7 @@ To enable KEDA autoscaling:
 helm install my-release regulaforensics/faceapi \
     --set licenseSecretName=face-api-license \
     --set autoscaling.keda.enabled=true
+```
 
 ## Ingress Configuration
 
@@ -470,4 +471,20 @@ ingress:
 | `postgresql.enabled`        | Whether to enable postgresql subchart   | `false` Required by Liveness/Search mode  |
 | `postgresql.auth.username`  | postgresql Username                     | `regula`                                  |
 | `postgresql.auth.password`  | postgresql Password                     | `Regulapasswd#1`                          |
-| `postgresql.auth.database`  | postgresql Database                     | `regula_db`                               |
+| `postgresql.auth.database`  | postgresql Database                     | `regula`                                  |
+
+> **Upgrading to 3.9.0:** Milvus goes `5.0.6` → `5.0.25` (Milvus v2.6.4 → v2.6.21) and now runs
+> `standalone` instead of a full cluster with Pulsar. It no longer deploys its own MinIO for object
+> storage — data is kept on the standalone pod's PersistentVolume instead. Dev/Test only.
+>
+> - Existing Milvus data in the bundled MinIO is not migrated: recreate collections, or restore the
+>   previous cluster+MinIO deployment with `milvus.cluster.enabled: true`, `milvus.minio.enabled:
+>   true` and `milvus.extraConfigFiles: null`.
+
+> **Upgrading to 3.8.0:** the bundled PostgreSQL subchart goes `13.4.4` → `16.7.27`
+> (PostgreSQL 16.1 → 17.6). Dev/Test only — external databases are unaffected.
+>
+> - PostgreSQL will not start on an existing 16 data directory: delete the PVC, or pin the
+>   previous chart version.
+> - A NetworkPolicy is now created by default. Opt out with
+>   `postgresql.primary.networkPolicy.enabled: false`.

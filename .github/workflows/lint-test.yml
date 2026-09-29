@@ -69,7 +69,7 @@ jobs:
           ct install --namespace test-charts \
             --config "${CT_CONFIGFILE}" \
             --helm-extra-args='--timeout 600s' \
-            --helm-extra-set-args '--set=licenseSecretName=license --set=mongodb.enabled=true --set=rabbitmq.enabled=true --set=minio.enabled=true --set=minio.rootUser=user --set=minio.rootPassword=password123 --set=minio.resources.requests.memory=512Mi --set=api.probes.startupProbe.enabled=true --set=api.probes.startupProbe.failureThreshold=30'
+            --helm-extra-set-args '--set=licenseSecretName=license --set=mongodb.enabled=true --set=rabbitmq.enabled=true --set=minio.enabled=true --set=minio.auth.rootUser=user --set=minio.auth.rootPassword=password123 --set=minio.resources.requests.memory=512Mi --set=api.probes.startupProbe.enabled=true --set=api.probes.startupProbe.failureThreshold=30'
 
       - name: Dump Kubernetes debug info (on failure)
         if: steps.list-changed.outputs.changed == 'true' && steps.ct-install.outcome != 'success'

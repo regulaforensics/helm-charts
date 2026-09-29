@@ -36,7 +36,7 @@ versionSha: latest
 
 image:
   repository: regulaforensics/idv-coordinator
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
   tag: ""
 imagePullSecrets: {}
 
@@ -270,6 +270,10 @@ config:
           cron: '*/30 * * * * *'
 
     audit:
+      # Number of worker processes ("auto" derives from available CPUs)
+      workers: auto
+      # Number of threads per worker
+      threads: 32
       wsEnabled: false
       user:
         keepFor: "90d"
@@ -368,6 +372,11 @@ config:
       location:
         bucket: "idv-bucket"
         prefix: "banlist"
+
+    thumbnails:
+      location:
+        bucket: "idv-bucket"
+        prefix: "thumbnails"
 
   faceSearch:
     # Set opensearch.enabled.true if 'faceSearch' is enabled
@@ -786,6 +795,8 @@ statsd:
 # NOTE
 # The subcharts below are used for the demonstration and Dev/Test purposes.
 # We strongly recommend to deploy separate installations of the DB in Production.
+# Images are pinned to `bitnamilegacy/*`, a frozen mirror that is still publicly pullable, because
+# Bitnami's default image repositories now require a commercial subscription.
 
 mongodb:
   enabled: false
@@ -804,17 +815,35 @@ rabbitmq:
     username: idv
     password: "admin"
 
+# S3-compatible object store for exercising `config.storage.type: s3` without AWS.
+# When enabled, overrides `config.storage.s3`.
 minio:
   enabled: false
-  rootUser: user
-  rootPassword: password123
+  # Also used as the S3 access key and secret in `config.storage.s3`.
+  auth:
+    rootUser: user
+    rootPassword: password123
+  # Single pod; upstream defaults to `distributed` (4 replicas).
   mode: standalone
   persistence:
     size: 10Gi
-  buckets:
-    - name: idv-bucket
-      policy: none
-      purge: false
+  # Buckets are created by the `init-minio-bucket` init container from
+  # `config.storage.*.location.bucket`, not by this subchart.
+  image:
+    repository: bitnamilegacy/minio
+  # `mc` client, used by the init container above.
+  clientImage:
+    repository: bitnamilegacy/minio-client
+    # Upstream defines no pull policy for this image.
+    pullPolicy: IfNotPresent
+  volumePermissions:
+    image:
+      repository: bitnamilegacy/os-shell
+  # Web console; a separate Deployment in this chart.
+  console:
+    enabled: false
+    image:
+      repository: bitnamilegacy/minio-object-browser
 
 opensearch:
   enabled: false

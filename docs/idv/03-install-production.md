@@ -1,6 +1,6 @@
 # Production Install
 
-The [Quickstart](02-quickstart.md) is an all-in-one installation that installs IDV together with bundled MongoDB, RabbitMQ, and MinIO services. It is designed for getting IDV up and running quickly.
+The [Quickstart](02-quickstart.md) is an all-in-one setup that installs IDV together with bundled MongoDB, RabbitMQ, and MinIO services. It is designed for getting IDV up and running quickly.
 
 The production install integrates IDV into your existing infrastructure, connecting to MongoDB, a message broker, and object storage that you run yourself outside the IDV Helm deployment. Before you start, make sure those three are reachable from the cluster and that you have
 credentials for each. See [Requirements](01-requirements.md).

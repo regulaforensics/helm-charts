@@ -40,7 +40,7 @@ Find your symptom below. All examples assume the namespace `regula-idv` and rele
 
 ### Likely cause
 
-Usually a missing Secret.
+A required Secret is usually missing.
 
 ### Check
 
@@ -64,7 +64,7 @@ kubectl get secret idv-license -n regula-idv -o jsonpath='{.data}' | tr ',' '\n'
 
 `--from-file=regula.license=./regula.license` gets this right. `--from-file=license=...` does not.
 
-## License Errors in the Logs
+## License Errors in Logs
 
 ### Likely cause
 
@@ -189,7 +189,7 @@ kubectl get ingress -n regula-idv -o yaml | grep -A6 paths
 
 Add the `/` path if it is missing.
 
-## Search Finds Nothing / No Indexer Running
+## Search Finds Nothing or No Indexer Is Running
 
 ### Likely cause
 
@@ -207,7 +207,7 @@ If `faceSearch` or `textSearch` is enabled but the Indexer is still not running,
 
 Enable `config.faceSearch` or `config.textSearch` if search is required. And see about the Indexer in [Integrations](05-integrations.md#the-indexer).
 
-## My Search Settings are Ignored
+## Search Settings are Ignored
 
 ### Likely cause
 
@@ -240,7 +240,7 @@ Check that `config.storage.type` is `s3`, `az`, or `gcs`.
 Local filesystem storage (`fs`) is not available
 for Kubernetes deployments and will not work if set.
 
-## A Setting from the Secret Has No Effect
+## The Secret Setting Has No Effect
 
 ### Likely cause
 
@@ -293,7 +293,7 @@ mongodb://…?tls=true&tlsCAFile=/etc/regula/tls/ca-bundle.pem
 
 For OpenSearch set `verifyCerts: true`; for the broker use `amqps://`.
 
-## Everything Restarted After I Changed a Setting
+## Everything Restarted After Changing a Setting
 
 ### Likely cause
 

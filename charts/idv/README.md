@@ -195,7 +195,7 @@ helm upgrade my-release regulaforensics/idv
 | `tls.trustedCABundle.caStorePaths`                        | CA-store file(s) overlaid with the bundle (image-version-dependent; update on Python upgrade) | `[botocore, certifi, system]` |
 | `versionSha`                                              | Version SHA tag                                   | `latest`                          |
 | `image.repository`                                        | Image repository                                  | `regulaforensics/idv-coordinator` |
-| `image.pullPolicy`                                        | Image pull policy                                 | `Always`                          |
+| `image.pullPolicy`                                        | Image pull policy                                 | `IfNotPresent`                          |
 | `image.tag`                                               | Image tag override                                | `""`                              |
 | `imagePullSecrets`                                        | Secrets for private registries                    | `{}`                              |
 | `licenseSecretName`                                       | Name of existing secret containing regula.license | `null`                            |
@@ -322,6 +322,8 @@ helm upgrade my-release regulaforensics/idv
 | `config.services.scheduler.jobs.expireDeviceLogs.keepFor` | Keep device logs for                              | `"30d"`                           |
 | `config.services.scheduler.jobs.reloadLocales.cron`       | Cron for reloading locales                        | `"*/15 * * * * *"`                |
 | `config.services.scheduler.jobs.cronWorkflow.cron`        | Cron for generic workflow task                    | `"*/30 * * * * *"`                |
+| `config.services.audit.workers`                           | Audit service workers                             | `auto`                            |
+| `config.services.audit.threads`                           | Audit service threads per worker                  | `32`                              |
 | `config.services.audit.wsEnabled`                         | Enable audit WebSocket                            | `false`                           |
 | `config.services.audit.user.keepFor`                      | Keep user data for specific time period           | `90d`                             |
 | `config.services.indexer.timeout`                         | Indexer request timeout seconds                   | `60`                              |
@@ -377,6 +379,8 @@ helm upgrade my-release regulaforensics/idv
 | `config.storage.tempFiles.location.folder`                | Temp files folder                                 | `"files"`                         |
 | `config.storage.banlists.location.bucket`                 | Banlists bucket                                   | `idv-bucket`                      |
 | `config.storage.banlists.location.prefix`                 | Banlists prefix                                   | `"banlist"`                       |
+| `config.storage.thumbnails.location.bucket`               | Thumbnails bucket                                 | `idv-bucket`                      |
+| `config.storage.thumbnails.location.prefix`               | Thumbnails prefix                                 | `"thumbnails"`                    |
 | |
 | `config.faceSearch.enabled`                               | Enable Face search                                | `false`                           |
 | `config.faceSearch.limit`                                 | Max Face search results                           | `1000`                            |
@@ -535,13 +539,23 @@ set `config.faceSearch.database.opensearch.verifyCerts: true` (and the same for 
 
 ## Subchart parameters
 
-| Parameter             | Description                                 | Default |
-|-----------------------|---------------------------------------------|---------|
-| `statsd.enabled`      | Enable Prometheus StatsD exporter subchart  | `false` |
-| `mongodb.enabled`     | Enable MongoDB subchart                     | `false` |
-| `rabbitmq.enabled`    | Enable RabbitMQ subchart                    | `false` |
-| `minio.enabled`       | Enable Minio subchart                       | `false` |
-| `opensearch.enabled`  | Enable OpenSearch subchart                  | `false` |
+| Parameter                 | Description                                                    | Default        |
+|---------------------------|----------------------------------------------------------------|----------------|
+| `statsd.enabled`          | Enable Prometheus StatsD exporter subchart                     | `false`        |
+| `mongodb.enabled`         | Enable MongoDB subchart                                        | `false`        |
+| `rabbitmq.enabled`        | Enable RabbitMQ subchart                                       | `false`        |
+| `minio.enabled`           | Enable MinIO subchart. Overrides all of `config.storage.s3.*`   | `false`        |
+| `minio.auth.rootUser`     | MinIO root user. Also used as the S3 access key                | `user`         |
+| `minio.auth.rootPassword` | MinIO root password. Also used as the S3 access secret         | `password123`  |
+| `minio.console.enabled`   | Deploy the MinIO web console as a separate Deployment           | `false`        |
+| `opensearch.enabled`      | Enable OpenSearch subchart                                     | `false`        |
+
+> **Upgrading to 1.16.0:** the MinIO subchart moved to
+> [`bitnami/minio`](https://github.com/bitnami/charts/tree/main/bitnami/minio). Dev/Test only —
+> installs pointing `config.storage.s3` at a real endpoint are unaffected.
+>
+> - Rename `minio.rootUser` / `minio.rootPassword` to `minio.auth.rootUser` /
+>   `minio.auth.rootPassword`. The old keys are silently ignored.
 
 
 ## KEDA Autoscaling

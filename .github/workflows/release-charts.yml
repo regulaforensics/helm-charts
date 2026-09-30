@@ -28,7 +28,6 @@ jobs:
       - name: Add dependency chart repos
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
-          helm repo add minio https://charts.min.io
           helm repo add milvus https://zilliztech.github.io/milvus-helm
           helm repo add opensearch https://opensearch-project.github.io/helm-charts
           helm repo add mongodb https://charts.bitnami.com/bitnami

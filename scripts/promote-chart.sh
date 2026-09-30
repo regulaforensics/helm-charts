@@ -4,8 +4,11 @@
 # a draft release PR.
 #
 # The upstream chart is copied verbatim; the only fields rewritten are `version`
-# and `appVersion` in Chart.yaml. Everything else (templates, values, README,
-# vendored subcharts) is taken as-is, and files removed upstream are removed here.
+# and `appVersion` in Chart.yaml, and `image.pullPolicy` in values.yaml (and its
+# README row), which is set to IfNotPresent because released image tags are
+# immutable while upstream uses Always for its mutable development tags.
+# Everything else (templates, values, README, vendored subcharts) is taken as-is,
+# and files removed upstream are removed here.
 #
 # All work happens in a throwaway git worktree, so the current checkout is never
 # touched and a dirty working tree is fine.
@@ -33,6 +36,7 @@ set -euo pipefail
 
 readonly PROMOTABLE_CHARTS=("docreader" "faceapi" "idv")
 readonly ANCHOR_SCAN_DEPTH=200
+readonly PROMOTED_PULL_POLICY="IfNotPresent"
 
 chart=""
 app_version=""
@@ -132,15 +136,52 @@ version_gt() {
   return 1
 }
 
+# Filters (stdin -> stdout) that apply the promoted pull policy. Idempotent, so
+# they can be run on either repository's content.
+#
+# values.yaml: only `pullPolicy` directly inside the top-level `image:` block;
+# subchart images such as `minio.clientImage` keep their own value.
+normalize_values() {
+  awk -v policy="$PROMOTED_PULL_POLICY" '
+    /^image:/                                { in_image = 1; print; next }
+    /^[^[:space:]#]/                         { in_image = 0 }
+    in_image && /^[[:space:]]+pullPolicy:/   { sub(/pullPolicy:.*/, "pullPolicy: " policy) }
+    { print }'
+}
+
+# README.md: the `image.pullPolicy` table row. When the column is padded wide
+# enough, six spaces after `Always` are consumed so it stays aligned.
+normalize_readme() {
+  local row='^(\|[[:space:]]*`image\.pullPolicy`[[:space:]]*\|[^|]*\|[[:space:]]*)'
+  sed -E \
+    -e "s/${row}\`Always\`      ( +\|)/\1\`${PROMOTED_PULL_POLICY}\`\2/" \
+    -e "s/${row}\`Always\`( *\|)/\1\`${PROMOTED_PULL_POLICY}\`\2/"
+}
+
+# Top-level image.pullPolicy value of a values.yaml, empty when absent.
+image_pull_policy() {
+  awk '/^image:/ { in_image = 1; next } /^[^[:space:]#]/ { in_image = 0 }
+       in_image && /^[[:space:]]+pullPolicy:/ { sub(/^[[:space:]]+pullPolicy:[[:space:]]*/, ""); print; exit }' "$1"
+}
+
 # Content fingerprint of a chart at a revision, ignoring Chart.yaml. Git blob
 # ids are content hashes, so the same content fingerprints identically in both
-# repositories.
+# repositories. values.yaml and README.md are hashed after normalisation, so the
+# pull policy rewrite above does not stop a promoted chart matching its source.
 fingerprint() {
-  local repo="$1" rev="$2" name="$3"
+  local repo="$1" rev="$2" name="$3" meta path rel sha
+  local pfx="charts/${name}/"
   git -C "$repo" ls-tree -r "$rev" -- "charts/${name}" 2>/dev/null \
-    | awk -v pfx="charts/${name}/" '
-        { sha = $3; path = $0; sub(/^[^\t]*\t/, "", path); sub("^" pfx, "", path)
-          if (path != "Chart.yaml") print path, sha }' \
+    | while IFS=$'\t' read -r meta path; do
+        rel="${path#"$pfx"}"
+        sha="${meta##* }"
+        case "$rel" in
+          Chart.yaml)  continue ;;
+          values.yaml) sha="$(git -C "$repo" show "${rev}:${path}" | normalize_values | git hash-object --stdin)" ;;
+          README.md)   sha="$(git -C "$repo" show "${rev}:${path}" | normalize_readme | git hash-object --stdin)" ;;
+        esac
+        printf '%s %s\n' "$rel" "$sha"
+      done \
     | LC_ALL=C sort | shasum | awk '{ print $1 }'
 }
 
@@ -349,6 +390,15 @@ rm -f "${target_chart_yaml}.bak"
   || die "failed to rewrite 'version' in Chart.yaml"
 [[ "$(chart_field "$target_chart_yaml" appVersion)" == "$app_version" ]] \
   || die "failed to rewrite 'appVersion' in Chart.yaml"
+
+target_values="$worktree/charts/$chart/values.yaml"
+target_readme="$worktree/charts/$chart/README.md"
+normalize_values <"$target_values" >"${target_values}.tmp" && mv "${target_values}.tmp" "$target_values"
+[[ "$(image_pull_policy "$target_values")" == "$PROMOTED_PULL_POLICY" ]] \
+  || die "failed to set image.pullPolicy to ${PROMOTED_PULL_POLICY} in values.yaml"
+if [[ -f "$target_readme" ]]; then
+  normalize_readme <"$target_readme" >"${target_readme}.tmp" && mv "${target_readme}.tmp" "$target_readme"
+fi
 
 if [[ -z "$(git -C "$worktree" status --porcelain -- "charts/$chart")" ]]; then
   die "nothing to promote: the upstream chart at '$source_ref' is already published as-is."

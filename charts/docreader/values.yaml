@@ -533,8 +533,20 @@ autoscaling:
 # ref: https://github.com/bitnami/charts/tree/main/bitnami/postgresql
 postgresql:
   enabled: false
+  # Images are pinned to the `bitnamilegacy` repositories because Bitnami moved its public
+  # container catalogue to a commercial registry. `bitnamilegacy` is a frozen mirror that is still
+  # anonymously pullable but receives no updates - adequate for Dev/Test only.
   image:
     repository: bitnamilegacy/postgresql
+  # Only used when `volumePermissions.enabled` is set (it is off by default), but pinned so that
+  # enabling it does not fail to pull.
+  volumePermissions:
+    image:
+      repository: bitnamilegacy/os-shell
+  # Only used when `metrics.enabled` is set (off by default), pinned for the same reason.
+  metrics:
+    image:
+      repository: bitnamilegacy/postgres-exporter
   auth:
     username: "regula"
     password: "Regulapasswd#1"

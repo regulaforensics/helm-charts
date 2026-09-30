@@ -55,6 +55,8 @@ services:
 
   audit:
     enabled: true
+    workers: {{ .Values.config.services.audit.workers }}
+    threads: {{ .Values.config.services.audit.threads }}
     wsEnabled: {{ .Values.config.services.audit.wsEnabled }}
     user:
       keepFor: {{ quote .Values.config.services.audit.user.keepFor }}
@@ -149,8 +151,8 @@ storage:
   ## `s3` configuration has been overridden by `minio.enabled=true` value
   s3:
     endpoint: http://{{ template "idv.minio" . }}:9000
-    accessKey: {{ quote (.Values.minio.rootUser | default "console") }}
-    accessSecret: {{ quote (.Values.minio.rootPassword | default "console123") }}
+    accessKey: {{ quote (.Values.minio.auth.rootUser | default "console") }}
+    accessSecret: {{ quote (.Values.minio.auth.rootPassword | default "console123") }}
     region: {{ quote .Values.config.storage.s3.region }}
     secure: false
   {{- else }}
@@ -256,6 +258,16 @@ storage:
       {{- end }}
       {{- if eq .Values.config.storage.type "az" }}
       prefix: {{ quote .Values.config.storage.banlists.location.prefix }}
+      {{- end }}
+
+  thumbnails:
+    location:
+      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
+      bucket: {{ quote .Values.config.storage.thumbnails.location.bucket }}
+      prefix: {{ quote .Values.config.storage.thumbnails.location.prefix }}
+      {{- end }}
+      {{- if eq .Values.config.storage.type "az" }}
+      prefix: {{ quote .Values.config.storage.thumbnails.location.prefix }}
       {{- end }}
 
 faceSearch:

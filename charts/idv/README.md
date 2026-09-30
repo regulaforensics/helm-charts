@@ -130,7 +130,7 @@ env:
 | `tls.trustedCABundle.caStorePaths`                        | CA-store file(s) overlaid with the bundle (image-version-dependent; update on Python upgrade) | `[botocore, certifi, system]` |
 | `versionSha`                                              | Version SHA tag                                   | `latest`                          |
 | `image.repository`                                        | Image repository                                  | `regulaforensics/idv-coordinator` |
-| `image.pullPolicy`                                        | Image pull policy                                 | `Always`                          |
+| `image.pullPolicy`                                        | Image pull policy                                 | `IfNotPresent`                          |
 | `image.tag`                                               | Image tag override                                | `""`                              |
 | `imagePullSecrets`                                        | Secrets for private registries                    | `{}`                              |
 | `licenseSecretName`                                       | Name of existing secret containing regula.license | `null`                            |
@@ -314,6 +314,8 @@ env:
 | `config.storage.tempFiles.location.folder`                | Temp files folder                                 | `"files"`                         |
 | `config.storage.banlists.location.bucket`                 | Banlists bucket                                   | `idv-bucket`                      |
 | `config.storage.banlists.location.prefix`                 | Banlists prefix                                   | `"banlist"`                       |
+| `config.storage.thumbnails.location.bucket`               | Thumbnails bucket                                 | `idv-bucket`                      |
+| `config.storage.thumbnails.location.prefix`               | Thumbnails prefix                                 | `"thumbnails"`                    |
 | |
 | `config.faceSearch.enabled`                               | Enable Face search                                | `false`                           |
 | `config.faceSearch.limit`                                 | Max Face search results                           | `1000`                            |
@@ -477,8 +479,18 @@ seems to be ignored, check these first.
 | `mongodb.enabled`     | Deploy MongoDB subchart. Overrides `config.mongo.url`                                    | `false` |
 | `rabbitmq.enabled`    | Deploy RabbitMQ subchart. Overrides `config.messageBroker.url`                           | `false` |
 | `minio.enabled`       | Deploy MinIO subchart. Overrides all of `config.storage.s3.*`                            | `false` |
+| `minio.auth.rootUser` | MinIO root user. Also used as the S3 access key                                          | `user`  |
+| `minio.auth.rootPassword` | MinIO root password. Also used as the S3 access secret                               | `password123` |
+| `minio.console.enabled` | Deploy the MinIO web console as a separate Deployment                                  | `false` |
 | `opensearch.enabled`  | Deploy OpenSearch subchart. Overrides all `faceSearch`/`textSearch` OpenSearch settings   | `false` |
 | `statsd.enabled`      | Deploy Prometheus StatsD exporter. Overrides `config.metrics.statsd.host`/`port`          | `false` |
+
+> **Upgrading to 1.16.0:** the MinIO subchart moved to
+> [`bitnami/minio`](https://github.com/bitnami/charts/tree/main/bitnami/minio). Dev/Test only —
+> installs pointing `config.storage.s3` at a real endpoint are unaffected.
+>
+> - Rename `minio.rootUser` / `minio.rootPassword` to `minio.auth.rootUser` /
+>   `minio.auth.rootPassword`. The old keys are silently ignored.
 
 ## Deployed components
 

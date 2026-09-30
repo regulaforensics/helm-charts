@@ -3,8 +3,8 @@
 apiVersion: v2
 name: docreader
 home: https://api.regulaforensics.com/
-version: 2.15.0
-appVersion: 9.7.321852.2268
+version: 2.17.0
+appVersion: 9.8.322817.2306
 description: Fast and accurate data extraction from identity documents. On-premise and cloud integration
 icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
 keywords:
@@ -13,7 +13,7 @@ keywords:
   - regulaforensics
 dependencies:
   - name: postgresql
-    version: 13.4.4
+    version: 16.7.27
     repository: "https://charts.bitnami.com/bitnami"
     condition: postgresql.enabled
 maintainers:

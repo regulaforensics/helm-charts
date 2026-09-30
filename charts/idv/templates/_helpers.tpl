@@ -181,13 +181,15 @@ Create the name of the service account to use
 {{- if .Values.minio.enabled }}
 initContainers:
   - name: init-minio-bucket
-    image: "{{ .Values.minio.mcImage.repository }}:{{ .Values.minio.mcImage.tag }}"
-    imagePullPolicy: {{ .Values.minio.mcImage.pullPolicy }}
-    command: ["sh", "-c"]
+    image: "{{ .Values.minio.clientImage.registry | default "docker.io" }}/{{ .Values.minio.clientImage.repository }}:{{ .Values.minio.clientImage.tag }}"
+    imagePullPolicy: {{ .Values.minio.clientImage.pullPolicy | default "IfNotPresent" }}
+    # `bash`, not `sh`: /bin/sh is dash in this image and the script below uses `set -o pipefail`,
+    # which dash does not support.
+    command: ["bash", "-c"]
     args:
       - |
         set -euo pipefail
-        until mc alias set myminio http://{{ template "idv.minio" . }}:9000 {{ .Values.minio.rootUser | default "user" | quote }} {{ .Values.minio.rootPassword | default "password123" | quote }}; do sleep 5; done
+        until mc alias set myminio http://{{ template "idv.minio" . }}:9000 {{ .Values.minio.auth.rootUser | default "user" | quote }} {{ .Values.minio.auth.rootPassword | default "password123" | quote }}; do sleep 5; done
         mc mb myminio/{{ .Values.config.storage.sessions.location.bucket }} --ignore-existing
         mc mb myminio/{{ .Values.config.storage.persons.location.bucket }} --ignore-existing
         mc mb myminio/{{ .Values.config.storage.workflows.location.bucket }} --ignore-existing

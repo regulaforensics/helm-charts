@@ -1325,6 +1325,36 @@ entries:
   faceapi:
   - apiVersion: v2
     appVersion: 8.3.749.1906-cpu
+    created: "2026-09-30T09:54:57.81751521Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.7.27
+    - condition: milvus.enabled
+      name: milvus
+      repository: https://zilliztech.github.io/milvus-helm/
+      version: 5.0.25
+    description: Face Recognition Service. On-premise and cloud integration
+    digest: 7283f4ced9292f479621bda97d759dd62fadb5811e75df547e086e22a12efecd
+    home: https://faceapi.regulaforensics.com/
+    icon: https://secure.gravatar.com/avatar/71a5efd69d82e444129ad18f51224bbb.jpg
+    keywords:
+    - regula
+    - faceapi
+    - face-api
+    - regulaforensics
+    maintainers:
+    - email: support@regulaforensics.com
+      name: Regula Forensics Support
+      url: https://support.regulaforensics.com
+    name: faceapi
+    type: application
+    urls:
+    - https://github.com/regulaforensics/helm-charts/releases/download/faceapi-3.9.0/faceapi-3.9.0.tgz
+    version: 3.9.0
+  - apiVersion: v2
+    appVersion: 8.3.749.1906-cpu
     created: "2026-08-05T14:10:27.036690136Z"
     dependencies:
     - condition: postgresql.enabled
@@ -3439,4 +3469,4 @@ entries:
     urls:
     - https://github.com/regulaforensics/helm-charts/releases/download/idv-1.0.3/idv-1.0.3.tgz
     version: 1.0.3
-generated: "2026-09-30T09:45:06.229316298Z"
+generated: "2026-09-30T09:54:57.817857516Z"

@@ -5,14 +5,14 @@ Regula Identity Verification Platform. On-premise and cloud deployment.
 > **Installation and configuration guides live in [`docs/idv/`](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/README.md).**
 >
 > This file is the parameter reference. If you are installing IDV for the first time, start with
-> the [documentation index](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/README.md) instead — it covers requirements, a demo quickstart, a
-> production install, integrations, and troubleshooting in order.
+> the [documentation index](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/README.md) instead — it covers requirements, a demo quickstart, the
+> production installation, integrations, and troubleshooting in order.
 
 | Guide | |
 |---|---|
 | [Requirements](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/01-requirements.md) | Dependencies, versions, sizing |
 | [Quickstart](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/02-quickstart.md) | Working demo in ~10 minutes |
-| [Production install](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/03-install-production.md) | External dependencies, secrets, TLS |
+| [Production installation](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/03-install-production.md) | External dependencies, secrets, TLS |
 | [Integrations](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/04-integrations.md) | Document Reader, Face API, search, metrics |
 | [Configuration](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/05-configuration.md) | Config pipeline and overrides |
 | [Authentication and users](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/06-auth-and-users.md) | First admin, SSO, roles |
@@ -66,7 +66,7 @@ use them in production** — see [Quickstart](https://github.com/regulaforensics
 A fresh install has **no users**. Create the first admin before you can log in:
 
 ```console
-kubectl exec -n regula-idv deploy/idv-api -- \
+kubectl exec -n regula-idv deploy/idv-backoffice -- \
   idv user create --name admin --password '<password>' --email admin@example.com --roles admin
 ```
 
@@ -112,6 +112,8 @@ env:
 
 ## Chart parameters
 
+> **Note:** In version 3.10, the `api` component was renamed to `backoffice`. The `api` component name still remains supported for backward compatibility (for v.3.10), but we recommend updating your configuration to use `backoffice`.
+
 | Parameter | Description | Default |
 |-----------------------------------------------------------|---------------------------------------------------|-----------------------------------|
 | `nameOverride`                                            | Override the chart name                           | `""`                              |
@@ -132,56 +134,56 @@ env:
 | `image.tag`                                               | Image tag override                                | `""`                              |
 | `imagePullSecrets`                                        | Secrets for private registries                    | `{}`                              |
 | `licenseSecretName`                                       | Name of existing secret containing regula.license | `null`                            |
-| `api.replicas`                                            | Number of API replicas                            | `1`                               |
-| `api.nodeSelector`                                        | Node selector for API pods                        | `{}`                              |
-| `api.tolerations`                                         | Tolerations for API pods                          | `[]`                              |
-| `api.affinity`                                            | Affinity rules for API pods                       | `{}`                              |
-| `api.resources`                                           | Resource requests/limits for API                  | `{}`                              |
-| `api.topologySpreadConstraints`                           | Topology spread constraints for API               | `[]`                              |
-| `api.terminationGracePeriodSeconds`                       | API pod termination grace period                  | `45`                              |
-| `api.lifecycle`                                           | API pod lifecycle hooks                           | `{}`                              |
-| `api.service.type`                                        | API service type                                  | `ClusterIP`                       |
-| `api.service.port`                                        | API service port                                  | `80`                              |
-| `api.service.annotations`                                 | API service annotations                           | `{}`                              |
-| `api.service.loadBalancerSourceRanges`                    | LoadBalancer source ranges for API                | `[]`                              |
-| `api.autoscaling.enabled`                                 | Enable API autoscaling                            | `false`                           |
-| `api.autoscaling.minReplicas`                             | Minimum API replicas                              | `1`                               |
-| `api.autoscaling.maxReplicas`                             | Maximum API replicas                              | `100`                             |
-| `api.autoscaling.targetCPUUtilizationPercentage`          | Target CPU utilization percent                    | `80`                              |
-| `api.autoscaling.targetMemoryUtilizationPercentage`       | Target memory utilization percent                 | `80`                              |
-| `api.autoscaling.keda.enabled`                            | Enable KEDA for API                               | `false`                           |
-| `api.autoscaling.keda.minReplicaCount`                    | KEDA minimum replica count for API                | `1`                               |
-| `api.autoscaling.keda.maxReplicaCount`                    | KEDA maximum replica count for API                | `100`                             |
-| `api.autoscaling.keda.cooldownPeriod`                     | KEDA cooldown period (seconds) for API            | `300`                             |
-| `api.autoscaling.keda.pollingInterval`                    | KEDA polling interval (seconds) for API           | `30`                              |
-| `api.autoscaling.keda.advanced.scaleUp.stabilizationWindowSeconds` | Seconds the HPA observes metric before scaling up | `180`                    |
-| `api.autoscaling.keda.advanced.scaleDown.stabilizationWindowSeconds` | Seconds the HPA observes metric before scaling down | `300`                |
-| `api.autoscaling.keda.triggers`                           | KEDA triggers for API                             | `[]`                              |
-| `api.autoscaling.keda.TriggerAuthentication`              | KEDA TriggerAuthentication for API                | `null`                            |
-| `api.autoscaling.keda.fallback`                           | KEDA fallback config when metrics unavailable     | `null`                            |
-| `api.autoscaling.keda.fallback.failureThreshold`          | Errors before fallback activates                  | `3`                               |
-| `api.autoscaling.keda.fallback.replicas`                  | Replica count during fallback                     | `1`                               |
-| `api.podDisruptionBudget.enabled`                         | Enable PDB for API                                | `false`                           |
-| `api.podDisruptionBudget.config.maxUnavailable`           | PDB maxUnavailable for API                        | `~`                               |
-| `api.podDisruptionBudget.config.minAvailable`             | PDB minAvailable for API                          | `1`                               |
-| `api.probes.livenessProbe.enabled`                        | Enable API liveness probe                         | `true`                            |
-| `api.probes.livenessProbe.initialDelaySeconds`            | Liveness initial delay                            | `5`                               |
-| `api.probes.livenessProbe.timeoutSeconds`                 | Liveness timeout                                  | `5`                               |
-| `api.probes.livenessProbe.periodSeconds`                  | Liveness period                                   | `10`                              |
-| `api.probes.livenessProbe.successThreshold`               | Liveness success threshold                        | `1`                               |
-| `api.probes.livenessProbe.failureThreshold`               | Liveness failure threshold                        | `3`                               |
-| `api.probes.readinessProbe.enabled`                       | Enable API readiness probe                        | `true`                            |
-| `api.probes.readinessProbe.initialDelaySeconds`           | Readiness initial delay                           | `5`                               |
-| `api.probes.readinessProbe.timeoutSeconds`                | Readiness timeout                                 | `5`                               |
-| `api.probes.readinessProbe.periodSeconds`                 | Readiness period                                  | `10`                              |
-| `api.probes.readinessProbe.successThreshold`              | Readiness success threshold                       | `1`                               |
-| `api.probes.readinessProbe.failureThreshold`              | Readiness failure threshold                       | `3`                               |
-| `api.probes.startupProbe.enabled`                         | Enable API startup probe                          | `false`                           |
-| `api.probes.startupProbe.initialDelaySeconds`             | Startup initial delay                             | `20`                              |
-| `api.probes.startupProbe.timeoutSeconds`                  | Startup timeout                                   | `5`                               |
-| `api.probes.startupProbe.periodSeconds`                   | Startup period                                    | `10`                              |
-| `api.probes.startupProbe.successThreshold`                | Startup success threshold                         | `1`                               |
-| `api.probes.startupProbe.failureThreshold`                | Startup failure threshold                         | `3`                               |
+| `backoffice.replicas`                                            | Number of Backoffice replicas                            | `1`                               |
+| `backoffice.nodeSelector`                                        | Node selector for Backoffice pods                        | `{}`                              |
+| `backoffice.tolerations`                                         | Tolerations for Backoffice pods                          | `[]`                              |
+| `backoffice.affinity`                                            | Affinity rules for Backoffice pods                       | `{}`                              |
+| `backoffice.resources`                                           | Resource requests/limits for Backoffice                 | `{}`                              |
+| `backoffice.topologySpreadConstraints`                           | Topology spread constraints for Backoffice              | `[]`                              |
+| `backoffice.terminationGracePeriodSeconds`                       | Backoffice pod termination grace period                  | `45`                              |
+| `backoffice.lifecycle`                                           | Backoffice pod lifecycle hooks                           | `{}`                              |
+| `backoffice.service.type`                                        | Backoffice service type                                  | `ClusterIP`                       |
+| `backoffice.service.port`                                        | Backoffice service port                                  | `80`                              |
+| `backoffice.service.annotations`                                 | Backoffice service annotations                           | `{}`                              |
+| `backoffice.service.loadBalancerSourceRanges`                    | LoadBalancer source ranges for Backoffice                | `[]`                              |
+| `backoffice.autoscaling.enabled`                                 | Enable Backoffice autoscaling                            | `false`                           |
+| `backoffice.autoscaling.minReplicas`                             | Minimum Backoffice replicas                              | `1`                               |
+| `backoffice.autoscaling.maxReplicas`                             | Maximum Backoffice replicas                              | `100`                             |
+| `backoffice.autoscaling.targetCPUUtilizationPercentage`          | Target CPU utilization percent                    | `80`                              |
+| `backoffice.autoscaling.targetMemoryUtilizationPercentage`       | Target memory utilization percent                 | `80`                              |
+| `backoffice.autoscaling.keda.enabled`                            | Enable KEDA for Backoffice                              | `false`                           |
+| `backoffice.autoscaling.keda.minReplicaCount`                    | KEDA minimum replica count for Backoffice               | `1`                               |
+| `backoffice.autoscaling.keda.maxReplicaCount`                    | KEDA maximum replica count for Backoffice                | `100`                             |
+| `backoffice.autoscaling.keda.cooldownPeriod`                     | KEDA cooldown period (seconds) for Backoffice            | `300`                             |
+| `backoffice.autoscaling.keda.pollingInterval`                    | KEDA polling interval (seconds) for Backoffice           | `30`                              |
+| `backoffice.autoscaling.keda.advanced.scaleUp.stabilizationWindowSeconds` | Seconds the HPA observes metric before scaling up | `180`                    |
+| `backoffice.autoscaling.keda.advanced.scaleDown.stabilizationWindowSeconds` | Seconds the HPA observes metric before scaling down | `300`                |
+| `backoffice.autoscaling.keda.triggers`                           | KEDA triggers for Backoffice                             | `[]`                              |
+| `backoffice.autoscaling.keda.TriggerAuthentication`              | KEDA TriggerAuthentication for Backoffice                | `null`                            |
+| `backoffice.autoscaling.keda.fallback`                           | KEDA fallback config when metrics unavailable     | `null`                            |
+| `backoffice.autoscaling.keda.fallback.failureThreshold`          | Errors before fallback activates                  | `3`                               |
+| `backoffice.autoscaling.keda.fallback.replicas`                  | Replica count during fallback                     | `1`                               |
+| `backoffice.podDisruptionBudget.enabled`                         | Enable PDB for Backoffice                                | `false`                           |
+| `backoffice.podDisruptionBudget.config.maxUnavailable`           | PDB maxUnavailable for Backoffice                        | `~`                               |
+| `backoffice.podDisruptionBudget.config.minAvailable`             | PDB minAvailable for Backoffice                          | `1`                               |
+| `backoffice.probes.livenessProbe.enabled`                        | Enable Backoffice liveness probe                         | `true`                            |
+| `backoffice.probes.livenessProbe.initialDelaySeconds`            | Liveness initial delay                            | `5`                               |
+| `backoffice.probes.livenessProbe.timeoutSeconds`                 | Liveness timeout                                  | `5`                               |
+| `backoffice.probes.livenessProbe.periodSeconds`                  | Liveness period                                   | `10`                              |
+| `backoffice.probes.livenessProbe.successThreshold`               | Liveness success threshold                        | `1`                               |
+| `backoffice.probes.livenessProbe.failureThreshold`               | Liveness failure threshold                        | `3`                               |
+| `backoffice.probes.readinessProbe.enabled`                       | Enable Backoffice readiness probe                        | `true`                            |
+| `backoffice.probes.readinessProbe.initialDelaySeconds`           | Readiness initial delay                           | `5`                               |
+| `backoffice.probes.readinessProbe.timeoutSeconds`                | Readiness timeout                                 | `5`                               |
+| `backoffice.probes.readinessProbe.periodSeconds`                 | Readiness period                                  | `10`                              |
+| `backoffice.probes.readinessProbe.successThreshold`              | Readiness success threshold                       | `1`                               |
+| `backoffice.probes.readinessProbe.failureThreshold`              | Readiness failure threshold                       | `3`                               |
+| `backoffice.probes.startupProbe.enabled`                         | Enable Backoffice startup probe                          | `false`                           |
+| `backoffice.probes.startupProbe.initialDelaySeconds`             | Startup initial delay                             | `20`                              |
+| `backoffice.probes.startupProbe.timeoutSeconds`                  | Startup timeout                                   | `5`                               |
+| `backoffice.probes.startupProbe.periodSeconds`                   | Startup period                                    | `10`                              |
+| `backoffice.probes.startupProbe.successThreshold`                | Startup success threshold                         | `1`                               |
+| `backoffice.probes.startupProbe.failureThreshold`                | Startup failure threshold                         | `3`                               |
 | `workflow.replicas`                                       | Number of Workflow replicas                       | `1`                               |
 | `workflow.nodeSelector`                                   | Node selector for Workflow pods                   | `{}`                              |
 | `workflow.tolerations`                                    | Tolerations for Workflow pods                     | `[]`                              |
@@ -232,19 +234,19 @@ env:
 | `config.tenant`                                           | Tenant name/id used for named broker topics       | `null`                            |
 | `config.identifier`                                       | Instance identifier                               | `null`                            |
 | `config.basicAuth.enabled`                                | Enable username/password sign-in                  | `true`                            |
-| `config.services.api.port`                                | Internal API port                                 | `8000`                            |
-| `config.services.api.host`                                | API bind host                                     | `0.0.0.0`                         |
-| `config.services.api.workers`                             | API worker count                                  | `auto`                            |
-| `config.services.api.threads`                             | API threads count                                 | `auto`                            |
-| `config.services.api.keepalive`                           | Keepalive seconds                                 | `120`                             |
-| `config.services.api.timeout`                             | Request timeout seconds                           | `120`                             |
-| `config.services.api.cors.enabled`                        | Enable CORS                                       | `false`                           |
-| `config.services.api.cors.origins`                        | Allowed origins                                   | `"*"`                             |
-| `config.services.api.cors.methods`                        | Allowed methods                                   | `"*"`                             |
-| `config.services.api.cors.headers`                        | Allowed headers                                   | `"*"`                             |
-| `config.services.api.cors.maxAge`                         | CORS max age seconds                              | `0`                               |
-| `config.services.api.maxBodySize`                         | Max body size                                     | `64Mi`                            |
-| `config.services.api.openapi`                             | Enable OpenAPI docs                               | `false`                           |
+| `config.services.backoffice.port`                                | Internal Backoffice port                                 | `8000`                            |
+| `config.services.backoffice.host`                                | Backoffice bind host                                     | `0.0.0.0`                         |
+| `config.services.backoffice.workers`                             | Backoffice worker count                                  | `auto`                            |
+| `config.services.backoffice.threads`                             | Backoffice threads count                                 | `auto`                            |
+| `config.services.backoffice.keepalive`                           | Keepalive seconds                                 | `120`                             |
+| `config.services.backoffice.timeout`                             | Request timeout seconds                           | `120`                             |
+| `config.services.backoffice.cors.enabled`                        | Enable CORS                                       | `false`                           |
+| `config.services.backoffice.cors.origins`                        | Allowed origins                                   | `"*"`                             |
+| `config.services.backoffice.cors.methods`                        | Allowed methods                                   | `"*"`                             |
+| `config.services.backoffice.cors.headers`                        | Allowed headers                                   | `"*"`                             |
+| `config.services.backoffice.cors.maxAge`                         | CORS max age seconds                              | `0`                               |
+| `config.services.backoffice.maxBodySize`                         | Max body size                                     | `64Mi`                            |
+| `config.services.backoffice.openapi`                             | Enable OpenAPI docs                               | `false`                           |
 | `config.services.workflow.workers`                        | Workflow service workers                          | `auto`                            |
 | `config.services.workflow.threads`                        | Workflow service threads per worker               | `32`                              |
 | `config.services.scheduler.jobs.reloadWorkflows.cron`     | Cron for reloading workflows                      | `"*/15 * * * * *"`                |
@@ -255,6 +257,8 @@ env:
 | `config.services.scheduler.jobs.expireDeviceLogs.keepFor` | Keep device logs for                              | `"30d"`                           |
 | `config.services.scheduler.jobs.reloadLocales.cron`       | Cron for reloading locales                        | `"*/15 * * * * *"`                |
 | `config.services.scheduler.jobs.cronWorkflow.cron`        | Cron for generic workflow task                    | `"*/30 * * * * *"`                |
+| `config.services.audit.workers` | Number of worker processes | `auto` |
+| `config.services.audit.threads` | Number of threads per worker | `32` |
 | `config.services.audit.wsEnabled`                         | Enable audit WebSocket                            | `false`                           |
 | `config.services.audit.user.keepFor`                      | Keep user data for specific time period           | `90d`                             |
 | `config.services.indexer.timeout`                         | Indexer request timeout seconds                   | `60`                              |
@@ -478,12 +482,12 @@ seems to be ignored, check these first.
 
 ## Deployed components
 
-All components share one image, one ConfigMap, and one license Secret. Only the API is exposed via
+All components share one image, one ConfigMap, and one license Secret. Only the Backoffice is exposed via
 `ingress`/`route`; the rest communicate through the message broker.
 
 | Component | Deployment | Command | Scales out | Deployed when |
 |---|---|---|---|---|
-| API | `<release>-idv-api` | `idv webserver start` | Yes | Always |
+| Backoffice| `<release>-idv-backoffice` | `idv webserver start` | Yes | Always |
 | Workflow | `<release>-idv-workflow` | `idv workflow start` | Yes | Always |
 | Scheduler | `<release>-idv-scheduler` | `idv scheduler start` | No | Always |
 | Audit | `<release>-idv-audit` | `idv audit start` | No | Always |

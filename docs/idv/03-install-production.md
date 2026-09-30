@@ -1,4 +1,4 @@
-# Production Install
+# Production Installation
 
 The [Quickstart](02-quickstart.md) is an all-in-one setup that installs IDV together with bundled MongoDB, RabbitMQ, and MinIO services. It is designed for getting IDV up and running quickly.
 
@@ -100,7 +100,7 @@ If you use Gateway API instead, configure `route.main` and keep `ingress.enabled
 
 ## 5. Configure `values.yaml`
 
-Use the following configuration as a starting point. Adjust the hostnames, buckets, and resource values for your environment.
+Use the following configuration as a starting point. Adjust the hostnames, buckets, and resource values for your environment. For additional configuration options and default values, see [Chart parameters](../../charts/idv/README/#chart-parameters.md)
 
 ```yaml
 licenseSecretName: idv-license

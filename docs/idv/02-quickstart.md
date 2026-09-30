@@ -6,7 +6,9 @@ storage. This setup is intended for evaluation and smaller deployments, not prod
 > **Warning**
 > **For demos only.** 
 > The bundled dependencies use default credentials, and the default encryption key is publicly known. Do not use this setup with real or sensitive data.
-> For a production deployment, see [Production install](./03-install-production.md).
+> For a production deployment, see [Production installation](./03-install-production.md).
+
+> **Note:** In version 3.10, the `api` component was renamed to `backoffice`. The `api` component name still remains supported for backward compatibility (for v.3.10), but we recommend updating your configuration to use `backoffice`.
 
 Main steps:
 
@@ -152,7 +154,7 @@ Open <a href="http://127.0.0.1:8080" target="_blank" rel="noopener noreferrer">h
 
 ## Setup Limitations
 
-**Document and face verification.** IDV is running, but the services required to read documents and match faces are separate and are not installed by this setup. See [Production install](./03-install-production.md) for deployment instructions.
+**Document and face verification.** IDV is running, but the services required to read documents and match faces are separate and are not installed by this setup. See [Production installation](./03-install-production.md) for deployment instructions.
 
 **Phone scanning.** Phone scanning requires a public HTTPS address. This setup does not provide one, so you cannot use QR codes to open the scanning session on a phone. Browsers also require a secure context for camera access. For configuration details, see [Integrations](./04-integrations.md).
 

@@ -132,14 +132,14 @@ The bundled StatsD exporter is the exception. It stores nothing and is fine to u
 you collect metrics (see [Integrations](04-integrations.md#metrics)).
 
 The [Quickstart](02-quickstart.md) uses them. The
-[Production install](03-install-production.md) does not.
+[Production installation](03-install-production.md) does not.
 
 ## Next
 
 - Just want to see it working → [Quickstart](02-quickstart.md)
-- Installing for real → [Production install](03-install-production.md)
+- Installing for real → [Production installation](03-install-production.md)
 
 ---
 
 Dependency versions, node capacity, and the GPU recommendation follow the
-[Regula IDV deployment documentation](https://docs.regulaforensics.com/develop/idv/administration/deployment/).
+[Regula IDV Deployment documentation](https://docs.regulaforensics.com/develop/idv/administration/deployment/).

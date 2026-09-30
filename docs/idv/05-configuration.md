@@ -1,7 +1,10 @@
 # Configuration
 
 This section describes configuration settings: where they are kept, how they are applied, and which settings should be configured through `values.yaml`.
-Learn where IDV configuration settings are stored, how they are applied, how to configure them with Helm, and which settings should be configured through `values.yaml`.
+Learn where IDV configuration settings are stored, how they are applied, how to configure them with Helm, and which settings should be configured through `values.yaml`. For the complete list of available Helm chart parameters and their default values, see [Chart parameters](../../charts/idv/README/#chart-parameters.md).
+
+> **Note:** In version 3.10, the `api` component was renamed to `backoffice`. The `api` component name still remains supported for backward compatibility (for v.3.10), but we recommend updating your configuration to use `backoffice`.
+
 
 ## How Configuration Works
 

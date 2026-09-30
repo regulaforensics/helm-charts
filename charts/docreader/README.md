@@ -418,4 +418,12 @@ helm install my-release regulaforensics/docreader \
 | `postgresql.enabled`        | Whether to enable postgresql subchart   | `false` Required by Session API / Chip Verification mode  |
 | `postgresql.auth.username`  | postgresql Username                     | `regula`                                                  |
 | `postgresql.auth.password`  | postgresql Password                     | `Regulapasswd#1`                                          |
-| `postgresql.auth.database`  | postgresql database                     | `regula_db`                                               |
+| `postgresql.auth.database`  | postgresql database                     | `regula`                                                  |
+
+> **Upgrading to 2.17.0:** the bundled PostgreSQL subchart goes `13.4.4` → `16.7.27`
+> (PostgreSQL 16.1 → 17.6). Dev/Test only — external databases are unaffected.
+>
+> - PostgreSQL will not start on an existing 16 data directory: delete the PVC, or pin the
+>   previous chart version.
+> - A NetworkPolicy is now created by default. Opt out with
+>   `postgresql.primary.networkPolicy.enabled: false`.

@@ -146,7 +146,7 @@ For MongoDB Atlas Vector Search, set `config.faceSearch.database.type: atlas` or
 
 ### Indexer
 
-A background service called the Indexer builds the search indexes. It is deployed automatically when `faceSearch.enabled` or `textSearch.enabled` is set to `true`. No separate setting is needed:
+A background service called Indexer builds the search indexes. It is deployed automatically when `faceSearch.enabled` or `textSearch.enabled` is set to `true`. No separate setting is needed:
 
 ```yaml
 config:

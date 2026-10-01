@@ -140,7 +140,7 @@ IDV itself stores nothing. Back up what it depends on:
 
 | What | Why |
 |---|---|
-| Database | Stores IDV records. Encrypt backups to protect the data |
+| Database | Stores IDV records. Encrypt backups to protect data |
 | Object storage | Stores images, documents, and other persistent files |
 | Encryption key | Required to decrypt data restored from a database backup |
 | `values.yaml` | Contains the configuration needed to recreate the deployment |

@@ -130,7 +130,7 @@ config:
       endpoint: "s3.eu-central-1.amazonaws.com"
       region: "eu-central-1"
       secure: true
-    # Eight data types sharing one bucket (`idv-prod`), separated by prefix.
+    # Nine data types sharing one bucket (`idv-prod`), separated by prefix.
     # Replace `idv-prod` with the name of your bucket.
     # It's recommended to keep the prefixes unchanged.
     sessions:  { location: { bucket: "idv-prod", prefix: "sessions" } }
@@ -141,6 +141,7 @@ config:
     assets:    { location: { bucket: "idv-prod", prefix: "assets" } }
     tempFiles: { location: { bucket: "idv-prod", prefix: "tmp", folder: "files" } }
     banlists:  { location: { bucket: "idv-prod", prefix: "banlist" } }
+    thumbnails: { location: { bucket: "idv-prod", prefix: "thumbnails" } }
 
   logging:
     level: INFO

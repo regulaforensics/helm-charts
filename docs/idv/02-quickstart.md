@@ -106,10 +106,9 @@ idv-workflow-...         1/1  Running
 mongodb-...              1/1  Running
 idv-rabbitmq-0           1/1  Running
 idv-minio-...            1/1  Running
-idv-minio-post-job-...   0/1  Completed
 ```
 
-The `idv-minio-post-job` pod should show `Completed`. It runs once to prepare storage.
+Each IDV pod starts with an `init-minio-bucket` init container that creates the storage bucket in MinIO, so the pods briefly show `Init:0/1` before `Running`.
 
 There is no `idv-indexer` pod by default. This is expected when search is not enabled.
 

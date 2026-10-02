@@ -98,8 +98,8 @@ kubectl set env deploy/idv-backoffice --list -n regula-idv | grep IDV_CONFIG
 Set `config.storage.type` to `s3`, `az`, or `gcs`. Kubernetes deployments use object storage; local
 filesystem storage (`fs`) is not available.
 
-Through this chart, IDV stores eight kinds of data: `sessions`, `persons`, `workflows`, `userFiles`,
-`locales`, `assets`, `tempFiles`, and `banlists`. Each data type requires an existing storage location. They can
+Through this chart, IDV stores nine kinds of data: `sessions`, `persons`, `workflows`, `userFiles`,
+`locales`, `assets`, `tempFiles`, `banlists`, and `thumbnails`. Each data type requires an existing storage location. They can
 share one bucket using different prefixes, which is what the
 [production example](03-install-production.md#5-configure-valuesyaml) does. For S3-compatible storage, replace the example bucket name with your bucket name. Keep the prefixes unchanged unless you have a specific reason to customize them.
 

@@ -7,7 +7,7 @@ credentials for each. See [Requirements](01-requirements.md).
 
 Main steps: 
 
-- [Step 1. Create the namespace and license secret](#1-create-the-namespace-and-license)
+- [Step 1. Create the namespace and license secret](#1-create-a-namespace-and-add-the-license)
 - [Step 2. Generate the encryption key](#2-generate-the-encryption-key)
 - [Step 3. Configure credentials](#3-configure-credentials)
 - [Step 4. Configure the address and HTTPS](#4-configure-the-address-and-https)
@@ -67,7 +67,7 @@ kubectl create secret generic idv-secrets \
 
 Step 5 below connects these values to IDV through the `env:` list. Do not put credentials directly under `config:`, where they would be stored as plain-text configuration values.
 
-> Use the **top-level `env:`**, never `config.env:`. They are separate configuration options. See [Configuration](05-configuration.md#watch-out-env-and-configenv-are-different).
+> Use the **top-level `env:`**, never `config.env:`. They are separate configuration options. See [Configuration](05-configuration.md#env-vs-configenv).
 
 ## 4. Configure the Address and HTTPS
 
@@ -100,7 +100,7 @@ If you use Gateway API instead, configure `route.main` and keep `ingress.enabled
 
 ## 5. Configure `values.yaml`
 
-Use the following configuration as a starting point. Adjust the hostnames, buckets, and resource values for your environment. For additional configuration options and default values, see [Chart parameters](../../charts/idv/README/#chart-parameters.md)
+Use the following configuration as a starting point. Adjust the hostnames, buckets, and resource values for your environment. For additional configuration options and default values, see [Chart parameters](../../charts/idv/README.md#chart-parameters)
 
 ```yaml
 licenseSecretName: idv-license

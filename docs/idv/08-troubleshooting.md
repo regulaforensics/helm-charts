@@ -23,17 +23,17 @@ kubectl logs -n regula-idv <pod> --previous
 Find your symptom below. All examples assume the namespace `regula-idv` and release name `idv`.
 
 - [A Pod never starts (`ContainerCreating`)](#a-pod-never-starts-containercreating)
-- [Licence errors in the logs](#licence-errors-in-the-logs)
+- [Licence errors in the logs](#license-errors-in-log)
 - [Pods keep restarting (`CrashLoopBackOff`)](#pods-keep-restarting-crashloopbackoff)
 - [The portal loads but I cannot sign in](#the-portal-loads-but-i-cannot-sign-in)
 - [QR codes or phone scanning do not work](#qr-codes-or-phone-scanning-do-not-work)
 - [The address works but returns 404](#the-address-works-but-returns-404)
-- [Search finds nothing / no Indexer running](#search-finds-nothing--no-indexer-running)
-- [My search settings are being ignored](#my-search-settings-are-being-ignored)
-- [Nothing is being saved to storage](#nothing-is-being-saved-to-storage)
-- [A setting from a Secret has no effect](#a-setting-from-a-secret-has-no-effect)
+- [Search finds nothing / no Indexer running](#search-finds-nothing-or-no-indexer-is-running)
+- [My search settings are being ignored](#search-settings-are-ignored)
+- [Nothing is being saved to storage](#nothing-is-saved-to-storage)
+- [A setting from a Secret has no effect](#the-secret-setting-has-no-effect)
 - [Certificate errors on internal connections](#certificate-errors-on-internal-connections)
-- [Everything restarted after I changed a setting](#everything-restarted-after-i-changed-a-setting)
+- [Everything restarted after I changed a setting](#everything-restarted-after-changing-a-setting)
 
 
 ## A Pod Never Starts (`ContainerCreating`)
@@ -112,7 +112,7 @@ verification rather than at startup.
 ### Fix
 
 If the credentials look right but clearly are not being used, see
-[subchart switches](05-configuration.md#careful-subchart-switches-overwrite-your-settings).
+[subchart switches](05-configuration.md#how-configuration-works).
 
 ## The Portal Loads but I Cannot Sign In
 
@@ -205,7 +205,7 @@ If `faceSearch` or `textSearch` is enabled but the Indexer is still not running,
 
 ### Fix
 
-Enable `config.faceSearch` or `config.textSearch` if search is required. And see about the Indexer in [Integrations](05-integrations.md#the-indexer).
+Enable `config.faceSearch` or `config.textSearch` if search is required. And see about the Indexer in [Integrations](04-integrations.md#indexer).
 
 ## Search Settings are Ignored
 
@@ -261,7 +261,7 @@ Nothing listed means it was never created.
 ### Fix
 
 Use the top-level `env` setting. See
-[Configuration](05-configuration.md#watch-out-env-and-configenv-are-different).
+[Configuration](05-configuration.md#env-vs-configenv).
 
 ## Certificate Errors on Internal Connections
 

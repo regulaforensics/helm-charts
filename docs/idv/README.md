@@ -39,6 +39,8 @@ queue, and file storage that you provide.
 ## The Five Services
 
 > **Note:** In version 3.10, the `api` component was renamed to `backoffice`. The `api` component name remains supported for backward compatibility (for v.3.10), but we recommend updating your configuration to use `backoffice`.
+>
+> During the upgrade, `backoffice` is unavailable for about 20 seconds. Plan the upgrade for a maintenance window.
 
 | Service | What it does | Can run multiple copies |
 |---|---|---|
@@ -51,7 +53,7 @@ queue, and file storage that you provide.
 Only the Backoffice is reachable from outside. The others talk to each other internally.
 
 The Indexer is only installed when search is switched on — see
-[Integrations](04-integrations.md#the-indexer).
+[Integrations](04-integrations.md#indexer).
 
 ## Before You Begin
 
@@ -60,7 +62,7 @@ one with a single command after installing. See [Users and sign-in](06-auth-and-
 
 **Change the encryption key.** The chart includes a working default key that is published publicly,
 so anyone who leaves it in place ends up with data protected by a key everybody can read. Helm warns
-you after installing if you do. See [Production installation](03-install-production.md#2-encryption-key).
+you after installing if you do. See [Production installation](03-install-production.md#2-generate-the-encryption-key).
 
 **The address in `config.baseUrl` must be the one users actually visit.** It goes into QR codes,
 emails, and sign-in redirects. If it is wrong, the portal still loads but phone scanning quietly

@@ -114,9 +114,9 @@ kubectl exec -n regula-idv deploy/idv-backoffice -- curl -sf localhost:8000/api/
 kubectl logs -n regula-idv deploy/idv-workflow --tail=100 -f
 ```
 
-The `backoffice` provides a health endpoint. Port 8000 is fixed and must not be changed.
+The `backoffice` provides a health endpoint. The application listens on port 8000 inside the container (default of `config.services.backoffice.port`).
 
-For `workflow`, `scheduler`, and `audit`, check the pod status and logs. For `workflow`, also check the queue length. The `--tail=100` option displays the last 100 log lines.
+For `workflow`, `scheduler`, `audit`, and `indexer` check the pod status and logs. For `workflow`, also check the queue length. The `--tail=100` option displays the last 100 log lines.
 
 For more detailed logs, temporarily set the logging level to `DEBUG`:
 

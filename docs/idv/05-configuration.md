@@ -1,9 +1,11 @@
 # Configuration
 
 This section describes configuration settings: where they are kept, how they are applied, and which settings should be configured through `values.yaml`.
-Learn where IDV configuration settings are stored, how they are applied, how to configure them with Helm, and which settings should be configured through `values.yaml`. For the complete list of available Helm chart parameters and their default values, see [Chart parameters](../../charts/idv/README/#chart-parameters.md).
+Learn where IDV configuration settings are stored, how they are applied, how to configure them with Helm, and which settings should be configured through `values.yaml`. For the complete list of available Helm chart parameters and their default values, see [Chart parameters](../../charts/idv/README.md#chart-parameters).
 
 > **Note:** In version 3.10, the `api` component was renamed to `backoffice`. The `api` component name still remains supported for backward compatibility (for v.3.10), but we recommend updating your configuration to use `backoffice`.
+>
+> During the upgrade, `backoffice` is unavailable for about 20 seconds. Plan the upgrade for a maintenance window.
 
 
 ## How Configuration Works
@@ -17,7 +19,7 @@ IDV reads one file, `config.yaml`. You never write it directly. Instead:
 
 Two things follow from this:
 
-- Anything under `config:` is stored in plain text** in the ConfigMap and can be read by anyone with access to the namespace. Do not put credentials there. Use a Secret instead (see below [Passing secrets](#passing-secrets)).
+- Anything under `config:` is stored in plain text in the ConfigMap and can be read by anyone with access to the namespace. Do not put credentials there. Use a Secret instead (see below [Passing secrets](#passing-secrets)).
 - **All five services share one config.** Changing it restarts all of them.
 
 To see the config your cluster is actually using, run the following command:
@@ -98,8 +100,8 @@ kubectl set env deploy/idv-backoffice --list -n regula-idv | grep IDV_CONFIG
 Set `config.storage.type` to `s3`, `az`, or `gcs`. Kubernetes deployments use object storage; local
 filesystem storage (`fs`) is not available.
 
-Through this chart, IDV stores nine kinds of data: `sessions`, `persons`, `workflows`, `userFiles`,
-`locales`, `assets`, `tempFiles`, `banlists`, and `thumbnails`. Each data type requires an existing storage location. They can
+Through this chart, IDV stores eight kinds of data: `sessions`, `persons`, `workflows`, `userFiles`,
+`locales`, `assets`, `tempFiles`, and `banlists`. Each data type requires an existing storage location. They can
 share one bucket using different prefixes, which is what the
 [production example](03-install-production.md#5-configure-valuesyaml) does. For S3-compatible storage, replace the example bucket name with your bucket name. Keep the prefixes unchanged unless you have a specific reason to customize them.
 

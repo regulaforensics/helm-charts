@@ -1,7 +1,7 @@
 # Quickstart
 
 This guide will help you get a working IDV Platform in about ten minutes, using a bundled database, message queue, and file
-storage. This setup is intended for evaluation and smaller deployments, not production workloads.
+storage. This setup is intended for evaluation only, not production workloads.
 
 > **Warning**
 > **For demos only.** 
@@ -30,6 +30,7 @@ Make sure you have:
 - Helm 3.10 or newer
 - The `regula.license` file from the <a href="https://client.regulaforensics.com/" target="_blank" rel="noopener noreferrer">Client Portal</a>
 - About 4 CPU cores and 8 GB of RAM in the cluster
+- At least one x86-64 (amd64) node: the bundled MongoDB image is not available for ARM (arm64)
 
 ## 1. Add the Helm Chart Repository
 

@@ -78,7 +78,7 @@ resources:
 ```
 
 Your cluster also needs the
-<a href="https://github.com/NVIDIA/k8s-device-plugin" target="_blank" rel="noopener noreferrer">NVIDIA device plugin</a>. GPU memory is more important than faster CPU cores. See [Requirements](01-requirements.md#face-api-and-gpu).
+<a href="https://github.com/NVIDIA/k8s-device-plugin" target="_blank" rel="noopener noreferrer">NVIDIA device plugin</a>. GPU memory is more important than faster GPU processing. See [Requirements](01-requirements.md#face-api-and-gpu).
 
 ## Face and Text Search
 
@@ -130,6 +130,13 @@ env:
       secretKeyRef: { name: idv-secrets, key: opensearchPassword }
 ```
 
+The `opensearchPassword` key is not part of the `idv-secrets` Secret created in [Production installation](03-install-production.md#3-configure-credentials). Add it before you install or upgrade:
+
+```bash
+kubectl patch secret idv-secrets -n regula-idv --type merge \
+  -p '{"stringData":{"opensearchPassword":"<password>"}}'
+```
+
 For AWS OpenSearch Service, you can use IAM authentication instead of a password:
 
 ```yaml
@@ -169,6 +176,8 @@ For development and testing, set `opensearch.enabled: true` to deploy a single-n
 > **Note**
 >
 > Enabling `opensearch.enabled` replaces the external OpenSearch connection settings described above. If your external OpenSearch settings appear to be ignored, check whether `opensearch.enabled` is set to `true`.
+>
+> `opensearch.enabled` only deploys OpenSearch. Search itself must still be enabled with `config.faceSearch.enabled: true` or `config.textSearch.enabled: true`.
 
 If your external OpenSearch settings appear to be ignored, check whether `opensearch.enabled` is enabled.
 
@@ -205,9 +214,7 @@ The bundled StatsD exporter is safe to use in production because it does not sto
 The bundled exporter converts raw metrics into Prometheus metrics, including
 `idv_backoffice_http_duration` and `idv_backoffice_http_request_total`. These metrics are recommended for scaling the `backoffice` service.
 
-Configure `config.metrics.statsd.enabled` and `statsd.enabled` consistently. The chart displays a warning during installation if only one is enabled.
-
-Make sure the two enabled settings are configured consistently. The chart warns you at installation time if only one is enabled.
+If you enable the bundled exporter (`statsd.enabled: true`), also enable `config.metrics.statsd.enabled: true`. Otherwise the exporter runs but receives no metrics. The chart prints a note during installation in this case.
 
 ## Email
 
@@ -230,6 +237,13 @@ env:
   - name: IDV_CONFIG__SMTP__PASSWORD
     valueFrom:
       secretKeyRef: { name: idv-secrets, key: smtpPassword }
+```
+
+The `smtpUsername` and `smtpPassword` keys are not part of the `idv-secrets` Secret created in [Production installation](03-install-production.md#3-configure-credentials). Add them before you install or upgrade:
+
+```bash
+kubectl patch secret idv-secrets -n regula-idv --type merge \
+  -p '{"stringData":{"smtpUsername":"<username>","smtpPassword":"<password>"}}'
 ```
 
 Links in outgoing email use `config.baseUrl`, so it must be correct.

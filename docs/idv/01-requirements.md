@@ -91,7 +91,7 @@ Three conventions to keep:
 
 Total resource requirements:
 
-- Single replica of each service requires roughly **1.5 CPU and 2.7 GiB**.
+- Single replica of each service requests roughly **1.5 CPU and 2.7 GiB**.
 - The second `workflow` replica requires an additional 0.2 CPU and 0.5 GiB.
 - External dependencies: additional capacity must be provisioned for your database, message queue, and storage, regardless of where they are hosted.
 
@@ -123,7 +123,7 @@ installation; it is never included in the chart.
 ## Bundled Dependencies
 
 The bundled dependencies are for demos only. The chart can install MongoDB, RabbitMQ, MinIO, and OpenSearch for you. This makes a demo quick to
-set up, but they are single-copy, use well-known passwords, and are not backed up.
+set up, but they are single-copy, use well-known passwords, and are not backed up. The bundled MongoDB image is not available for ARM (arm64) nodes.
 
 **Do not use these four in production.** Run each dependency properly, with its own backups,
 passwords, and monitoring.

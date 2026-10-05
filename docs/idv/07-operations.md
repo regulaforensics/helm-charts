@@ -165,7 +165,7 @@ The trade-offs between approaches are covered in the
 ```bash
 helm uninstall idv -n regula-idv
 ```
-The command removes the IDV application resources but does not delete your Secrets and data in object storage. Deleting the namespace removes them so
+The command removes the IDV application resources but does not delete your Secrets and the volumes (PersistentVolumeClaims) of the bundled dependencies. Deleting the namespace removes them so
 **make sure the encryption key is saved elsewhere first.**
 
 The command removes the IDV application resources but does not delete data stored in external object storage.

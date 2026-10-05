@@ -54,7 +54,7 @@ Add these somewhere in the Kubernetes install/config pages — each is a real su
 
 ## Open question for the platform team
 
-`DONE`
+`OPEN: waiting for the backend team`
 
 [Sign-in methods](06-auth-and-users.md#sign-in-methods)
 

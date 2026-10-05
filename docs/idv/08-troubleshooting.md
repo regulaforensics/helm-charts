@@ -158,7 +158,7 @@ kubectl get ingress -n regula-idv
 
 ### Fix
 
-The chart default, `http://idv.example.com`, points nowhere.
+Set `config.baseUrl` to the public HTTPS address your users open in the browser, then run `helm upgrade`. The chart default, `http://idv.example.com`, points nowhere.
 
 **No HTTPS.** Browsers block camera access on plain HTTP.
 **Using `port-forward`.** It only works on your own machine; a phone cannot reach `127.0.0.1`.
@@ -237,6 +237,7 @@ Check that `config.storage.type` is `s3`, `az`, or `gcs`.
 
 ### Fix
 
+Set `config.storage.type` to `s3`, `az`, or `gcs`, make sure the bucket exists, and run `helm upgrade`.
 Local filesystem storage (`fs`) is not available
 for Kubernetes deployments and will not work if set.
 

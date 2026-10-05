@@ -231,6 +231,8 @@ Create the bucket before installing IDV. The chart does not create it for you. F
 - <a href="https://docs.cloud.google.com/storage/docs/creating-buckets" target="_blank" rel="noopener noreferrer">GCP</a>
 - <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal" target="_blank" rel="noopener noreferrer">Azure</a>
 
+The example above is for Amazon S3. For Google Cloud Storage or Azure, set `config.storage.type` to `gcs` or `az`, see [Configuration](05-configuration.md#storage).
+
 ## 6. Install IDV
 
 You should preview first. This helps catch configuration mistakes before they are applied to the cluster:
@@ -270,7 +272,7 @@ A healthy installation should have these four IDV components running:
 - `scheduler`
 - `audit`
 
-A successful health check returns HTTP status code `200`.
+If the health check succeeds, the command prints the health status and exits without an error.
 
 There is no `indexer` component unless you enable search.
 

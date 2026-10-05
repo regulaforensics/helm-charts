@@ -1,4 +1,4 @@
-{{- if or .Values.config.textSearch.enabled .Values.config.faceSearch.enabled }}
+{{- if .Values.config.textSearch.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

@@ -320,7 +320,7 @@ textSearch:
     type: {{ .Values.config.textSearch.database.type }}
     {{- if eq .Values.config.textSearch.database.type "opensearch" }}
     {{- if .Values.opensearch.enabled }}
-    ## `textSearch` configuration has been overridden by `opensearch.enabled=true` value
+    ## `faceSearch` configuration has been overridden by `opensearch.enabled=true` value
     opensearch:
       host: opensearch
       port: "9200"
@@ -328,6 +328,7 @@ textSearch:
       verifyCerts: false
       username: ""
       password: ""
+      dimension: 512
       awsAuth:
         enabled: false
     {{- else }}

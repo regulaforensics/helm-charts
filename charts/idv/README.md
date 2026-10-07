@@ -112,7 +112,7 @@ env:
 
 ## Chart parameters
 
-> **Note:** In version 3.10, the `api` component was renamed to `backoffice`. The `api` component name still remains supported for backward compatibility (for v.3.10), but we recommend updating your configuration to use `backoffice`. 
+> **Note:** In version 3.10, the `api` component was renamed to `backoffice`. The `api` component name remains supported for backward compatibility in version 3.10, but we recommend updating your configuration to use `backoffice`.
 >
 > During the upgrade, `backoffice` is unavailable for about 20 seconds. Plan the upgrade for a maintenance window.
 
@@ -186,6 +186,54 @@ env:
 | `backoffice.probes.startupProbe.periodSeconds`                   | Startup period                                    | `10`                              |
 | `backoffice.probes.startupProbe.successThreshold`                | Startup success threshold                         | `1`                               |
 | `backoffice.probes.startupProbe.failureThreshold`                | Startup failure threshold                         | `3`                               |
+| `frontoffice.replicas` | Number of Frontoffice replicas | `1` |
+| `frontoffice.nodeSelector` | Node selector for Frontoffice pods | `{}` |
+| `frontoffice.tolerations` | Tolerations for Frontoffice pods | `[]` |
+| `frontoffice.affinity` | Affinity rules for Frontoffice pods | `{}` |
+| `frontoffice.resources` | Resource requests/limits for Frontoffice | `{}` |
+| `frontoffice.topologySpreadConstraints` | Topology spread constraints for Frontoffice | `[]` |
+| `frontoffice.terminationGracePeriodSeconds` | Frontoffice pod termination grace period | `45` |
+| `frontoffice.lifecycle` | Frontoffice pod lifecycle hooks | `{}` |
+| `frontoffice.service.type` | Frontoffice service type | `ClusterIP` |
+| `frontoffice.service.port` | Frontoffice service port | `80` |
+| `frontoffice.service.annotations` | Frontoffice service annotations | `{}` |
+| `frontoffice.service.loadBalancerSourceRanges` | LoadBalancer source ranges for Frontoffice | `[]` |
+| `frontoffice.ingress.enabled` | Enable dedicated Frontoffice Ingress | `false` |
+| `frontoffice.ingress.className` | Ingress class for Frontoffice | `""` |
+| `frontoffice.ingress.annotations` | Frontoffice Ingress annotations | `{}` |
+| `frontoffice.ingress.hosts` | Frontoffice Ingress hostnames | `[]` |
+| `frontoffice.ingress.paths` | Frontoffice Ingress paths | `[]` |
+| `frontoffice.ingress.pathType` | Frontoffice Ingress path type | `Prefix` |
+| `frontoffice.ingress.tls` | Frontoffice Ingress TLS entries | `[]` |
+| `frontoffice.autoscaling.enabled` | Enable Frontoffice autoscaling | `false` |
+| `frontoffice.autoscaling.minReplicas` | Minimum Frontoffice replicas | `1` |
+| `frontoffice.autoscaling.maxReplicas` | Maximum Frontoffice replicas | `100` |
+| `frontoffice.autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization percent for Frontoffice | `80` |
+| `frontoffice.autoscaling.targetMemoryUtilizationPercentage` | Target memory utilization percent for Frontoffice | `80` |
+| `frontoffice.autoscaling.keda.enabled` | Enable KEDA for Frontoffice | `false` |
+| `frontoffice.autoscaling.keda.triggers` | KEDA triggers for Frontoffice | `[]` |
+| `frontoffice.autoscaling.keda.TriggerAuthentication` | KEDA TriggerAuthentication for Frontoffice | `null` |
+| `frontoffice.podDisruptionBudget.enabled` | Enable PDB for Frontoffice | `false` |
+| `frontoffice.podDisruptionBudget.config.maxUnavailable` | PDB maxUnavailable for Frontoffice | `~` |
+| `frontoffice.podDisruptionBudget.config.minAvailable` | PDB minAvailable for Frontoffice | `1` |
+| `frontoffice.probes.livenessProbe.enabled` | Enable Frontoffice liveness probe | `true` |
+| `frontoffice.probes.livenessProbe.initialDelaySeconds` | Liveness initial delay | `5` |
+| `frontoffice.probes.livenessProbe.timeoutSeconds` | Liveness timeout | `5` |
+| `frontoffice.probes.livenessProbe.periodSeconds` | Liveness period | `10` |
+| `frontoffice.probes.livenessProbe.successThreshold` | Liveness success threshold | `1` |
+| `frontoffice.probes.livenessProbe.failureThreshold` | Liveness failure threshold | `3` |
+| `frontoffice.probes.readinessProbe.enabled` | Enable Frontoffice readiness probe | `true` |
+| `frontoffice.probes.readinessProbe.initialDelaySeconds` | Readiness initial delay | `5` |
+| `frontoffice.probes.readinessProbe.timeoutSeconds` | Readiness timeout | `5` |
+| `frontoffice.probes.readinessProbe.periodSeconds` | Readiness period | `10` |
+| `frontoffice.probes.readinessProbe.successThreshold` | Readiness success threshold | `1` |
+| `frontoffice.probes.readinessProbe.failureThreshold` | Readiness failure threshold | `3` |
+| `frontoffice.probes.startupProbe.enabled` | Enable Frontoffice startup probe | `false` |
+| `frontoffice.probes.startupProbe.initialDelaySeconds` | Startup initial delay | `10` |
+| `frontoffice.probes.startupProbe.timeoutSeconds` | Startup timeout | `5` |
+| `frontoffice.probes.startupProbe.periodSeconds` | Startup period | `10` |
+| `frontoffice.probes.startupProbe.successThreshold` | Startup success threshold | `1` |
+| `frontoffice.probes.startupProbe.failureThreshold` | Startup failure threshold | `3` |
 | `workflow.replicas`                                       | Number of Workflow replicas                       | `1`                               |
 | `workflow.nodeSelector`                                   | Node selector for Workflow pods                   | `{}`                              |
 | `workflow.tolerations`                                    | Tolerations for Workflow pods                     | `[]`                              |
@@ -249,6 +297,15 @@ env:
 | `config.services.backoffice.cors.maxAge`                         | CORS max age seconds                              | `0`                               |
 | `config.services.backoffice.maxBodySize`                         | Max body size                                     | `64Mi`                            |
 | `config.services.backoffice.openapi`                             | Enable OpenAPI docs                               | `false`                           |
+| `config.services.frontoffice.enabled` | Enable Frontoffice service | `false` |
+| `config.services.frontoffice.port` | Internal Frontoffice port | `8001` |
+| `config.services.frontoffice.host` | Frontoffice bind host | `0.0.0.0` |
+| `config.services.frontoffice.workers` | Number of worker processes | `auto` |
+| `config.services.frontoffice.threads` | Number of threads per worker | `auto` |
+| `config.services.frontoffice.keepalive` | Keepalive seconds | `120` |
+| `config.services.frontoffice.timeout` | Request timeout seconds | `30` |
+| `config.services.frontoffice.maxBodySize` | Maximum request body size | `64Mi` |
+| `config.services.frontoffice.openapi` | Enable OpenAPI docs | `true` |
 | `config.services.workflow.workers`                        | Workflow service workers                          | `auto`                            |
 | `config.services.workflow.threads`                        | Workflow service threads per worker               | `32`                              |
 | `config.services.scheduler.jobs.reloadWorkflows.cron`     | Cron for reloading workflows                      | `"*/15 * * * * *"`                |
@@ -262,7 +319,7 @@ env:
 | `config.services.audit.workers` | Number of worker processes | `auto` |
 | `config.services.audit.threads` | Number of threads per worker | `32` |
 | `config.services.audit.wsEnabled`                         | Enable audit WebSocket                            | `false`                           |
-| `config.services.audit.user.keepFor`                      | Keep user data for specific time period           | `90d`                             |
+| `config.services.audit.user.keepFor`                      | Data retention period for user data           | `90d`                             |
 | `config.services.indexer.timeout`                         | Indexer request timeout seconds                   | `60`                              |
 | `config.services.indexer.maxBatchSize`                    | Indexer max batch size                            | `1000`                            |
 | `config.services.docreader.enabled`                       | Enable docreader integration                      | `false`                           |
@@ -496,12 +553,12 @@ seems to be ignored, check these first.
 
 ## Deployed components
 
-All components share one image, one ConfigMap, and one license Secret. Only the Backoffice is exposed via
-`ingress`/`route`; the rest communicate through the message broker.
+Backoffice can be exposed through the main ingress/route, while Frontoffice can use its own dedicated Ingress. The remaining services communicate internally through the message broker.
 
 | Component | Deployment | Command | Scales out | Deployed when |
 |---|---|---|---|---|
-| Backoffice| `<release>-idv-backoffice` | `idv webserver start` | Yes | Always |
+| Frontoffice | `<release>-idv-frontoffice` | `idv webserver start` | Yes | `config.services.frontoffice.enabled` |
+| Backoffice | `<release>-idv-backoffice` | `idv webserver start` | Yes | Always |
 | Workflow | `<release>-idv-workflow` | `idv workflow start` | Yes | Always |
 | Scheduler | `<release>-idv-scheduler` | `idv scheduler start` | No | Always |
 | Audit | `<release>-idv-audit` | `idv audit start` | No | Always |

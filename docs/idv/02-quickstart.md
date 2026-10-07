@@ -8,7 +8,7 @@ storage. This setup is intended for evaluation only, not production workloads.
 > The bundled dependencies use default credentials, and the default encryption key is publicly known. Do not use this setup with real or sensitive data.
 > For a production deployment, see [Production installation](./03-install-production.md).
 
-> **Note:** In version 3.10, the `api` component was renamed to `backoffice`. The `api` component name still remains supported for backward compatibility (for v.3.10), but we recommend updating your configuration to use `backoffice`.
+> **Note:** In version 3.10, the `api` component was renamed to `backoffice`. The `api` component name remains supported for backward compatibility in version 3.10, but we recommend updating your configuration to use `backoffice`.
 >
 > During the upgrade, `backoffice` is unavailable for about 20 seconds. Plan the upgrade for a maintenance window.
 

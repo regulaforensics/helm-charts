@@ -1,5 +1,18 @@
 # Integrations
 
+- [Overview](#overview)
+- [Document Reader](#document-reader)
+- [Face API](#face-api)
+  - [Running on GPU](#running-on-gpu)
+- [Face and Text Search](#face-and-text-search)
+  - [Indexer](#indexer)
+  - [Test without your own OpenSearch](#test-without-your-own-opensearch)
+- [Metrics](#metrics)
+- [Email](#email)
+- [Next Steps](#next-steps)
+
+## Overview
+
 On its own, IDV can run workflows but cannot read a document or match a face. These capabilities are provided by two separate Regula services: Document Reader and Face API. Face and text search, metrics, and email are optional. All optional services described on this page are disabled by default.
 
 | Integration | Required when | Default |
@@ -248,7 +261,7 @@ kubectl patch secret idv-secrets -n regula-idv --type merge \
 
 Links in outgoing email use `config.baseUrl`, so it must be correct.
 
-## Next
+## Next Steps
 
-- [Configuration](05-configuration.md) — configure how these settings reach the application
-- [Authentication and users](06-auth-and-users.md) — configure sign-in and roles
+- To configure how these settings reach the application see [Configuration](05-configuration.md).
+- To configure sign-in and roles, refer to [Authentication and users](06-auth-and-users.md).

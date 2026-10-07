@@ -1,5 +1,13 @@
 # Authentication and Users
 
+- [Create First User](#create-first-user)
+- [Sign-In Methods](#sign-in-methods)
+  - [`config.basicAuth.enabled`](#configbasicauthenabled)
+  - [OAuth 2.0](#oauth-20)
+  - [SAML](#saml)
+- [Roles](#roles)
+- [Next Steps](#next-steps)
+
 This section explains how to create and manage users, configure sign-in methods, and control access through roles and permissions. 
 
 ## Create the First User
@@ -51,7 +59,7 @@ The `--name` value must be unique. After you create the first administrator acco
 
 `config.basicAuth.enabled` controls the username and password sign-in method.
 
-`config.basicAuth.enabled: true`: this is the default setting which enables username and password sign-in. The first administrator account created with `idv user create` uses this sign-in method. 
+`config.basicAuth.enabled: true`: this is the default setting and enables username and password sign-in. The first administrator account created with `idv user create` uses this sign-in method. 
 
 If SSO is also configured, users can sign in through SSO or with username and password. The local username/password login remains available as a backup if the SSO provider is misconfigured or temporarily unavailable.
 
@@ -160,7 +168,7 @@ Available operations are:
 - `delete` — delete data
 - `subscribe` — receive updates
 
-A scope ending in `_all` grants access to records belonging to all users rather than only the current user's records. For example, `session:read_all`  allows the user to read sessions belonging to all users.
+A scope ending in `_all` grants access to records belonging to all users rather than only the current user's records. For example, `session_all:read`  allows the user to read sessions belonging to all users.
 
 Create a custom role:
 
@@ -186,10 +194,9 @@ portal, under **Settings**. The complete permission list is in the
 
 ## Next
 
-- [Operations](07-operations.md)
-- [Troubleshooting](08-troubleshooting.md)
+## Next Steps
 
----
-
-Roles and permissions summarized from the
+- To learn how to operate, scale, and upgrade your deployment, see [Operations](07-operations.md).
+- To diagnose common deployment and configuration issues, see [Troubleshooting](08-troubleshooting.md).
+- To see roles and permissions summarized, refer to
 [Regula IDV user management documentation](https://docs.regulaforensics.com/develop/idv/administration/user-management/).

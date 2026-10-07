@@ -64,7 +64,7 @@ Get an answer, then document it.
 
 ## Timing: wait for the `backoffice`/`frontoffice` rename
 
-`Release 3.10: api renamed to backoffice`
+DONE
 
 The next chart version renames the `api` component to `backoffice` and adds an optional
 `frontoffice` component. Update these pages **when that chart is promoted and published**, not

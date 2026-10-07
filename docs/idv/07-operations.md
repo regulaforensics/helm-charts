@@ -1,5 +1,16 @@
 # Operations
 
+- [Upgrades](#upgrades)
+- [Scaling](#scaling)
+  - [Automatic scaling on CPU and memory](#automatic-scaling-on-cpu-and-memory)
+  - [Automatic scaling on queue length (KEDA)](#automatic-scaling-on-queue-length-keda)
+- [Disruption Budgets](#disruption-budgets)
+- [Check Health](#check-health)
+- [Data Retention](#data-retention)
+- [Backups](#backups)
+- [Disaster Recovery](#disaster-recovery)
+- [Removing IDV](#removing-idv)
+
 This section covers day-to-day operations of a production IDV deployment, including upgrades, scaling, health checks, backups, disaster recovery, and removal.
 
 ## Upgrades
@@ -32,12 +43,13 @@ if the encryption key changed.
 
 ## Scaling
 
-Only `backoffice` and `workflow` can run multiple copies. `scheduler`, `audit`, and `indexer` must stay at
-one. Running multiple `scheduler` replicas causes each scheduled job to run multiple times.
+Frontoffice, Backoffice, and Workflow support horizontal scaling. Scheduler, Audit, and Indexer are designed to run as single instances and should not be scaled out. Running multiple `scheduler` replicas causes each scheduled job to run multiple times.
 
 To configure a fixed number of replicas:
 
 ```yaml
+frontoffice:
+  replicas: 2
 backoffice:
   replicas: 3
 workflow:
@@ -86,7 +98,7 @@ workflow:
         replicas: 2
 ```
 
-Scale the `backoffice` on request volume and `workflow` on queue length. See
+Scale frontoffice and backoffice based on request volume, and workflow based on queue length. See
 [Integrations](04-integrations.md#metrics).
 
 ## Disruption Budgets
@@ -155,10 +167,9 @@ Search indexes can be rebuilt, so backing them up is optional.
 
 IDV is deployed in your own infrastructure, so you are responsible for setting up disaster recovery. The appropriate approach depends on your recovery objectives and infrastructure. Options range from backup and restore to running IDV across two sites.
 
-For multi-site deployments, replicate stateful components between sites, including database replica sets, object storage, search indexes, and the message broker. The remaining IDV services are stateless and can run at both sites behind a load balancer.
+For multi-site deployments, replicate stateful components between sites, including database replica sets, object storage, search indexes, and the message broker. Frontoffice, Backoffice, and Workflow support horizontal scaling.
 
-The trade-offs between approaches are covered in the
-[platform disaster recovery guide](https://docs.regulaforensics.com/develop/idv/administration/disaster-recovery/).
+The trade-offs between approaches are covered in the [platform disaster recovery guide](https://docs.regulaforensics.com/develop/idv/administration/disaster-recovery/).
 
 ## Removing IDV
 

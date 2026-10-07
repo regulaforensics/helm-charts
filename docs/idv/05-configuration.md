@@ -1,6 +1,14 @@
 # Configuration
 
-This section describes configuration settings: where they are kept, how they are applied, and which settings should be configured through `values.yaml`.
+- [How Configuration Works](#how-configuration-works)
+- [Passing Secrets](#passing-secrets)
+  - [`env` vs `config.env`](#env-vs-configenv)
+- [Storage](#storage)
+- [Scheduled Clean-Up Jobs](#scheduled-clean-up-jobs)
+- [Check Settings](#check-settings)
+- [Settings Outside Chart](#settings-outside-chart)
+- [Next Steps](#next-steps)
+
 Learn where IDV configuration settings are stored, how they are applied, how to configure them with Helm, and which settings should be configured through `values.yaml`. For the complete list of available Helm chart parameters and their default values, see [Chart parameters](../../charts/idv/README.md#chart-parameters).
 
 > **Note:** In version 3.10, the `api` component was renamed to `backoffice`. The `api` component name remains supported for backward compatibility in version 3.10, but we recommend updating your configuration to use `backoffice`.
@@ -22,7 +30,7 @@ For settings that are also configurable through the Platform UI, UI values take 
 Two things follow from this:
 
 - Anything under `config:` is stored in plain text in the ConfigMap and can be read by anyone with access to the namespace. Do not put credentials there. Use a Secret instead (see below [Passing secrets](#passing-secrets)).
-- **All services share one config.** Changing it restarts all of them.
+- **All services share one config.** Otherwise, changing it could sound as though changing a setting through UI restarts all services.
 
 To see the config your cluster is actually using, run the following command:
 
@@ -32,7 +40,7 @@ kubectl get configmap idv-config -n regula-idv -o jsonpath='{.data.idv-config}'
 
 ## Passing Secrets
 
-Never put passwords, keys, or connection strings under `config:`. Put them in a Secret and
+Never put passwords, keys, or connection strings under `config`. Put them in a Secret and
 reference them from the top-level `env:` list:
 
 ```yaml
@@ -186,8 +194,8 @@ IDV Helm chart 1.16.0 supports the settings required for a standard Kubernetes d
 Contact Regula support if your deployment needs one of these. Editing the ConfigMap directly is not a
 workaround because Helm replaces it on the next upgrade.
 
-## Next
+## Next Steps
 
-- [Authentication and users](06-auth-and-users.md)
-- [Operations](07-operations.md)
-- Every available setting → [chart README](../../charts/idv/README.md)
+- To configure sign-in and user roles, see [Authentication and users](06-auth-and-users.md)
+- To learn how to operate, scale, upgrade, and troubleshoot your deployment, [Operations](07-operations.md)
+- To see all available Helm chart settings and their default values, see [chart README](../../charts/idv/README.md)

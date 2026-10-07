@@ -15,7 +15,7 @@ Main steps:
 - [Step 6. Install IDV](#6-install-idv)
 - [Step 7. Create the first user](#7-create-the-first-user)
 - [Check before going live](#check-before-going-live)
-- [Next](#next)
+- [Next](#next-steps)
 
 ## 1. Create a Namespace and Add the License
 
@@ -318,12 +318,9 @@ You can now open `https://idv.example.com` and sign in.
 Using your own certificate authority for internal connections? See
 [Troubleshooting](08-troubleshooting.md#certificate-errors-on-internal-connections).
 
-## Next
+## Next Steps
 
-- Add document and face verification → [Integrations](04-integrations.md)
-- Day-to-day running → [Operations](07-operations.md)
-
----
-
-Security recommendations follow the
+- To know how to add document and face verification, refer to [Integrations](04-integrations.md).
+- To see the day-to-day running instructions, go to [Operations](07-operations.md).
+- For security recommendations follow the
 [Regula IDV security documentation](https://docs.regulaforensics.com/develop/idv/administration/security/).

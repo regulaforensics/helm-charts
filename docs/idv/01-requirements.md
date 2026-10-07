@@ -2,6 +2,16 @@
 
  IDV depends on the services you provide. The included Helm chart does not configure production-ready versions of these dependent services for you. So before you begin, make sure your system meets the requirements described in this section.
 
+- [Cluster](#cluster)
+- [Services](#services)
+- [Resources](#resources)
+  - [Node capacity](#node-capacity)
+  - [Requests and limits](#requests-and-limits)
+  - [Memory adjustments](#memory-adjustments)
+  - [Face API and GPU](#face-api-and-gpu)
+- [License](#bundled-dependencies)
+- [Next Steps](#next-steps)
+
 ## Cluster
 
 | Component          | Version                                                                                                                                                                | Requirement                                        |
@@ -134,12 +144,8 @@ you collect metrics (see [Integrations](04-integrations.md#metrics)).
 The [Quickstart](02-quickstart.md) uses them. The
 [Production installation](03-install-production.md) does not.
 
-## Next
+## Next Steps
 
-- Just want to see it working → [Quickstart](02-quickstart.md)
-- Installing for real → [Production installation](03-install-production.md)
-
----
-
-Dependency versions, node capacity, and the GPU recommendation follow the
-[Regula IDV Deployment documentation](https://docs.regulaforensics.com/develop/idv/administration/deployment/).
+- To get started, see [Quickstart](02-quickstart.md).
+- For production installation instructions, refer to [Production installation](03-install-production.md).
+- Also follow [Regula IDV Deployment documentation](https://docs.regulaforensics.com/develop/idv/administration/deployment/) to know dependency versions, node capacity, and the GPU recommendation.

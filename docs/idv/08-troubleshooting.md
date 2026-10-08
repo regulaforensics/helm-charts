@@ -18,7 +18,7 @@ kubectl logs -n regula-idv <pod> --previous
 | `kubectl logs -n regula-idv <pod> --tail=200` | Shows recent application errors from the container.                             |
 | `kubectl logs -n regula-idv <pod> --previous` | Shows logs from the previous container instance if the container has restarted. |
 
-## Find Your Symptom
+Find your symptom:
 
 Find your symptom below. All examples assume the namespace `regula-idv` and release name `idv`.
 

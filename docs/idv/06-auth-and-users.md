@@ -192,7 +192,6 @@ Access to individual workflows, views, and profile groups can be narrowed per pe
 portal, under **Settings**. The complete permission list is in the
 [platform user management documentation](https://docs.regulaforensics.com/develop/idv/administration/user-management/).
 
-## Next
 
 ## Next Steps
 

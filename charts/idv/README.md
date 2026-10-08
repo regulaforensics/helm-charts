@@ -2,10 +2,21 @@
 
 Regula Identity Verification Platform. On-premise and cloud deployment.
 
-> **Installation and configuration guides live in [`docs/idv/`](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/README.md).**
+> **Installation and configuration guides live in [`docs/idv/`](../../README.md).**
+
+[About](#about)
+[Prerequisites](#prerequisites)
+[Quick Reference](#quick-reference)
+[Chart Parameters](#chart-parameters)
+[In Cluster TLS](#in-cluster-tls-trusted-ca-bundle)
+[Subchart Parameters](#subchart-parameters)
+[Deployed Components](#deployed-components)
+[KEDA Autoscaling](#keda-autoscaling)
+
+## About
 >
-> This file is the parameter reference. If you are installing IDV for the first time, start with
-> the [documentation index](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/README.md) instead — it covers requirements, a demo quickstart, the
+> This file is the parameter reference (see [Chart Parameters](#chart-parameters) below). If you are installing IDV for the first time, start with
+> the [documentation index](../../README.md) instead — it covers requirements, a demo quickstart, the
 > production installation, integrations, and troubleshooting in order.
 
 | Guide | |
@@ -26,7 +37,7 @@ Regula Identity Verification Platform. On-premise and cloud deployment.
 - A `regula.license` file from the [Client Portal](https://client.regulaforensics.com/), loaded
   into a Secret
 
-## Quick reference
+## Quick Reference
 
 ```console
 helm repo add regulaforensics https://regulaforensics.github.io/helm-charts
@@ -528,7 +539,7 @@ The feature is disabled by default (`configMapName: ""`) and changes nothing in 
 version. For in-cluster TLS to RabbitMQ, set the broker URL scheme to `amqps://`; for OpenSearch
 set `config.faceSearch.database.opensearch.verifyCerts: true` (and the same for `textSearch`).
 
-## Subchart parameters
+## Subchart Parameters
 
 Each switch also **overrides the matching `config` settings** you supplied. If a connection setting
 seems to be ignored, check these first.
@@ -551,7 +562,7 @@ seems to be ignored, check these first.
 > - Rename `minio.rootUser` / `minio.rootPassword` to `minio.auth.rootUser` /
 >   `minio.auth.rootPassword`. The old keys are silently ignored.
 
-## Deployed components
+## Deployed Components
 
 Backoffice can be exposed through the main ingress/route, while Frontoffice can use its own dedicated Ingress. The remaining services communicate internally through the message broker.
 

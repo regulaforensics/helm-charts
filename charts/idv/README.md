@@ -4,14 +4,14 @@ Regula Identity Verification Platform. On-premise and cloud deployment.
 
 > **Installation and configuration guides live in [`docs/idv/`](../../README.md).**
 
-[About](#about)
-[Prerequisites](#prerequisites)
-[Quick Reference](#quick-reference)
-[Chart Parameters](#chart-parameters)
-[In Cluster TLS](#in-cluster-tls-trusted-ca-bundle)
-[Subchart Parameters](#subchart-parameters)
-[Deployed Components](#deployed-components)
-[KEDA Autoscaling](#keda-autoscaling)
+- [About](#about)
+- [Prerequisites](#prerequisites)
+- [Quick Reference](#quick-reference)
+- [Chart Parameters](#chart-parameters)
+- [In Cluster TLS](#in-cluster-tls-trusted-ca-bundle)
+- [Subchart Parameters](#subchart-parameters)
+- [Deployed Components](#deployed-components)
+- [KEDA Autoscaling](#keda-autoscaling)
 
 ## About
 >

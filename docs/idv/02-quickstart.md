@@ -30,9 +30,26 @@ Make sure you have:
 
 - A Kubernetes cluster version 1.23 or newer with `kubectl` connected to it
 - Helm 3.10 or newer
-- The `regula.license` file from the <a href="https://client.regulaforensics.com/" target="_blank" rel="noopener noreferrer">Client Portal</a>
+- The `regula.license` file from the [Client Portal](https://client.regulaforensics.com/)
 - About 4 CPU cores and 8 GB of RAM in the cluster
-- At least one x86-64 (amd64) node: the bundled MongoDB image is not available for ARM (arm64)
+- At least one x86-64 (`amd64`) node: the bundled MongoDB image is available only for `amd64`
+
+The other bundled components and IDV itself can run on `arm64`.
+
+If your cluster includes both `amd64` and `arm64` nodes, schedule MongoDB on an `amd64` node by adding the following argument to your Helm installation command:
+
+```bash
+--set 'mongodb.nodeSelector.kubernetes\.io/arch=amd64'
+```
+
+Alternatively, you can use an external MongoDB instance by disabling the bundled MongoDB and specifying a connection URL:
+
+```bash
+--set mongodb.enabled=false \
+--set-string config.mongo.url='<mongodb_connection_url>'
+```
+
+**Note:** If you want to run the bundled MongoDB on `arm64`, you may replace its default image with `arm64`-compatible alternative at your own risk. **This approach is not recommended as not supported by IDV**.
 
 ## 1. Add the Helm Chart Repository
 

@@ -1,0 +1,201 @@
+# Configuration
+
+- [How Configuration Works](#how-configuration-works)
+- [Passing Secrets](#passing-secrets)
+  - [`env` vs `config.env`](#env-vs-configenv)
+- [Storage](#storage)
+- [Scheduled Clean-Up Jobs](#scheduled-clean-up-jobs)
+- [Check Settings](#check-settings)
+- [Settings Outside Chart](#settings-outside-chart)
+- [Next Steps](#next-steps)
+
+Learn where IDV configuration settings are stored, how they are applied, how to configure them with Helm, and which settings should be configured through `values.yaml`. For the complete list of available Helm chart parameters and their default values, see [Chart parameters](../../charts/idv/README.md#chart-parameters).
+
+> **Note:** In version 3.10, the `api` component was renamed to `backoffice`. The `api` component name remains supported for backward compatibility in version 3.10, but we recommend updating your configuration to use `backoffice`.
+>
+> During the upgrade, `backoffice` is unavailable for about 20 seconds. Plan the upgrade for a maintenance window.
+
+
+## How Configuration Works
+
+Helm generates the `config.yaml` file used by IDV from the values under `config:` in `values.yaml`.
+
+For settings that are also configurable through the Platform UI, UI values take precedence over values from `config.yaml`. UI settings are stored in the database and persist across pod restarts. If a setting is not configured in the UI, IDV uses the value from `config.yaml`.
+
+1. You set values under `config:` in your `values.yaml`.
+2. The chart turns them into the ConfigMap.
+3. The ConfigMap is mounted into all services as `/app/config.yaml`.
+4. Environment variables can override any single field at startup.
+
+Two things follow from this:
+
+- Anything under `config:` is stored in plain text in the ConfigMap and can be read by anyone with access to the namespace. Do not put credentials there. Use a Secret instead (see below [Passing secrets](#passing-secrets)).
+- **All services share one config.** Otherwise, changing it could sound as though changing a setting through UI restarts all services.
+
+To see the config your cluster is actually using, run the following command:
+
+```bash
+kubectl get configmap idv-config -n regula-idv -o jsonpath='{.data.idv-config}'
+```
+
+## Passing Secrets
+
+Never put passwords, keys, or connection strings under `config`. Put them in a Secret and
+reference them from the top-level `env:` list:
+
+```yaml
+env:
+  - name: IDV_CONFIG__FERNETKEY
+    valueFrom:
+      secretKeyRef:
+        name: idv-secrets
+        key: fernetKey
+```
+
+The variable name is `IDV_CONFIG__` plus the setting's path, in capitals, with **two** underscores
+between each level:
+
+| Setting | Variable |
+|---|---|
+| `fernetKey` | `IDV_CONFIG__FERNETKEY` |
+| `mongo.url` | `IDV_CONFIG__MONGO__URL` |
+| `messageBroker.url` | `IDV_CONFIG__MESSAGEBROKER__URL` |
+| `storage.s3.accessKey` | `IDV_CONFIG__STORAGE__S3__ACCESSKEY` |
+| `storage.az.connectionString` | `IDV_CONFIG__STORAGE__AZ__CONNECTIONSTRING` |
+| `smtp.password` | `IDV_CONFIG__SMTP__PASSWORD` |
+| `faceSearch.database.opensearch.password` | `IDV_CONFIG__FACESEARCH__DATABASE__OPENSEARCH__PASSWORD` |
+
+Items in the list are numbered from zero, so the first OAuth2 provider's secret is
+`IDV_CONFIG__OAUTH2__PROVIDERS__0__SECRET`.
+
+The variable overrides the value in the config file. 
+The placeholder under `config`: remains visible in the ConfigMap because the environment variable overrides it at startup.
+
+### `env` vs `config.env`
+
+`env` and `config.env` are different.
+
+| Configuration field | When to use |
+|---|---|
+| `env:` (top level) | Kubernetes environment variables. **Use this for secrets.** |
+| `config.env:` | A label for the environment, such as `prod`. Nothing else. |
+
+Putting the `valueFrom` block under `config.env` does **not** create the variable you intended. It may write something unexpected into the config file and keeps your original setting unchanged, with no error:
+
+```yaml
+# Incorrect: `config.env` does not create environment variables
+config:
+  env:
+    - name: IDV_CONFIG__FERNETKEY
+      valueFrom:
+        secretKeyRef: { name: idv-secrets, key: fernetKey }
+```
+
+```yaml
+# Correct: env is a top-level setting
+env:
+  - name: IDV_CONFIG__FERNETKEY
+    valueFrom:
+      secretKeyRef: { name: idv-secrets, key: fernetKey }
+```
+
+Check that the variable is added to the deployment:
+
+```bash
+kubectl set env deploy/idv-backoffice --list -n regula-idv | grep IDV_CONFIG
+```
+
+## Storage
+
+Set `config.storage.type` to `s3`, `az`, or `gcs`. Kubernetes deployments use object storage; local
+filesystem storage (`fs`) is not available.
+
+Through this chart, IDV stores these kinds of data: `sessions`, `persons`, `workflows`, `userFiles`,
+`locales`, `assets`, `thumbnails`, `tempFiles`, and `banlists`. Each data type requires an existing storage location. They can
+share one bucket using different prefixes, which is what the
+[production example](03-install-production.md#5-configure-valuesyaml) does. For S3-compatible storage, replace the example bucket name with your bucket name. Keep the prefixes unchanged unless you have a specific reason to customize them.
+
+The chart does not create buckets unless you use the MinIO subchart.
+
+For Azure, only `prefix` is used and `bucket` is ignored. For Google Cloud, add the service account
+key as a Secret:
+
+```yaml
+config:
+  storage:
+    type: gcs
+    gcs:
+      gcsKeyJsonSecretName: gcs-credentials
+```
+
+```bash
+kubectl create secret generic gcs-credentials \
+  -n regula-idv --from-file=gcs_key.json=./key.json
+```
+
+## Scheduled Clean-Up Jobs
+
+The Scheduler runs housekeeping tasks on a timer.
+
+> **Note**
+>
+> Most timers use six fields and start with seconds. For example, `*/10 * * * * *` means every 10 seconds, not every 10 minutes. When changing a timer, follow the format of the existing default.
+
+By default, session data is kept indefinitely. If you have a retention policy, configure `cleanSessions`:
+
+```yaml
+config:
+  services:
+    scheduler:
+      jobs:
+        cleanSessions:
+          cron: '0 0 3 * * *'   # 03:00 daily
+          keepFor: 90d
+```
+
+`keepFor` accepts values like `30d`, `1w`, `1y`.
+
+## Check Settings
+
+Subchart switches overwrite your settings. Turning on a bundled dependency replaces the matching settings you supplied. This is useful for demo but can be confusing for other environments. **If a connection setting seems to be ignored, check the following options.**
+
+| Switch | Overwrites |
+|---|---|
+| `mongodb.enabled` | `config.mongo.url` |
+| `rabbitmq.enabled` | `config.messageBroker.url` |
+| `minio.enabled` | all of `config.storage.s3` |
+| `opensearch.enabled` | all face and text search connection settings |
+| `statsd.enabled` | `config.metrics.statsd.host` and `port` |
+
+For production deployments, keep the first four disabled and use externally managed services instead. The bundled MongoDB, RabbitMQ, MinIO, and OpenSearch instances are intended for development and testing, not as production data stores. 
+
+`statsd` is different because it is a stateless metrics exporter that does not store application data. You can enable it in production.
+
+## Settings Outside the Chart
+
+IDV Helm chart 1.16.0 supports the settings required for a standard Kubernetes deployment.
+
+> **Important**
+>
+> The following settings are not supported through `config:` in the Helm chart. Adding them there has no effect:
+
+
+| Setting | Feature |
+|---|---|
+| `mode` | Always `cluster` for Kubernetes deployments |
+| `storage.type: fs` | Local filesystem storage |
+| `storage.<location>.folder` | Folder paths, available for `tempFiles` |
+| `metrics.alerts`, `metrics.database` | Prometheus alert access and database-backed metrics |
+| `services.audit.backoffice.keepFor` | `backoffice` audit retention, separate from `user.keepFor` |
+| `deviceMessageTracking` | Device message history |
+| `replicationBus`, `services.mongoReplicator`, `services.searchReplicator` | Multi-site replication |
+| Advanced `saml.providers[].security` options | Signature and digest algorithms, assertion signing |
+
+Contact Regula support if your deployment needs one of these. Editing the ConfigMap directly is not a
+workaround because Helm replaces it on the next upgrade.
+
+## Next Steps
+
+- To configure sign-in and user roles, see [Authentication and users](06-auth-and-users.md)
+- To learn how to operate, scale, upgrade, and troubleshoot your deployment, [Operations](07-operations.md)
+- To see all available Helm chart settings and their default values, see [chart README](../../charts/idv/README.md)

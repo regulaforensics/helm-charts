@@ -24,6 +24,12 @@ service:
     port: {{ .Values.config.service.webServer.port }}
     workers: {{ .Values.config.service.webServer.workers }}
     timeout: {{ .Values.config.service.webServer.timeout }}
+    {{- $maxBodySize := .Values.config.service.webServer.maxBodySize }}
+    {{- if kindIs "invalid" $maxBodySize }}
+    maxBodySize: null
+    {{- else }}
+    maxBodySize: {{ $maxBodySize | int64 }}
+    {{- end }}
     demoApp:
       enabled: {{ .Values.config.service.webServer.demoApp.enabled }}
     cors:

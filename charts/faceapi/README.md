@@ -319,6 +319,7 @@ ingress:
 | `config.service.webServer.port`                           | Port server binding                                                               | `41101`                                                       |
 | `config.service.webServer.workers`                        | Number of workers per pod                                                         | `1`                                                           |
 | `config.service.webServer.timeout`                        | Number of seconds for the worker to process the request                           | `30`                                                          |
+| `config.service.webServer.maxBodySize`                    | Max request body size in Kb. Set to `null` for unlimited request body             | `102400` (100Mb)                                              |
 | `config.service.webServer.demoApp.enabled`                | Serve a demo web app                                                              | `true`                                                        |
 | `config.service.webServer.cors.origins`                   | Origin, allowed to use API                                                        | `*`                                                           |
 | `config.service.webServer.cors.headers`                   | Headers, allowed to read from the API                                             | `*`                                                           |

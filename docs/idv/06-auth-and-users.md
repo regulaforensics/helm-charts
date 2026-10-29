@@ -93,7 +93,7 @@ config:
         clientId: "<app_id>"
         secret: ""                    # comes from the Secret below
         scope: "email openid profile User.Read"
-        defaultRoles: ["verifier"]
+        defaultRoles: ["demo"]
         defaultGroups: []
         urls:
           jwk: "https://login.microsoftonline.com/<tenant_id>/discovery/v2.0/keys"
@@ -128,7 +128,7 @@ config:
     providers:
       - name: okta
         entityId: "<idp_entity_id>"
-        defaultRoles: ["verifier"]
+        defaultRoles: ["demo"]
         defaultGroups: []
         ssoService:
           url: "https://<tenant>.okta.com/app/<app>/sso/saml"
@@ -155,7 +155,6 @@ A role is a set of permissions. IDV provides a set of predefined roles, such as:
 | Role | Intended use |
 |---|---|
 | `admin` | Full access to all data and settings |
-| `verifier` | Can view and verify, but not administer |
 | `device` | Used by devices connecting to the platform, not people |
 | `demo` | Demonstrations only |
 
@@ -185,7 +184,7 @@ curl -X POST "https://idv.example.com/api/security/roles" \
 curl -X PATCH "https://idv.example.com/api/security/users/<user_id>" \
   -H "Authorization: Token <token>" \
   -H "Content-Type: application/json" \
-  -d '{"roles": ["verifier", "device"]}'
+  -d '{"roles": ["demo", "device"]}'
 ```
 
 Access to individual workflows, views, and profile groups can be narrowed per person or group in the

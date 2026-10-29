@@ -164,7 +164,7 @@ Permissions use the format `scope:operations:entity`, where `scope` identifies t
 
 If granular access is not supported for a scope, the wildcard (*) is used to grant access to all entities within that scope.
 
-Examples: analytics:r:*, config:c,l,r,u,d:*. 
+Examples: `analytics:r:*`, `config:c,l,r,u,d:*`. 
 
 For more information, see [Role-Based Access Control documentation](https://docs.regulaforensics.com/develop/idv/administration/rbac/).
 

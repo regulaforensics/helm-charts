@@ -158,38 +158,52 @@ A role is a set of permissions. IDV provides a set of predefined roles, such as:
 | `device` | Used by devices connecting to the platform, not people |
 | `demo` | Demonstrations only |
 
-For the complete list of default roles, refer to [Platform RBAC documentation](https://docs.regulaforensics.com/develop/idv/administration/rbac/roles/#default-roles).
+For the complete list of default roles, refer to [Platform RBAC documentation: default roles](https://docs.regulaforensics.com/develop/idv/administration/rbac/roles/#default-roles).
 
-Permissions use the format `scope:operation`, where `scope` is the resource and `operation` defines what the user can do with it. For example, `session:read` allows the user to read their own sessions. 
+Permissions use the format `scope:operations:entity`, where `scope` identifies the resource, `operations` specifies the permitted actions, and `entity` defines the resources to which the permissions apply. Multiple operations can be separated by commas.
 
-Available operations are:
+If granular access is not supported for a scope, the wildcard (*) is used to grant access to all entities within that scope.
 
-- `read` — view data
-- `write` — create or update data
-- `delete` — delete data
-- `subscribe` — receive updates
+Examples: analytics:r:*, config:c,l,r,u,d:*. 
 
-Create a custom role:
+For more information, see [Role-Based Access Control documentation](https://docs.regulaforensics.com/develop/idv/administration/rbac/).
+
+Create a custom role using the API:
 
 ```bash
 curl -X POST "https://idv.example.com/api/security/roles" \
   -H "Authorization: Token <token>" \
   -H "Content-Type: application/json" \
-  -d '{"name": "Session Observer", "permissions": ["session:read", "session:subscribe"]}'
+  -d '{
+    "name": "Session Observer",
+    "description": "Role for viewing and monitoring sessions",
+    "permissions": [
+      "session:read:*",
+      "session:subscribe:*"
+    ]
+  }'
 ```
 
-> **Note:** Changing someone's roles **replaces** their entire list of roles. Include all roles the user should keep when updating them:
+Users inherit permissions through their group memberships. To grant a user access, add them to a group with the required roles.
+
+For example, to add a user to an existing group:
 
 ```bash
-curl -X PATCH "https://idv.example.com/api/security/users/<user_id>" \
+curl -X POST "https://idv.example.com/api/groups/<group_id>/members" \
   -H "Authorization: Token <token>" \
   -H "Content-Type: application/json" \
-  -d '{"roles": ["demo", "device"]}'
+  -d '[
+    {
+      "id": "<user_id>"
+    }
+  ]'
 ```
+
+Replace `<group_id>` with the target group ID and `<user_id>` with the ID of the user to add.
 
 Access to individual workflows, views, and profile groups can be narrowed per person or group in the
 portal, under **Settings**. The complete permission list is in the
-[Platform RBAC documentation](https://docs.regulaforensics.com/develop/idv/administration/rbac/rbac/permissions/).
+[Role-Based Access Control documentation](https://docs.regulaforensics.com/develop/idv/administration/rbac/rbac/permissions/).
 
 
 ## Next Steps

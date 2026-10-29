@@ -382,6 +382,29 @@ The feature is disabled by default (`configMapName: ""`) and changes nothing in 
 | `config.service.sdkErrorLog.persistence.storageClassName` | The SDK Error Log data Persistent Volume storage Class Name                             | `""`                            |
 | `config.service.sdkErrorLog.persistence.existingClaim`    | Name of the existing Persistent Volume Claim                                            | `""`                            |
 
+## Telemetry parameters
+
+The `config.service.telemetry` section is optional. It is omitted from the rendered config unless set, and
+`remote.enabled` / `local.enabled` are rendered only when explicitly specified.
+
+| Parameter                                  | Description                                                                          | Default |
+|--------------------------------------------|--------------------------------------------------------------------------------------|---------|
+| `config.service.telemetry`                 | Telemetry configuration. When empty, the `telemetry` section is not rendered         | `{}`    |
+| `config.service.telemetry.options`         | Free-form map with the telemetry config, passed to the service as is                 | `{}`    |
+| `config.service.telemetry.remote.enabled`  | Whether to enable remote telemetry                                                   | unset   |
+| `config.service.telemetry.local.enabled`   | Whether to enable local telemetry                                                    | unset   |
+
+```yaml
+config:
+  service:
+    telemetry:
+      options: {}
+      remote:
+        enabled: true
+      local:
+        enabled: false
+```
+
 
 > [!NOTE]
 > The subcharts are used for the demonstration and Dev/Test purposes.

@@ -198,4 +198,20 @@ service:
       folder: {{ quote .Values.config.service.sdkErrorLog.location.folder }}
       {{- end }}
     {{- end }}
+  {{- with .Values.config.service.telemetry }}
+
+  telemetry:
+    {{- if .options }}
+    options:
+      {{- toYaml .options | nindent 6 }}
+    {{- end }}
+    {{- if and .remote (hasKey .remote "enabled") }}
+    remote:
+      enabled: {{ .remote.enabled }}
+    {{- end }}
+    {{- if and .local (hasKey .local "enabled") }}
+    local:
+      enabled: {{ .local.enabled }}
+    {{- end }}
+  {{- end }}
 {{- end }}

@@ -150,7 +150,7 @@ Certificates and keys are base64-encoded. The private key must come from a Secre
 
 ## Roles
 
-A role is a set of permissions. IDV provides four predefined roles:
+A role is a set of permissions. IDV provides a set of predefined roles, such as:
 
 | Role | Intended use |
 |---|---|
@@ -158,6 +158,8 @@ A role is a set of permissions. IDV provides four predefined roles:
 | `verifier` | Can view and verify, but not administer |
 | `device` | Used by devices connecting to the platform, not people |
 | `demo` | Demonstrations only |
+
+For the complete list of default roles, refer to [Platform RBAC documentation](https://docs.regulaforensics.com/develop/idv/administration/rbac/roles/#default-roles).
 
 Permissions use the format `scope:operation`, where `scope` is the resource and `operation` defines what the user can do with it. For example, `session:read` allows the user to read their own sessions. 
 
@@ -167,8 +169,6 @@ Available operations are:
 - `write` — create or update data
 - `delete` — delete data
 - `subscribe` — receive updates
-
-A scope ending in `_all` grants access to records belonging to all users rather than only the current user's records. For example, `session_all:read`  allows the user to read sessions belonging to all users.
 
 Create a custom role:
 
@@ -190,7 +190,7 @@ curl -X PATCH "https://idv.example.com/api/security/users/<user_id>" \
 
 Access to individual workflows, views, and profile groups can be narrowed per person or group in the
 portal, under **Settings**. The complete permission list is in the
-[platform user management documentation](https://docs.regulaforensics.com/develop/idv/administration/user-management/).
+[Platform RBAC documentation](https://docs.regulaforensics.com/develop/idv/administration/rbac/rbac/permissions/).
 
 
 ## Next Steps
@@ -198,4 +198,4 @@ portal, under **Settings**. The complete permission list is in the
 - To learn how to operate, scale, and upgrade your deployment, see [Operations](07-operations.md).
 - To diagnose common deployment and configuration issues, see [Troubleshooting](08-troubleshooting.md).
 - To see roles and permissions summarized, refer to
-[Regula IDV user management documentation](https://docs.regulaforensics.com/develop/idv/administration/user-management/).
+[Regula IDV RBAC documentation](https://docs.regulaforensics.com/develop/idv/administration/rbac/).

@@ -1,183 +1,131 @@
 # IDV Helm Chart
 
-Identity Verification Plantform. On-premise and cloud integration.
+Regula Identity Verification Platform. On-premise and cloud deployment.
 
-## Add Chart
+> **Installation and configuration guides live in [`docs/idv/`](../../README.md).**
 
-First of all, you need to add the `regulaforensics` chart:
+- [About](#about)
+- [Prerequisites](#prerequisites)
+- [Quick Reference](#quick-reference)
+- [Chart Parameters](#chart-parameters)
+- [In Cluster TLS](#in-cluster-tls-trusted-ca-bundle)
+- [Subchart Parameters](#subchart-parameters)
+- [Deployed Components](#deployed-components)
+- [KEDA Autoscaling](#keda-autoscaling)
+
+## About
+>
+> This file is the parameter reference (see [Chart Parameters](#chart-parameters) below). If you are installing IDV for the first time, start with
+> the [documentation index](../../README.md) instead — it covers requirements, a demo quickstart, the
+> production installation, integrations, and troubleshooting in order.
+
+| Guide | |
+|---|---|
+| [Requirements](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/01-requirements.md) | Dependencies, versions, sizing |
+| [Quickstart](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/02-quickstart.md) | Working demo in ~10 minutes |
+| [Production installation](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/03-install-production.md) | External dependencies, secrets, TLS |
+| [Integrations](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/04-integrations.md) | Document Reader, Face API, search, metrics |
+| [Configuration](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/05-configuration.md) | Config pipeline and overrides |
+| [Authentication and users](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/06-auth-and-users.md) | First admin, SSO, roles |
+| [Operations](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/07-operations.md) | Upgrades, scaling, backups |
+| [Troubleshooting](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/08-troubleshooting.md) | Common failures |
+
+## Prerequisites
+
+- Helm >= 3.10
+- Kubernetes >= 1.23
+- A `regula.license` file from the [Client Portal](https://client.regulaforensics.com/), loaded
+  into a Secret
+
+## Quick Reference
 
 ```console
 helm repo add regulaforensics https://regulaforensics.github.io/helm-charts
 helm repo update
+
+kubectl create namespace regula-idv
+kubectl create secret generic idv-license \
+  -n regula-idv --from-file=regula.license=./regula.license
+
+helm install idv regulaforensics/idv \
+  -n regula-idv \
+  --set licenseSecretName=idv-license \
+  -f values.yaml
 ```
 
-See the [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation.
+### Demo install, with bundled dependencies
 
-## Prerequisites
-> [!NOTE]
-> - Helm >=3.10
-> - Kubernetes version >=1.23-0
-
-## Installing the Chart
-
-### Licensing
-
-To install the chart, you need to obtain the `regula.license` file (at the [Client Portal](https://client.regulaforensics.com/), for example) and then create a Kubernetes Secret from that license file:
+For evaluation only. Deploys MongoDB, RabbitMQ, and MinIO alongside IDV and wires them up
+automatically, so no connection settings are needed:
 
 ```console
-kubectl create secret generic idv-license --from-file=regula.license=/path/to/file
-```
-
-Note that the `regula.license` file should be located in the same folder where the `kubectl create secret` command is executed.
-
-### Set config Fernet Encryption Key
-
-> [!WARNING]
->
-> We strongly recommend that you DO NOT USE the default `config.fernetKey` in production.
-
-An example fernetKey can be generated via python:
-```bash
-pip install cryptography
-python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
-```
-
-#### Option 1 - using the value
-
-You may set the fernet encryption key using the `config.fernetKey` value.
-```yaml
-config:
-  fernetKey: "tton53xJw0QV6vfaOTNRP_YGnPc76ZJkXFdVFZSnaKQ="
-```
-
-#### Option 2 - using a secret (recommended)
-
-You may set the fernet encryption key from a Kubernetes Secret by referencing it with the `config.env` value.
-
-For example, to use the `fernet-key` key from the existing Secret called `idv-fernet-key`:
-```bash
-pip install cryptography
-export IDV_FERNET_KEY=$(python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")
-kubectl create secret generic idv-fernet-key --from-literal=fernet-key=${IDV_FERNET_KEY}
-```
-
-```yaml
-config:
-  env:
-    - name: IDV_CONFIG__FERNETKEY
-      valueFrom:
-        secretKeyRef:
-          name: idv-fernet-key
-          key: fernet-key
-```
-
-### Configure LiveKit (Optional)
-
-To enable LiveKit integration for video/audio capabilities, you need to configure the LiveKit server details and credentials.
-
-#### Creating a Secret for LiveKit Credentials
-
-Since `apiKey` and `apiSecret` are sensitive values, it's recommended to store them in a Kubernetes Secret:
-
-```bash
-kubectl create secret generic idv-livekit \
-  --from-literal=IDV_CONFIG__SERVICES__LIVEKIT__APIKEY=your-api-key \
-  --from-literal=IDV_CONFIG__SERVICES__LIVEKIT__APISECRET=your-api-secret
-```
-
-#### Configuring LiveKit in values.yaml
-
-```yaml
-config:
-  services:
-    livekit:
-      enabled: true
-      url: https://livekit.your-domain.com
-      egress:
-        enabled: false
-
-env:
-  - name: IDV_CONFIG__SERVICES__LIVEKIT__APIKEY
-    valueFrom:
-      secretKeyRef:
-        name: idv-livekit
-        key: IDV_CONFIG__SERVICES__LIVEKIT__APIKEY
-  - name: IDV_CONFIG__SERVICES__LIVEKIT__APISECRET
-    valueFrom:
-      secretKeyRef:
-        name: idv-livekit
-        key: IDV_CONFIG__SERVICES__LIVEKIT__APISECRET
-```
-
-### Configure Sentry (Optional)
-
-To enable Sentry integration for error tracking and monitoring, you can configure the Sentry portal settings.
-
-#### Configuring Sentry in values.yaml
-
-```yaml
-config:
-  sentry:
-    portal:
-      enabled: true
-      dsn: "https://your-sentry-key@o0000.ingest.sentry.io/project-id"
-      environment: "production"
-```
-
-To use sensitive values like DSN from Kubernetes Secrets (recommended):
-
-```bash
-kubectl create secret generic idv-sentry \
-  --from-literal=IDV_CONFIG__SENTRY__PORTAL__DSN=your-sentry-dsn
-```
-
-```yaml
-config:
-  sentry:
-    portal:
-      enabled: true
-      dsn: null
-      environment: "production"
-
-env:
-  - name: IDV_CONFIG__SENTRY__PORTAL__DSN
-    valueFrom:
-      secretKeyRef:
-        name: idv-sentry
-        key: IDV_CONFIG__SENTRY__PORTAL__DSN
-```
-
-### Installation
-
-To install the chart with the release name `my-release`:
-
-```console
-helm install my-release regulaforensics/idv \
+helm install idv regulaforensics/idv \
+  -n regula-idv \
   --set licenseSecretName=idv-license \
   --set mongodb.enabled=true \
   --set rabbitmq.enabled=true \
-  --set minio.enabled=true
+  --set minio.enabled=true \
+  --wait --timeout 10m
 ```
 
-## Uninstalling the Chart
+These bundled data stores are single-node, use well-known passwords, and are not backed up. **Do not
+use them in production** — see [Quickstart](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/02-quickstart.md) for the full walkthrough and
+[Production install](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/03-install-production.md) for a real deployment.
 
-To uninstall/delete the `my-release` deployment:
+### First user
+
+A fresh install has **no users**. Create the first admin before you can log in:
 
 ```console
-helm delete my-release
+kubectl exec -n regula-idv deploy/idv-backoffice -- \
+  idv user create --name admin --password '<password>' --email admin@example.com --roles admin
 ```
 
-The command removes all the Kubernetes components associated with the chart and deletes the release.
-
-## Upgrading the Chart
-
-To upgrade the `my-release` deployment:
+Upgrade and uninstall:
 
 ```console
-helm upgrade my-release regulaforensics/idv
+helm upgrade idv regulaforensics/idv -n regula-idv -f values.yaml
+helm uninstall idv -n regula-idv
 ```
+
+## Things to get right before production
+
+- **Override `config.fernetKey`.** The default is a real, working key published in this
+  repository, so data encrypted with it is not protected. The chart prints a warning after install
+  if the default is still in use, or if no key is set at all. Back the key up: without it,
+  encrypted database fields are unrecoverable, and changing it later makes existing data unreadable.
+- **Set `config.baseUrl`** to the URL clients actually reach. It is embedded in QR codes and
+  redirects; a mismatch breaks capture flows while the portal still loads.
+- **Pass credentials through the top-level `env` list**, not through `config`. Anything under
+  `config` is rendered into a ConfigMap in plain text. See
+  [Configuration](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/05-configuration.md#passing-secrets).
+- **Keep the bundled data stores disabled** (`mongodb`, `rabbitmq`, `minio`, `opensearch`). The
+  `statsd` exporter is stateless and safe to enable.
+
+### Injecting a secret value
+
+Set any config field from a Secret using the top-level `env` list. The variable name is
+`IDV_CONFIG__` plus the config path, uppercased, with double underscores between levels:
+
+```yaml
+env:
+  - name: IDV_CONFIG__FERNETKEY
+    valueFrom:
+      secretKeyRef:
+        name: idv-secrets
+        key: fernetKey
+```
+
+> `config.env` is **not** the same thing. It is an application config field holding an environment
+> *name* (such as `prod`) and is rendered into `config.yaml` as a string. A `valueFrom` block placed
+> there creates no environment variable and silently corrupts the config file. Always use the
+> top-level `env`.
 
 ## Chart parameters
+
+> **Note:** In version 3.10, the `api` component was renamed to `backoffice`. The `api` component name remains supported for backward compatibility in version 3.10, but we recommend updating your configuration to use `backoffice`.
+>
+> During the upgrade, `backoffice` is unavailable for about 20 seconds. Plan the upgrade for a maintenance window.
 
 | Parameter | Description | Default |
 |-----------------------------------------------------------|---------------------------------------------------|-----------------------------------|
@@ -199,56 +147,104 @@ helm upgrade my-release regulaforensics/idv
 | `image.tag`                                               | Image tag override                                | `""`                              |
 | `imagePullSecrets`                                        | Secrets for private registries                    | `{}`                              |
 | `licenseSecretName`                                       | Name of existing secret containing regula.license | `null`                            |
-| `api.replicas`                                            | Number of API replicas                            | `1`                               |
-| `api.nodeSelector`                                        | Node selector for API pods                        | `{}`                              |
-| `api.tolerations`                                         | Tolerations for API pods                          | `[]`                              |
-| `api.affinity`                                            | Affinity rules for API pods                       | `{}`                              |
-| `api.resources`                                           | Resource requests/limits for API                  | `{}`                              |
-| `api.topologySpreadConstraints`                           | Topology spread constraints for API               | `[]`                              |
-| `api.terminationGracePeriodSeconds`                       | API pod termination grace period                  | `45`                              |
-| `api.lifecycle`                                           | API pod lifecycle hooks                           | `{}`                              |
-| `api.service.type`                                        | API service type                                  | `ClusterIP`                       |
-| `api.service.port`                                        | API service port                                  | `80`                              |
-| `api.service.annotations`                                 | API service annotations                           | `{}`                              |
-| `api.service.loadBalancerSourceRanges`                    | LoadBalancer source ranges for API                | `[]`                              |
-| `api.autoscaling.enabled`                                 | Enable API autoscaling                            | `false`                           |
-| `api.autoscaling.minReplicas`                             | Minimum API replicas                              | `1`                               |
-| `api.autoscaling.maxReplicas`                             | Maximum API replicas                              | `100`                             |
-| `api.autoscaling.targetCPUUtilizationPercentage`          | Target CPU utilization percent                    | `80`                              |
-| `api.autoscaling.targetMemoryUtilizationPercentage`       | Target memory utilization percent                 | `80`                              |
-| `api.autoscaling.keda.enabled`                            | Enable KEDA for API                               | `false`                           |
-| `api.autoscaling.keda.minReplicaCount`                    | KEDA minimum replica count for API                | `1`                               |
-| `api.autoscaling.keda.maxReplicaCount`                    | KEDA maximum replica count for API                | `100`                             |
-| `api.autoscaling.keda.cooldownPeriod`                     | KEDA cooldown period (seconds) for API            | `300`                             |
-| `api.autoscaling.keda.pollingInterval`                    | KEDA polling interval (seconds) for API           | `30`                              |
-| `api.autoscaling.keda.advanced.scaleUp.stabilizationWindowSeconds` | Seconds the HPA observes metric before scaling up | `180`                    |
-| `api.autoscaling.keda.advanced.scaleDown.stabilizationWindowSeconds` | Seconds the HPA observes metric before scaling down | `300`                |
-| `api.autoscaling.keda.triggers`                           | KEDA triggers for API                             | `[]`                              |
-| `api.autoscaling.keda.TriggerAuthentication`              | KEDA TriggerAuthentication for API                | `null`                            |
-| `api.autoscaling.keda.fallback`                           | KEDA fallback config when metrics unavailable     | `null`                            |
-| `api.autoscaling.keda.fallback.failureThreshold`          | Errors before fallback activates                  | `3`                               |
-| `api.autoscaling.keda.fallback.replicas`                  | Replica count during fallback                     | `1`                               |
-| `api.podDisruptionBudget.enabled`                         | Enable PDB for API                                | `false`                           |
-| `api.podDisruptionBudget.config.maxUnavailable`           | PDB maxUnavailable for API                        | `~`                               |
-| `api.podDisruptionBudget.config.minAvailable`             | PDB minAvailable for API                          | `1`                               |
-| `api.probes.livenessProbe.enabled`                        | Enable API liveness probe                         | `true`                            |
-| `api.probes.livenessProbe.initialDelaySeconds`            | Liveness initial delay                            | `5`                               |
-| `api.probes.livenessProbe.timeoutSeconds`                 | Liveness timeout                                  | `5`                               |
-| `api.probes.livenessProbe.periodSeconds`                  | Liveness period                                   | `10`                              |
-| `api.probes.livenessProbe.successThreshold`               | Liveness success threshold                        | `1`                               |
-| `api.probes.livenessProbe.failureThreshold`               | Liveness failure threshold                        | `3`                               |
-| `api.probes.readinessProbe.enabled`                       | Enable API readiness probe                        | `true`                            |
-| `api.probes.readinessProbe.initialDelaySeconds`           | Readiness initial delay                           | `5`                               |
-| `api.probes.readinessProbe.timeoutSeconds`                | Readiness timeout                                 | `5`                               |
-| `api.probes.readinessProbe.periodSeconds`                 | Readiness period                                  | `10`                              |
-| `api.probes.readinessProbe.successThreshold`              | Readiness success threshold                       | `1`                               |
-| `api.probes.readinessProbe.failureThreshold`              | Readiness failure threshold                       | `3`                               |
-| `api.probes.startupProbe.enabled`                         | Enable API startup probe                          | `false`                           |
-| `api.probes.startupProbe.initialDelaySeconds`             | Startup initial delay                             | `20`                              |
-| `api.probes.startupProbe.timeoutSeconds`                  | Startup timeout                                   | `5`                               |
-| `api.probes.startupProbe.periodSeconds`                   | Startup period                                    | `10`                              |
-| `api.probes.startupProbe.successThreshold`                | Startup success threshold                         | `1`                               |
-| `api.probes.startupProbe.failureThreshold`                | Startup failure threshold                         | `3`                               |
+| `backoffice.replicas`                                            | Number of Backoffice replicas                            | `1`                               |
+| `backoffice.nodeSelector`                                        | Node selector for Backoffice pods                        | `{}`                              |
+| `backoffice.tolerations`                                         | Tolerations for Backoffice pods                          | `[]`                              |
+| `backoffice.affinity`                                            | Affinity rules for Backoffice pods                       | `{}`                              |
+| `backoffice.resources`                                           | Resource requests/limits for Backoffice                 | `{}`                              |
+| `backoffice.topologySpreadConstraints`                           | Topology spread constraints for Backoffice              | `[]`                              |
+| `backoffice.terminationGracePeriodSeconds`                       | Backoffice pod termination grace period                  | `45`                              |
+| `backoffice.lifecycle`                                           | Backoffice pod lifecycle hooks                           | `{}`                              |
+| `backoffice.service.type`                                        | Backoffice service type                                  | `ClusterIP`                       |
+| `backoffice.service.port`                                        | Backoffice service port                                  | `80`                              |
+| `backoffice.service.annotations`                                 | Backoffice service annotations                           | `{}`                              |
+| `backoffice.service.loadBalancerSourceRanges`                    | LoadBalancer source ranges for Backoffice                | `[]`                              |
+| `backoffice.autoscaling.enabled`                                 | Enable Backoffice autoscaling                            | `false`                           |
+| `backoffice.autoscaling.minReplicas`                             | Minimum Backoffice replicas                              | `1`                               |
+| `backoffice.autoscaling.maxReplicas`                             | Maximum Backoffice replicas                              | `100`                             |
+| `backoffice.autoscaling.targetCPUUtilizationPercentage`          | Target CPU utilization percent                    | `80`                              |
+| `backoffice.autoscaling.targetMemoryUtilizationPercentage`       | Target memory utilization percent                 | `80`                              |
+| `backoffice.autoscaling.keda.enabled`                            | Enable KEDA for Backoffice                              | `false`                           |
+| `backoffice.autoscaling.keda.minReplicaCount`                    | KEDA minimum replica count for Backoffice               | `1`                               |
+| `backoffice.autoscaling.keda.maxReplicaCount`                    | KEDA maximum replica count for Backoffice                | `100`                             |
+| `backoffice.autoscaling.keda.cooldownPeriod`                     | KEDA cooldown period (seconds) for Backoffice            | `300`                             |
+| `backoffice.autoscaling.keda.pollingInterval`                    | KEDA polling interval (seconds) for Backoffice           | `30`                              |
+| `backoffice.autoscaling.keda.advanced.scaleUp.stabilizationWindowSeconds` | Seconds the HPA observes metric before scaling up | `180`                    |
+| `backoffice.autoscaling.keda.advanced.scaleDown.stabilizationWindowSeconds` | Seconds the HPA observes metric before scaling down | `300`                |
+| `backoffice.autoscaling.keda.triggers`                           | KEDA triggers for Backoffice                             | `[]`                              |
+| `backoffice.autoscaling.keda.TriggerAuthentication`              | KEDA TriggerAuthentication for Backoffice                | `null`                            |
+| `backoffice.autoscaling.keda.fallback`                           | KEDA fallback config when metrics unavailable     | `null`                            |
+| `backoffice.autoscaling.keda.fallback.failureThreshold`          | Errors before fallback activates                  | `3`                               |
+| `backoffice.autoscaling.keda.fallback.replicas`                  | Replica count during fallback                     | `1`                               |
+| `backoffice.podDisruptionBudget.enabled`                         | Enable PDB for Backoffice                                | `false`                           |
+| `backoffice.podDisruptionBudget.config.maxUnavailable`           | PDB maxUnavailable for Backoffice                        | `~`                               |
+| `backoffice.podDisruptionBudget.config.minAvailable`             | PDB minAvailable for Backoffice                          | `1`                               |
+| `backoffice.probes.livenessProbe.enabled`                        | Enable Backoffice liveness probe                         | `true`                            |
+| `backoffice.probes.livenessProbe.initialDelaySeconds`            | Liveness initial delay                            | `5`                               |
+| `backoffice.probes.livenessProbe.timeoutSeconds`                 | Liveness timeout                                  | `5`                               |
+| `backoffice.probes.livenessProbe.periodSeconds`                  | Liveness period                                   | `10`                              |
+| `backoffice.probes.livenessProbe.successThreshold`               | Liveness success threshold                        | `1`                               |
+| `backoffice.probes.livenessProbe.failureThreshold`               | Liveness failure threshold                        | `3`                               |
+| `backoffice.probes.readinessProbe.enabled`                       | Enable Backoffice readiness probe                        | `true`                            |
+| `backoffice.probes.readinessProbe.initialDelaySeconds`           | Readiness initial delay                           | `5`                               |
+| `backoffice.probes.readinessProbe.timeoutSeconds`                | Readiness timeout                                 | `5`                               |
+| `backoffice.probes.readinessProbe.periodSeconds`                 | Readiness period                                  | `10`                              |
+| `backoffice.probes.readinessProbe.successThreshold`              | Readiness success threshold                       | `1`                               |
+| `backoffice.probes.readinessProbe.failureThreshold`              | Readiness failure threshold                       | `3`                               |
+| `backoffice.probes.startupProbe.enabled`                         | Enable Backoffice startup probe                          | `false`                           |
+| `backoffice.probes.startupProbe.initialDelaySeconds`             | Startup initial delay                             | `20`                              |
+| `backoffice.probes.startupProbe.timeoutSeconds`                  | Startup timeout                                   | `5`                               |
+| `backoffice.probes.startupProbe.periodSeconds`                   | Startup period                                    | `10`                              |
+| `backoffice.probes.startupProbe.successThreshold`                | Startup success threshold                         | `1`                               |
+| `backoffice.probes.startupProbe.failureThreshold`                | Startup failure threshold                         | `3`                               |
+| `frontoffice.replicas` | Number of Frontoffice replicas | `1` |
+| `frontoffice.nodeSelector` | Node selector for Frontoffice pods | `{}` |
+| `frontoffice.tolerations` | Tolerations for Frontoffice pods | `[]` |
+| `frontoffice.affinity` | Affinity rules for Frontoffice pods | `{}` |
+| `frontoffice.resources` | Resource requests/limits for Frontoffice | `{}` |
+| `frontoffice.topologySpreadConstraints` | Topology spread constraints for Frontoffice | `[]` |
+| `frontoffice.terminationGracePeriodSeconds` | Frontoffice pod termination grace period | `45` |
+| `frontoffice.lifecycle` | Frontoffice pod lifecycle hooks | `{}` |
+| `frontoffice.service.type` | Frontoffice service type | `ClusterIP` |
+| `frontoffice.service.port` | Frontoffice service port | `80` |
+| `frontoffice.service.annotations` | Frontoffice service annotations | `{}` |
+| `frontoffice.service.loadBalancerSourceRanges` | LoadBalancer source ranges for Frontoffice | `[]` |
+| `frontoffice.ingress.enabled` | Enable dedicated Frontoffice Ingress | `false` |
+| `frontoffice.ingress.className` | Ingress class for Frontoffice | `""` |
+| `frontoffice.ingress.annotations` | Frontoffice Ingress annotations | `{}` |
+| `frontoffice.ingress.hosts` | Frontoffice Ingress hostnames | `[]` |
+| `frontoffice.ingress.paths` | Frontoffice Ingress paths | `[]` |
+| `frontoffice.ingress.pathType` | Frontoffice Ingress path type | `Prefix` |
+| `frontoffice.ingress.tls` | Frontoffice Ingress TLS entries | `[]` |
+| `frontoffice.autoscaling.enabled` | Enable Frontoffice autoscaling | `false` |
+| `frontoffice.autoscaling.minReplicas` | Minimum Frontoffice replicas | `1` |
+| `frontoffice.autoscaling.maxReplicas` | Maximum Frontoffice replicas | `100` |
+| `frontoffice.autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization percent for Frontoffice | `80` |
+| `frontoffice.autoscaling.targetMemoryUtilizationPercentage` | Target memory utilization percent for Frontoffice | `80` |
+| `frontoffice.autoscaling.keda.enabled` | Enable KEDA for Frontoffice | `false` |
+| `frontoffice.autoscaling.keda.triggers` | KEDA triggers for Frontoffice | `[]` |
+| `frontoffice.autoscaling.keda.TriggerAuthentication` | KEDA TriggerAuthentication for Frontoffice | `null` |
+| `frontoffice.podDisruptionBudget.enabled` | Enable PDB for Frontoffice | `false` |
+| `frontoffice.podDisruptionBudget.config.maxUnavailable` | PDB maxUnavailable for Frontoffice | `~` |
+| `frontoffice.podDisruptionBudget.config.minAvailable` | PDB minAvailable for Frontoffice | `1` |
+| `frontoffice.probes.livenessProbe.enabled` | Enable Frontoffice liveness probe | `true` |
+| `frontoffice.probes.livenessProbe.initialDelaySeconds` | Liveness initial delay | `5` |
+| `frontoffice.probes.livenessProbe.timeoutSeconds` | Liveness timeout | `5` |
+| `frontoffice.probes.livenessProbe.periodSeconds` | Liveness period | `10` |
+| `frontoffice.probes.livenessProbe.successThreshold` | Liveness success threshold | `1` |
+| `frontoffice.probes.livenessProbe.failureThreshold` | Liveness failure threshold | `3` |
+| `frontoffice.probes.readinessProbe.enabled` | Enable Frontoffice readiness probe | `true` |
+| `frontoffice.probes.readinessProbe.initialDelaySeconds` | Readiness initial delay | `5` |
+| `frontoffice.probes.readinessProbe.timeoutSeconds` | Readiness timeout | `5` |
+| `frontoffice.probes.readinessProbe.periodSeconds` | Readiness period | `10` |
+| `frontoffice.probes.readinessProbe.successThreshold` | Readiness success threshold | `1` |
+| `frontoffice.probes.readinessProbe.failureThreshold` | Readiness failure threshold | `3` |
+| `frontoffice.probes.startupProbe.enabled` | Enable Frontoffice startup probe | `false` |
+| `frontoffice.probes.startupProbe.initialDelaySeconds` | Startup initial delay | `10` |
+| `frontoffice.probes.startupProbe.timeoutSeconds` | Startup timeout | `5` |
+| `frontoffice.probes.startupProbe.periodSeconds` | Startup period | `10` |
+| `frontoffice.probes.startupProbe.successThreshold` | Startup success threshold | `1` |
+| `frontoffice.probes.startupProbe.failureThreshold` | Startup failure threshold | `3` |
 | `workflow.replicas`                                       | Number of Workflow replicas                       | `1`                               |
 | `workflow.nodeSelector`                                   | Node selector for Workflow pods                   | `{}`                              |
 | `workflow.tolerations`                                    | Tolerations for Workflow pods                     | `[]`                              |
@@ -298,20 +294,29 @@ helm upgrade my-release regulaforensics/idv
 | `config.fernetKey`                                        | Fernet encryption key                             | `""`                              |
 | `config.tenant`                                           | Tenant name/id used for named broker topics       | `null`                            |
 | `config.identifier`                                       | Instance identifier                               | `null`                            |
-| `config.basicAuth.enabled`                                | Enable basic authentication                       | `false`                           |
-| `config.services.api.port`                                | Internal API port                                 | `8000`                            |
-| `config.services.api.host`                                | API bind host                                     | `0.0.0.0`                         |
-| `config.services.api.workers`                             | API worker count                                  | `auto`                            |
-| `config.services.api.threads`                             | API threads count                                 | `auto`                            |
-| `config.services.api.keepalive`                           | Keepalive seconds                                 | `120`                             |
-| `config.services.api.timeout`                             | Request timeout seconds                           | `120`                             |
-| `config.services.api.cors.enabled`                        | Enable CORS                                       | `false`                           |
-| `config.services.api.cors.origins`                        | Allowed origins                                   | `"*"`                             |
-| `config.services.api.cors.methods`                        | Allowed methods                                   | `"*"`                             |
-| `config.services.api.cors.headers`                        | Allowed headers                                   | `"*"`                             |
-| `config.services.api.cors.maxAge`                         | CORS max age seconds                              | `0`                               |
-| `config.services.api.maxBodySize`                         | Max body size                                     | `64Mi`                            |
-| `config.services.api.openapi`                             | Enable OpenAPI docs                               | `false`                           |
+| `config.basicAuth.enabled`                                | Enable username/password sign-in                  | `true`                            |
+| `config.services.backoffice.port`                                | Internal Backoffice port                                 | `8000`                            |
+| `config.services.backoffice.host`                                | Backoffice bind host                                     | `0.0.0.0`                         |
+| `config.services.backoffice.workers`                             | Backoffice worker count                                  | `auto`                            |
+| `config.services.backoffice.threads`                             | Backoffice threads count                                 | `auto`                            |
+| `config.services.backoffice.keepalive`                           | Keepalive seconds                                 | `120`                             |
+| `config.services.backoffice.timeout`                             | Request timeout seconds                           | `120`                             |
+| `config.services.backoffice.cors.enabled`                        | Enable CORS                                       | `false`                           |
+| `config.services.backoffice.cors.origins`                        | Allowed origins                                   | `"*"`                             |
+| `config.services.backoffice.cors.methods`                        | Allowed methods                                   | `"*"`                             |
+| `config.services.backoffice.cors.headers`                        | Allowed headers                                   | `"*"`                             |
+| `config.services.backoffice.cors.maxAge`                         | CORS max age seconds                              | `0`                               |
+| `config.services.backoffice.maxBodySize`                         | Max body size                                     | `64Mi`                            |
+| `config.services.backoffice.openapi`                             | Enable OpenAPI docs                               | `false`                           |
+| `config.services.frontoffice.enabled` | Enable Frontoffice service | `false` |
+| `config.services.frontoffice.port` | Internal Frontoffice port | `8001` |
+| `config.services.frontoffice.host` | Frontoffice bind host | `0.0.0.0` |
+| `config.services.frontoffice.workers` | Number of worker processes | `auto` |
+| `config.services.frontoffice.threads` | Number of threads per worker | `auto` |
+| `config.services.frontoffice.keepalive` | Keepalive seconds | `120` |
+| `config.services.frontoffice.timeout` | Request timeout seconds | `30` |
+| `config.services.frontoffice.maxBodySize` | Maximum request body size | `64Mi` |
+| `config.services.frontoffice.openapi` | Enable OpenAPI docs | `true` |
 | `config.services.workflow.workers`                        | Workflow service workers                          | `auto`                            |
 | `config.services.workflow.threads`                        | Workflow service threads per worker               | `32`                              |
 | `config.services.scheduler.jobs.reloadWorkflows.cron`     | Cron for reloading workflows                      | `"*/15 * * * * *"`                |
@@ -322,10 +327,10 @@ helm upgrade my-release regulaforensics/idv
 | `config.services.scheduler.jobs.expireDeviceLogs.keepFor` | Keep device logs for                              | `"30d"`                           |
 | `config.services.scheduler.jobs.reloadLocales.cron`       | Cron for reloading locales                        | `"*/15 * * * * *"`                |
 | `config.services.scheduler.jobs.cronWorkflow.cron`        | Cron for generic workflow task                    | `"*/30 * * * * *"`                |
-| `config.services.audit.workers`                           | Audit service workers                             | `auto`                            |
-| `config.services.audit.threads`                           | Audit service threads per worker                  | `32`                              |
+| `config.services.audit.workers` | Number of worker processes | `auto` |
+| `config.services.audit.threads` | Number of threads per worker | `32` |
 | `config.services.audit.wsEnabled`                         | Enable audit WebSocket                            | `false`                           |
-| `config.services.audit.user.keepFor`                      | Keep user data for specific time period           | `90d`                             |
+| `config.services.audit.user.keepFor`                      | Data retention period for user data           | `90d`                             |
 | `config.services.indexer.timeout`                         | Indexer request timeout seconds                   | `60`                              |
 | `config.services.indexer.maxBatchSize`                    | Indexer max batch size                            | `1000`                            |
 | `config.services.docreader.enabled`                       | Enable docreader integration                      | `false`                           |
@@ -393,7 +398,7 @@ helm upgrade my-release regulaforensics/idv
 | `config.faceSearch.database.opensearch.username`          | OpenSearch username                               | `admin`                           |
 | `config.faceSearch.database.opensearch.password`          | OpenSearch password                               | `""`                              |
 | `config.faceSearch.database.opensearch.dimension`         | Vector dimension                                  | `512`                             |
-| `config.faceSearch.database.opensearch.indexName`         | Index name                                        | `hnsw`                            |
+| `config.faceSearch.database.opensearch.method`            | Vector index method                               | `hnsw`                            |
 | `config.faceSearch.database.opensearch.awsAuth.enabled`   | Enable AWS auth for OpenSearch                    | `false`                           |
 | `config.faceSearch.database.opensearch.awsAuth.region`    | AWS auth region                                   | `""`                              |
 | `config.faceSearch.database.opensearch.awsAuth.accessKey` | AWS auth access key                               | `""`                              |
@@ -401,7 +406,6 @@ helm upgrade my-release regulaforensics/idv
 | |
 | `config.textSearch.enabled`                               | Enable Text search                                | `false`                           |
 | `config.textSearch.limit`                                 | Max Text search results                           | `1000`                            |
-| `config.textSearch.threshold`                             | Text match threshold                              | `0.75`                            |
 | `config.textSearch.database.type`                         | Text DB type                                      | `opensearch`                      |
 | `config.textSearch.database.opensearch.host`              | OpenSearch host                                   | `opensearch`                      |
 | `config.textSearch.database.opensearch.port`              | OpenSearch port                                   | `9200`                            |
@@ -409,8 +413,6 @@ helm upgrade my-release regulaforensics/idv
 | `config.textSearch.database.opensearch.verifyCerts`       | Verify OpenSearch certs                           | `false`                           |
 | `config.textSearch.database.opensearch.username`          | OpenSearch username                               | `admin`                           |
 | `config.textSearch.database.opensearch.password`          | OpenSearch password                               | `""`                              |
-| `config.textSearch.database.opensearch.dimension`         | Vector dimension                                  | `512`                             |                           
-| `config.textSearch.database.opensearch.indexName`         | Index name                                        | `hnsw`                            |
 | `config.textSearch.database.opensearch.awsAuth.enabled`   | Enable AWS auth for OpenSearch                    | `false`                           |
 | `config.textSearch.database.opensearch.awsAuth.region`    | AWS auth region                                   | `""`                              |
 | `config.textSearch.database.opensearch.awsAuth.accessKey` | AWS auth access key                               | `""`                              |
@@ -508,7 +510,7 @@ helm upgrade my-release regulaforensics/idv
 
 > [!NOTE]
 > The subcharts are used for the demonstration and Dev/Test purposes.
-> We strongly recommend to deploying separate installations of required resources in Production.
+> We strongly recommend deploying separate installations of the required resources in Production.
 
 ## In-cluster TLS (trusted CA bundle)
 
@@ -537,18 +539,21 @@ The feature is disabled by default (`configMapName: ""`) and changes nothing in 
 version. For in-cluster TLS to RabbitMQ, set the broker URL scheme to `amqps://`; for OpenSearch
 set `config.faceSearch.database.opensearch.verifyCerts: true` (and the same for `textSearch`).
 
-## Subchart parameters
+## Subchart Parameters
 
-| Parameter                 | Description                                                    | Default        |
-|---------------------------|----------------------------------------------------------------|----------------|
-| `statsd.enabled`          | Enable Prometheus StatsD exporter subchart                     | `false`        |
-| `mongodb.enabled`         | Enable MongoDB subchart                                        | `false`        |
-| `rabbitmq.enabled`        | Enable RabbitMQ subchart                                       | `false`        |
-| `minio.enabled`           | Enable MinIO subchart. Overrides all of `config.storage.s3.*`   | `false`        |
-| `minio.auth.rootUser`     | MinIO root user. Also used as the S3 access key                | `user`         |
-| `minio.auth.rootPassword` | MinIO root password. Also used as the S3 access secret         | `password123`  |
-| `minio.console.enabled`   | Deploy the MinIO web console as a separate Deployment           | `false`        |
-| `opensearch.enabled`      | Enable OpenSearch subchart                                     | `false`        |
+Each switch also **overrides the matching `config` settings** you supplied. If a connection setting
+seems to be ignored, check these first.
+
+| Parameter             | Description                                                                             | Default |
+|-----------------------|------------------------------------------------------------------------------------------|---------|
+| `mongodb.enabled`     | Deploy MongoDB subchart. Overrides `config.mongo.url`                                    | `false` |
+| `rabbitmq.enabled`    | Deploy RabbitMQ subchart. Overrides `config.messageBroker.url`                           | `false` |
+| `minio.enabled`       | Deploy MinIO subchart. Overrides all of `config.storage.s3.*`                            | `false` |
+| `minio.auth.rootUser` | MinIO root user. Also used as the S3 access key                                          | `user`  |
+| `minio.auth.rootPassword` | MinIO root password. Also used as the S3 access secret                               | `password123` |
+| `minio.console.enabled` | Deploy the MinIO web console as a separate Deployment                                  | `false` |
+| `opensearch.enabled`  | Deploy OpenSearch subchart. Overrides all `faceSearch`/`textSearch` OpenSearch settings   | `false` |
+| `statsd.enabled`      | Deploy Prometheus StatsD exporter. Overrides `config.metrics.statsd.host`/`port`          | `false` |
 
 > **Upgrading to 1.16.0:** the MinIO subchart moved to
 > [`bitnami/minio`](https://github.com/bitnami/charts/tree/main/bitnami/minio). Dev/Test only —
@@ -557,6 +562,21 @@ set `config.faceSearch.database.opensearch.verifyCerts: true` (and the same for 
 > - Rename `minio.rootUser` / `minio.rootPassword` to `minio.auth.rootUser` /
 >   `minio.auth.rootPassword`. The old keys are silently ignored.
 
+## Deployed Components
+
+Backoffice can be exposed through the main ingress/route, while Frontoffice can use its own dedicated Ingress. The remaining services communicate internally through the message broker.
+
+| Component | Deployment | Command | Scales out | Deployed when |
+|---|---|---|---|---|
+| Frontoffice | `<release>-idv-frontoffice` | `idv webserver start` | Yes | `config.services.frontoffice.enabled` |
+| Backoffice | `<release>-idv-backoffice` | `idv webserver start` | Yes | Always |
+| Workflow | `<release>-idv-workflow` | `idv workflow start` | Yes | Always |
+| Scheduler | `<release>-idv-scheduler` | `idv scheduler start` | No | Always |
+| Audit | `<release>-idv-audit` | `idv audit start` | No | Always |
+| Indexer | `<release>-idv-indexer` | `idv indexer start` | No | `config.textSearch.enabled` or `config.faceSearch.enabled` |
+
+The Indexer builds the search indexes and is deployed when either `config.textSearch.enabled` or
+`config.faceSearch.enabled` is `true`.
 
 ## KEDA Autoscaling
 

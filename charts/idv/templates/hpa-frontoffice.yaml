@@ -1,0 +1,32 @@
+{{- if and .Values.config.services.frontoffice.enabled .Values.frontoffice.autoscaling.enabled (not .Values.frontoffice.autoscaling.keda.enabled) }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "idv.fullname" . }}-frontoffice
+  labels:
+    {{- include "idv.frontoffice.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "idv.fullname" . }}-frontoffice
+  minReplicas: {{ .Values.frontoffice.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.frontoffice.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.frontoffice.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.frontoffice.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.frontoffice.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.frontoffice.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}

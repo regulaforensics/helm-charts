@@ -16,6 +16,27 @@ MIND: Metrics collection is disabled, but statsd subchart has been deployed
 {{- else if and .Values.config.metrics.statsd.enabled (not .Values.statsd.enabled) }}
 MIND: Metrics collection is configured to external statsd deployment
 {{- end }}
+{{- include "idv.compat" . }}
+{{- if .Values.api }}
+DEPRECATED: the top-level `api:` section is renamed to `backoffice:`. Your `api:` settings are
+            still applied. Please move them to `backoffice:`.
+{{- end }}
+{{- if (.Values.config.services).api }}
+DEPRECATED: `config.services.api` is renamed to `config.services.backoffice`. Your settings are
+            still applied. Please move them to `config.services.backoffice`.
+{{- end }}
+{{- if and .Release.IsUpgrade .Values.backoffice.legacyApiService.enabled }}
+DEPRECATED: the Service `{{ include "idv.fullname" . }}-api` is kept for compatibility and points to
+            the Backoffice. Please switch clients to `{{ include "idv.fullname" . }}-backoffice`, then
+            set `backoffice.legacyApiService.enabled: false`.
+{{- end }}
+{{- if include "idv.storage.isLegacy" . }}
+DEPRECATED: your `config.storage` still sets a per-entity `location.bucket`/`location.folder`
+            (the pre-3.10 layout). These values are still applied, so your data path is preserved.
+            The new layout uses a single backend-level bucket (`config.storage.s3.bucket` /
+            `config.storage.gcs.bucket`) plus `location.prefix` per entity. The old keys are
+            removed in IDV 5.0. Migrate when convenient.
+{{- end }}
 
 1. Get the application URL by running these commands:
 {{- if .Values.ingress.enabled }}
@@ -29,22 +50,62 @@ MIND: Metrics collection is configured to external statsd deployment
     {{- end }}
   {{- end }}
 {{- end }}
-{{- else if contains "NodePort" .Values.api.service.type }}
+{{- else if contains "NodePort" .Values.backoffice.service.type }}
   export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "idv.fullname" . }})
   export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
   echo http://$NODE_IP:$NODE_PORT
-{{- else if contains "LoadBalancer" .Values.api.service.type }}
+{{- else if contains "LoadBalancer" .Values.backoffice.service.type }}
      NOTE: It may take a few minutes for the LoadBalancer IP to be available.
            You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "idv.fullname" . }}'
   export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "idv.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
-  echo http://$SERVICE_IP:{{ .Values.api.service.port }}
-{{- else if contains "ClusterIP" .Values.api.service.type }}
+  echo http://$SERVICE_IP:{{ .Values.backoffice.service.port }}
+{{- else if contains "ClusterIP" .Values.backoffice.service.type }}
   export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "idv.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
   export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
   echo "Visit http://127.0.0.1:8080 to use your application"
   kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
 {{- end }}
 
-{{- if eq .Values.config.fernetKey "tton53xJw0QV6vfaOTNRP_YGnPc76ZJkXFdVFZSnaKQ=" }}
-  * HELP: set a custom value with `config.fernetKey` or `IDV_CONFIG__FERNETKEY` env.
+{{- $fernetState := trim (include "idv.fernetKeyState" .) }}
+{{- if $fernetState }}
+
+#######################################################################
+##                                                                   ##
+{{- if eq $fernetState "default" }}
+##   WARNING: IDV is using the chart's DEFAULT encryption key         ##
+{{- else }}
+##   WARNING: no encryption key is configured                         ##
+{{- end }}
+##                                                                   ##
+#######################################################################
+{{ if eq $fernetState "default" }}
+`config.fernetKey` is still set to the chart's default. That value is published
+publicly in the Regula helm-charts repository, so sensitive fields in your
+database are being encrypted with a key anyone can read.
+{{- else }}
+`config.fernetKey` is empty and no IDV_CONFIG__FERNETKEY environment variable was
+supplied, so IDV has no key to encrypt sensitive database fields with.
+{{- end }}
+
+Generate your own key:
+
+  python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+
+Store it in a Secret:
+
+  kubectl create secret generic idv-secrets -n {{ .Release.Namespace }} \
+    --from-literal=fernetKey='<generated-key>'
+
+Then reference it from the top-level `env` list in your values:
+
+  env:
+    - name: IDV_CONFIG__FERNETKEY
+      valueFrom:
+        secretKeyRef:
+          name: idv-secrets
+          key: fernetKey
+
+Keep a backup of the key somewhere safe. Without it, encrypted data cannot be
+recovered. Note that changing the key later makes already-encrypted data
+unreadable, so set it before storing real data.
 {{- end }}

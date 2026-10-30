@@ -1,0 +1,32 @@
+{{- if and .Values.config.services.deviceGtw.enabled .Values.deviceGateway.autoscaling.enabled (not .Values.deviceGateway.autoscaling.keda.enabled) }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "idv.fullname" . }}-device-gateway
+  labels:
+    {{- include "idv.deviceGateway.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "idv.fullname" . }}-device-gateway
+  minReplicas: {{ .Values.deviceGateway.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.deviceGateway.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.deviceGateway.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.deviceGateway.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.deviceGateway.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.deviceGateway.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}

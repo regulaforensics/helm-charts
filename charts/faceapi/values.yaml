@@ -145,21 +145,6 @@ config:
       #         platform:
       #         - ios
 
-    # Core (native SDK) logging. Empty by default (disabled); populate to enable.
-    # severity: one of DEBUG | INFO | WARNING | ERROR | CRITICAL
-    # appenders: ConsoleAppender (stdout) and/or RollingFileAppender (files under logDir)
-    # logDir / maxFileSize (bytes) / maxFiles apply when RollingFileAppender is used.
-    # Example:
-    #   logging:
-    #     severity: DEBUG
-    #     appenders:
-    #       - ConsoleAppender
-    #       - RollingFileAppender
-    #     logDir: "logs/sdk"
-    #     maxFileSize: 100000000
-    #     maxFiles: 10
-    logging: {}
-
     # Core (native SDK) options passed verbatim to the core library.
     # Empty by default; populate to enable.
     # Example:

@@ -15,11 +15,6 @@ sdk:
   liveness: {{- toYaml .Values.config.sdk.liveness | nindent 4 }}
   {{- end }}
 
-  {{- if .Values.config.sdk.logging }}
-  logging:
-    {{- toYaml .Values.config.sdk.logging | nindent 4 }}
-  {{- end }}
-
   {{- if .Values.config.sdk.options }}
   options:
     {{- toYaml .Values.config.sdk.options | nindent 4 }}

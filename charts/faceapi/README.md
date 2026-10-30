@@ -314,7 +314,6 @@ ingress:
 | `config.sdk.param`                                        | Configuration of SDK `param` capabilities                                         | `[]`                                                          |
 | `config.sdk.detect`                                       | Configuration of SDK `detect` capabilities                                        | `[]`                                                          |
 | `config.sdk.liveness`                                     | Configuration of SDK `liveness` capabilities                                      | `[]`                                                          |
-| `config.sdk.logging`                                      | Core (native SDK) logging config (`severity`, `appenders`, `logDir`, `maxFileSize`, `maxFiles`); disabled when unset | `{}`                                        |
 | `config.sdk.options`                                      | Core (native SDK) options passed verbatim to the core library (e.g. `configPolicy`); disabled when unset | `{}`                                      |
 | `config.service.enrollment.enabled`                       | Enable enrollment/verify functionality (requires `liveness` and `search`)         | `false`                                                       |
 |                                                                                                                                                                                                               |

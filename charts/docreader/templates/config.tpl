@@ -29,11 +29,6 @@ sdk:
   requestLimits:
     {{- toYaml .Values.config.sdk.requestLimits | nindent 4 }}
   {{- end }}
-  {{- if .Values.config.sdk.logging }}
-
-  logging:
-    {{- toYaml .Values.config.sdk.logging | nindent 4 }}
-  {{- end }}
   {{- if .Values.config.sdk.options }}
 
   options:

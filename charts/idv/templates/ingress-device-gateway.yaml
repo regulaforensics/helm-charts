@@ -1,0 +1,82 @@
+{{- if and .Values.config.services.deviceGtw.enabled .Values.deviceGateway.ingress.enabled -}}
+{{- $defaultServiceName := printf "%s-device-gateway" (include "idv.fullname" .) -}}
+{{- $defaultServicePort := .Values.deviceGateway.service.port -}}
+{{- $paths := .Values.deviceGateway.ingress.paths -}}
+{{- $pathType := .Values.deviceGateway.ingress.pathType | default "Prefix" -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "idv.fullname" . }}-device-gateway
+  labels: {{- include "idv.deviceGateway.labels" . | nindent 4 }}
+  {{- with .Values.deviceGateway.ingress.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.deviceGateway.ingress.className }}
+  ingressClassName: {{ .Values.deviceGateway.ingress.className }}
+  {{- end }}
+  rules:
+  {{- if .Values.deviceGateway.ingress.hosts }}
+    {{- range $host := .Values.deviceGateway.ingress.hosts }}
+    - host: {{ tpl $host $ }}
+      http:
+        paths:
+        {{- range $p := $paths }}
+          {{- if kindIs "map" $p }}
+          - path: {{ tpl $p.path $ }}
+            pathType: {{ $p.pathType | default $pathType }}
+            backend:
+              service:
+                {{- if $p.action }}
+                name: {{ $p.action }}
+                port:
+                  name: use-annotation
+                {{- else }}
+                name: {{ $p.service.name | default $defaultServiceName }}
+                port:
+                  number: {{ $p.service.port | default $defaultServicePort }}
+                {{- end }}
+          {{- else }}
+          - path: {{ tpl $p $ }}
+            pathType: {{ $pathType }}
+            backend:
+              service:
+                name: {{ $defaultServiceName }}
+                port:
+                  number: {{ $defaultServicePort }}
+          {{- end }}
+        {{- end }}
+    {{- end -}}
+  {{- else }}
+    - http:
+        paths:
+        {{- range $p := $paths }}
+          {{- if kindIs "map" $p }}
+          - path: {{ tpl $p.path $ }}
+            pathType: {{ $p.pathType | default $pathType }}
+            backend:
+              service:
+                {{- if $p.action }}
+                name: {{ $p.action }}
+                port:
+                  name: use-annotation
+                {{- else }}
+                name: {{ $p.service.name | default $defaultServiceName }}
+                port:
+                  number: {{ $p.service.port | default $defaultServicePort }}
+                {{- end }}
+          {{- else }}
+          - path: {{ tpl $p $ }}
+            pathType: {{ $pathType }}
+            backend:
+              service:
+                name: {{ $defaultServiceName }}
+                port:
+                  number: {{ $defaultServicePort }}
+          {{- end }}
+        {{- end }}
+  {{- end }}
+  {{- with .Values.deviceGateway.ingress.tls }}
+  tls: {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end -}}

@@ -8,8 +8,8 @@ podAnnotations: {}
 podSecurityContext: {}
 securityContext: {}
 
-# Extra volumes and volumeMounts added to every IDV deployment (api, workflow, scheduler,
-# audit, indexer). Empty by default (no change to existing deployments).
+# Extra volumes and volumeMounts added to every IDV deployment. Empty by default (no change to
+# existing deployments).
 extraVolumes: []
 extraVolumeMounts: []
 
@@ -46,7 +46,7 @@ imagePullSecrets: {}
 #
 licenseSecretName: null
 
-api:
+backoffice:
   replicas: 1
 
   nodeSelector: {}
@@ -70,6 +70,13 @@ api:
     port: 80
     annotations: {}
     loadBalancerSourceRanges: []
+
+  # Deprecated: also create the pre-3.10 Service `<release>-api`, pointing at
+  # the Backoffice pods with the same settings as `backoffice.service`. Keeps clients and external
+  # load balancers that use the old name working after the upgrade. Set to false once nothing
+  # uses `<release>-api` any more.
+  legacyApiService:
+    enabled: true
 
   autoscaling:
     enabled: false
@@ -103,7 +110,7 @@ api:
       #   scaleDown:
       #     stabilizationWindowSeconds: 300
 
-  # API pod disruption budget
+  # Backoffice pod disruption budget
   podDisruptionBudget:
     enabled: false
     # PDB configuration
@@ -112,6 +119,242 @@ api:
       maxUnavailable: ~
       minAvailable: 1
 
+  probes:
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+    startupProbe:
+      enabled: false
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+
+# Frontoffice component. Not supported in this release. Keep disabled.
+# These resources are only rendered when `config.services.frontoffice.enabled: true`.
+frontoffice:
+  replicas: 1
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  resources: {}
+    # requests:
+    #   cpu: "1000m"
+    #   memory: "512Mi"
+  topologySpreadConstraints: []
+
+  terminationGracePeriodSeconds: 45
+
+  lifecycle: {}
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "sleep 30"]
+
+  service:
+    type: ClusterIP
+    port: 80
+    annotations: {}
+    loadBalancerSourceRanges: []
+
+  # Dedicated Ingress for the public frontoffice entrypoint. Kept separate from the top-level
+  # `ingress` (which fronts the backoffice/API) so the public service can use its own hostname,
+  # TLS certificate, ingressClass, and annotations. Requires `config.services.frontoffice.enabled`.
+  ingress:
+    # Enable a dedicated Ingress for the frontoffice service
+    enabled: false
+    # The Ingress Class for the frontoffice Ingress (Kubernetes v1.19+)
+    className: ""
+    annotations: {}
+    # The hostnames for the frontoffice Ingress
+    hosts: []
+      # - frontoffice.domain.com
+    # Paths default to the frontoffice service when no per-path service is given
+    paths: []
+      # - /
+      # - path: /
+      #   service:
+      #     name: my-frontoffice-service
+      #     port: 8080
+    pathType: Prefix
+    # TLS configuration for the frontoffice Ingress
+    tls: []
+    #  - secretName: frontoffice-example-tls
+    #    hosts:
+    #      - frontoffice.domain.com
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+    # Either HPA or KEDA can be enabled at a time for autoscaling
+    keda:
+      enabled: false
+      # KEDA-specific replica count settings (override autoscaling.minReplicas/maxReplicas)
+      # minReplicaCount: 1
+      # maxReplicaCount: 100
+      # cooldownPeriod: 300
+      # pollingInterval: 30
+      triggers: []
+      TriggerAuthentication: null
+      # Optional: fallback behavior when the metric source is unavailable
+      # (e.g. RabbitMQ queue not yet created in ephemeral PR environments).
+      # KEDA will hold `replicas` replicas after `failureThreshold` consecutive errors,
+      # then resume normal scaling once the metric source recovers.
+      # fallback:
+      #   failureThreshold: 3
+      #   replicas: 1
+      # Optional: HPA scaling behavior
+      # .stabilizationWindowSeconds prevents reacting to short CPU/metric spikes (e.g. during pod startup)
+      # by requiring the metric to stay above threshold for the full window before scaling up or down.
+      # advanced:
+      #   scaleUp:
+      #     stabilizationWindowSeconds: 180
+      #   scaleDown:
+      #     stabilizationWindowSeconds: 300
+
+  # Frontoffice pod disruption budget
+  podDisruptionBudget:
+    enabled: false
+    # PDB configuration
+    config:
+      # minAvailable and maxUnavailable cannot be both set
+      maxUnavailable: ~
+      minAvailable: 1
+
+  probes:
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+    startupProbe:
+      enabled: false
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+
+# Device Gateway component. Not supported in this release. Keep disabled.
+# These resources are only rendered when `config.services.deviceGtw.enabled: true`.
+deviceGateway:
+  replicas: 1
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  resources: {}
+    # requests:
+    #   cpu: "500m"
+    #   memory: "256Mi"
+  topologySpreadConstraints: []
+
+  terminationGracePeriodSeconds: 45
+
+  lifecycle: {}
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "sleep 30"]
+
+  service:
+    type: ClusterIP
+    port: 80
+    annotations: {}
+    loadBalancerSourceRanges: []
+
+  # Dedicated Ingress for the Device Gateway entrypoint. Kept separate from the top-level
+  # `ingress` (which fronts the backoffice/API) so the device-facing service can use its own
+  # hostname, TLS certificate, ingressClass, and annotations. Requires
+  # `config.services.deviceGtw.enabled`.
+  ingress:
+    # Enable a dedicated Ingress for the Device Gateway service
+    enabled: false
+    # The Ingress Class for the Device Gateway Ingress (Kubernetes v1.19+)
+    className: ""
+    annotations: {}
+    # The hostnames for the Device Gateway Ingress
+    hosts: []
+      # - device-gateway.domain.com
+    # Paths default to the Device Gateway service when no per-path service is given
+    paths: []
+      # - /
+      # - path: /
+      #   service:
+      #     name: my-device-gateway-service
+      #     port: 8080
+    pathType: Prefix
+    # TLS configuration for the Device Gateway Ingress
+    tls: []
+    #  - secretName: device-gateway-example-tls
+    #    hosts:
+    #      - device-gateway.domain.com
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+    # Either HPA or KEDA can be enabled at a time for autoscaling
+    keda:
+      enabled: false
+      # KEDA-specific replica count settings (override autoscaling.minReplicas/maxReplicas)
+      # minReplicaCount: 1
+      # maxReplicaCount: 100
+      # cooldownPeriod: 300
+      # pollingInterval: 30
+      triggers: []
+      TriggerAuthentication: null
+      # Optional: fallback behavior when the metric source is unavailable
+      # (e.g. RabbitMQ queue not yet created in ephemeral PR environments).
+      # KEDA will hold `replicas` replicas after `failureThreshold` consecutive errors,
+      # then resume normal scaling once the metric source recovers.
+      # fallback:
+      #   failureThreshold: 3
+      #   replicas: 1
+      # Optional: HPA scaling behavior
+      # .stabilizationWindowSeconds prevents reacting to short CPU/metric spikes (e.g. during pod startup)
+      # by requiring the metric to stay above threshold for the full window before scaling up or down.
+      # advanced:
+      #   scaleUp:
+      #     stabilizationWindowSeconds: 180
+      #   scaleDown:
+      #     stabilizationWindowSeconds: 300
+
+  # Device Gateway pod disruption budget
+  podDisruptionBudget:
+    enabled: false
+    # PDB configuration
+    config:
+      # minAvailable and maxUnavailable cannot be both set
+      maxUnavailable: ~
+      minAvailable: 1
+
+  # Probes use /api/v1/device-gtw/ping (liveness) and /api/v1/device-gtw/health (readiness, startup)
   probes:
     livenessProbe:
       enabled: true
@@ -219,6 +462,8 @@ indexer:
   topologySpreadConstraints: []
 
 config:
+  # Root base URL. Used as a fallback for any service that does not set its own `baseUrl`
+  # (e.g. `services.backoffice.baseUrl`).
   baseUrl: "http://idv.example.com"
   fernetKey: "tton53xJw0QV6vfaOTNRP_YGnPc76ZJkXFdVFZSnaKQ="
   tenant: null
@@ -228,13 +473,25 @@ config:
     enabled: true
 
   services:
-    api:
+    # Backoffice (API) service.
+    # Renamed from `api` in 3.10. The old `config.services.api` key still works (deprecated,
+    # merged over these defaults by the `idv.compat` helper) and prints a DEPRECATED note on install.
+    backoffice:
+      # Optional public base URL of the backoffice. When null, the root `config.baseUrl` is used.
+      # Example: "https://api.example.com"
+      baseUrl: ~
       port: 8000
       host: 0.0.0.0
       workers: auto
       threads: auto
       keepalive: 120
       timeout: 120
+      # DEPRECATED: This configuration is retained for backward compatibility
+      # and initial migration to the platform database.
+      # Values are migrated only when the corresponding database settings do not exist.
+      # Existing database settings take precedence and are not overwritten.
+      # Manage these settings through the platform administrative settings after initialization.
+      # This configuration will be removed from the Helm chart in the next release.
       cors:
         enabled: false
         origins: "*"
@@ -243,6 +500,58 @@ config:
         maxAge: 0
       maxBodySize: 64Mi
       openapi: false
+
+    # Frontoffice service. Not supported in this release. Keep disabled.
+    # When enabled, the chart deploys a dedicated frontoffice Deployment/Service and (optionally)
+    # a dedicated Ingress under the `frontoffice` section above.
+    frontoffice:
+      # Enable the frontoffice service. When false, no frontoffice resources are rendered.
+      enabled: false
+      # Optional public base URL of the frontoffice. When null, the root `config.baseUrl` is used.
+      # Example: "https://frontoffice.example.com"
+      baseUrl: ~
+      # Expose the OpenAPI docs for the frontoffice service
+      openapi: true
+      # Internal port the frontoffice process listens on (must match frontoffice.service targetPort)
+      port: 8001
+      # Bind host inside the container
+      host: "0.0.0.0"
+      # Number of worker processes ("auto" derives from available CPUs)
+      workers: auto
+      # Number of threads per worker ("auto" derives from available CPUs)
+      threads: auto
+      # Seconds to keep idle client connections open
+      keepalive: 120
+      # Request timeout in seconds
+      timeout: 30
+      # Maximum accepted request body size
+      maxBodySize: 64Mi
+
+    # Device Gateway service. Not supported in this release. Keep disabled.
+    # When enabled, the chart deploys a dedicated Deployment/Service and (optionally)
+    # a dedicated Ingress under the `deviceGateway` section above.
+    deviceGtw:
+      # Enable the Device Gateway service. When false, no Device Gateway resources are rendered.
+      enabled: false
+      # Optional public base URL of the Device Gateway. When null, the root `config.baseUrl` is used.
+      # Example: "https://device-gateway.example.com"
+      baseUrl: ~
+      # Expose the OpenAPI docs for the Device Gateway service
+      openapi: false
+      # Internal port the Device Gateway process listens on (the Service targets it by name)
+      port: 8002
+      # Bind host inside the container
+      host: "0.0.0.0"
+      # Number of worker processes ("auto" derives from available CPUs)
+      workers: auto
+      # Number of threads per worker ("auto" derives from available CPUs)
+      threads: auto
+      # Seconds to keep idle client connections open
+      keepalive: 120
+      # Request timeout in seconds
+      timeout: 30
+      # Maximum accepted request body size
+      maxBodySize: 64Mi
 
     workflow:
       # Number of worker processes ("auto" derives from available CPUs)
@@ -319,63 +628,62 @@ config:
     url: "amqp://rabbitmq:5672/"
 
   storage:
+    # Storage backend type: one of `s3`, `az`, `gcs`.
     type: s3
+    # S3 (or S3-compatible, e.g. MinIO) object storage.
     s3:
+      # Single bucket used for all IDV data. Each entity below is separated by its `location.prefix`.
+      bucket: "idv-bucket"
       endpoint: ""
       accessKey: null
       accessSecret: null
       region: "eu-central-1"
       secure: true
     # az:
+    #   # Single Azure Blob container used for all IDV data.
+    #   container: "idv"
     #   storageAccount: ""
     #   # `connectionString` is a sensitive value, consider using Kubernetes Secret to provide it,
     #   # see `IDV_CONFIG__STORAGE__AZ__CONNECTIONSTRING` env variable in the env section below
     #   connectionString: ~
     # gcs:
+    #   # Single GCS bucket used for all IDV data.
+    #   bucket: "idv-bucket"
     #   #  Supply the name of existing secret with service account key gcs.json file.
     #   # You can load it to a k8s generic secret via the following command:
     #   #  `kubectl create secret generic gcs-credentials -n <namespace> --from-file=gcs_key.json=<path_to_key>`
     #   gcsKeyJsonSecretName: ~
 
+    # Per-entity object key prefixes within the backend bucket/container.
     sessions:
       location:
-        bucket: "idv-bucket"
         prefix: "sessions"
     persons:
       location:
-        bucket: "idv-bucket"
         prefix: "persons"
     workflows:
       location:
-        bucket: "idv-bucket"
         prefix: "workflows"
     userFiles:
       location:
-        bucket: "idv-bucket"
         prefix: "files"
     locales:
       location:
-        bucket: "idv-bucket"
         prefix: "localization"
     assets:
       location:
-        bucket: "idv-bucket"
         prefix: "assets"
 
     tempFiles:
       location:
-        bucket: "idv-bucket"
-        prefix: "tmp"
-        folder: "files"
+        prefix: "files/tmp"
 
     banlists:
       location:
-        bucket: "idv-bucket"
         prefix: "banlist"
 
     thumbnails:
       location:
-        bucket: "idv-bucket"
         prefix: "thumbnails"
 
   faceSearch:
@@ -423,8 +731,20 @@ config:
       # type: atlas
       atlas: {}
 
+  # DEPRECATED: This configuration is retained for backward compatibility
+  # and initial migration to the platform database.
+  # Values are migrated only when the corresponding database settings do not exist.
+  # Existing database settings take precedence and are not overwritten.
+  # Manage these settings through the platform administrative settings after initialization.
+  # This configuration will be removed from the Helm chart in the next release.
   mobile: {}
 
+  # DEPRECATED: This configuration is retained for backward compatibility
+  # and initial migration to the platform database.
+  # Values are migrated only when the corresponding database settings do not exist.
+  # Existing database settings take precedence and are not overwritten.
+  # Manage these settings through the platform administrative settings after initialization.
+  # This configuration will be removed from the Helm chart in the next release.
   smtp:
     enabled: false
     host: ""
@@ -433,12 +753,24 @@ config:
     password: ""
     tls: true
 
+  # DEPRECATED: This configuration is retained for backward compatibility
+  # and initial migration to the platform database.
+  # Values are migrated only when the corresponding database settings do not exist.
+  # Existing database settings take precedence and are not overwritten.
+  # Manage these settings through the platform administrative settings after initialization.
+  # This configuration will be removed from the Helm chart in the next release.
   oauth2:
     enabled: false
     accessTokenTtl: 600
     refreshTokenTtl: 604800
     providers: []
 
+  # DEPRECATED: This configuration is retained for backward compatibility
+  # and initial migration to the platform database.
+  # Values are migrated only when the corresponding database settings do not exist.
+  # Existing database settings take precedence and are not overwritten.
+  # Manage these settings through the platform administrative settings after initialization.
+  # This configuration will be removed from the Helm chart in the next release.
   saml:
     enabled: false
     providers: []
@@ -462,6 +794,12 @@ config:
   deviceRegistration:
     enabled: false
 
+  # DEPRECATED: This configuration is retained for backward compatibility
+  # and initial migration to the platform database.
+  # Values are migrated only when the corresponding database settings do not exist.
+  # Existing database settings take precedence and are not overwritten.
+  # Manage these settings through the platform administrative settings after initialization.
+  # This configuration will be removed from the Helm chart in the next release.
   rateLimit:
     enabled: true
     profiles:
@@ -507,6 +845,9 @@ env: []
   #     secretKeyRef:
   #       name: idv
   #       key: IDV_CONFIG__SERVICES__LIVEKIT__APISECRET
+  # DEPRECATED: Environment overrides for this configuration are retained
+  # only for backward compatibility and initial database migration.
+  # They will be removed in the next release.
   # - name: IDV_CONFIG__OAUTH2__PROVIDERS__0__SECRET
   #   valueFrom:
   #     secretKeyRef:
@@ -522,6 +863,9 @@ env: []
   #     secretKeyRef:
   #       name: idv
   #       key: IDV_CONFIG__OAUTH2__PROVIDERS__3__SECRET
+  # DEPRECATED: Environment overrides for this configuration are retained
+  # only for backward compatibility and initial database migration.
+  # They will be removed in the next release.
   # - name: IDV_CONFIG__SAML__PROVIDERS__0__SECURITY__SPPRIVATEKEY
   #   valueFrom:
   #     secretKeyRef:
@@ -552,6 +896,9 @@ env: []
   #     secretKeyRef:
   #       name: idv
   #       key: IDV_CONFIG__TOPICS__AUDIT__URL
+  # DEPRECATED: Environment overrides for this configuration are retained
+  # only for backward compatibility and initial database migration.
+  # They will be removed in the next release.
   # - name: IDV_CONFIG__SMTP__PASSWORD
   #   valueFrom:
   #     secretKeyRef:
@@ -827,8 +1174,8 @@ minio:
   mode: standalone
   persistence:
     size: 10Gi
-  # Buckets are created by the `init-minio-bucket` init container from
-  # `config.storage.*.location.bucket`, not by this subchart.
+  # The bucket is created by the `init-minio-bucket` init container from
+  # `config.storage.s3.bucket`, not by this subchart.
   image:
     repository: bitnamilegacy/minio
   # `mc` client, used by the init container above.

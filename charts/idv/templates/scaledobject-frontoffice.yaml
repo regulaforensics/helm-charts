@@ -1,0 +1,52 @@
+{{- if and .Values.config.services.frontoffice.enabled .Values.frontoffice.autoscaling.enabled .Values.frontoffice.autoscaling.keda.enabled }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "idv.fullname" . }}-frontoffice
+  labels:
+    {{- include "idv.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: {{ include "idv.fullname" . }}-frontoffice
+  minReplicaCount: {{ .Values.frontoffice.autoscaling.keda.minReplicaCount | default 1 }}
+  maxReplicaCount: {{ .Values.frontoffice.autoscaling.keda.maxReplicaCount | default 100 }}
+  cooldownPeriod: {{ .Values.frontoffice.autoscaling.keda.cooldownPeriod | default 300 }}
+  pollingInterval: {{ .Values.frontoffice.autoscaling.keda.pollingInterval | default 30 }}
+  {{- if .Values.frontoffice.autoscaling.keda.fallback }}
+  fallback:
+    failureThreshold: {{ .Values.frontoffice.autoscaling.keda.fallback.failureThreshold | default 3 }}
+    replicas: {{ .Values.frontoffice.autoscaling.keda.fallback.replicas | default 1 }}
+  {{- end }}
+  {{- if .Values.frontoffice.autoscaling.keda.advanced }}
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        {{- if .Values.frontoffice.autoscaling.keda.advanced.scaleUp }}
+        scaleUp:
+          stabilizationWindowSeconds: {{ .Values.frontoffice.autoscaling.keda.advanced.scaleUp.stabilizationWindowSeconds | default 180 }}
+        {{- end }}
+        {{- if .Values.frontoffice.autoscaling.keda.advanced.scaleDown }}
+        scaleDown:
+          stabilizationWindowSeconds: {{ .Values.frontoffice.autoscaling.keda.advanced.scaleDown.stabilizationWindowSeconds | default 300 }}
+        {{- end }}
+  {{- end }}
+  triggers:
+  {{- range .Values.frontoffice.autoscaling.keda.triggers }}
+  - type: {{ .type }}
+    metadata:
+      {{- toYaml .metadata | nindent 6 }}
+    {{- if .name }}
+    name: {{ .name }}
+    {{- end }}
+    {{- if .useCachedMetrics }}
+    useCachedMetrics: {{ .useCachedMetrics }}
+    {{- end }}
+    {{- if .authenticationRef }}
+    authenticationRef:
+      name: {{ .authenticationRef.name }}
+    {{- end }}
+    {{- if .metricType }}
+    metricType: {{ .metricType }}
+    {{- end }}
+  {{- end }}
+{{- end }}

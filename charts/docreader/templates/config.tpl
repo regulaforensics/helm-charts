@@ -29,6 +29,11 @@ sdk:
   requestLimits:
     {{- toYaml .Values.config.sdk.requestLimits | nindent 4 }}
   {{- end }}
+  {{- if .Values.config.sdk.options }}
+
+  options:
+    {{- toYaml .Values.config.sdk.options | nindent 4 }}
+  {{- end }}
 
 service:
   {{- if .Values.config.service.mode }}
@@ -198,4 +203,20 @@ service:
       folder: {{ quote .Values.config.service.sdkErrorLog.location.folder }}
       {{- end }}
     {{- end }}
+  {{- with .Values.config.service.telemetry }}
+
+  telemetry:
+    {{- if .options }}
+    options:
+      {{- toYaml .options | nindent 6 }}
+    {{- end }}
+    {{- if and .remote (hasKey .remote "enabled") }}
+    remote:
+      enabled: {{ .remote.enabled }}
+    {{- end }}
+    {{- if and .local (hasKey .local "enabled") }}
+    local:
+      enabled: {{ .local.enabled }}
+    {{- end }}
+  {{- end }}
 {{- end }}

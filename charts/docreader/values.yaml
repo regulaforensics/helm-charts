@@ -128,6 +128,13 @@ config:
     # optional request size and content limits for API processing
     requestLimits: {}
 
+    # Core (native SDK) options passed verbatim to the core library.
+    # Empty by default; populate to enable.
+    # Example:
+    #   options:
+    #     configPolicy: Update
+    options: {}
+
   service:
     # run core library in separate process
     # Note: this option is available only for Linux and Docker
@@ -288,6 +295,18 @@ config:
         size: 10Gi
         storageClassName: ~
         existingClaim: ~
+
+    # Optional telemetry configuration. The whole section is omitted from the rendered config when empty.
+    # `options` is a free-form map passed verbatim to the service (telemetry config).
+    # `remote.enabled` / `local.enabled` are rendered only when explicitly set.
+    # Example:
+    # telemetry:
+    #   options: {}
+    #   remote:
+    #     enabled: true
+    #   local:
+    #     enabled: false
+    telemetry: {}
 
 env: []
 # Environment variables support both simple key-value pairs and references to secrets/configmaps.

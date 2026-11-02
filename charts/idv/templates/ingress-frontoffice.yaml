@@ -1,0 +1,82 @@
+{{- if and .Values.config.services.frontoffice.enabled .Values.frontoffice.ingress.enabled -}}
+{{- $defaultServiceName := printf "%s-frontoffice" (include "idv.fullname" .) -}}
+{{- $defaultServicePort := .Values.frontoffice.service.port -}}
+{{- $paths := .Values.frontoffice.ingress.paths -}}
+{{- $pathType := .Values.frontoffice.ingress.pathType | default "Prefix" -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "idv.fullname" . }}-frontoffice
+  labels: {{- include "idv.frontoffice.labels" . | nindent 4 }}
+  {{- with .Values.frontoffice.ingress.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.frontoffice.ingress.className }}
+  ingressClassName: {{ .Values.frontoffice.ingress.className }}
+  {{- end }}
+  rules:
+  {{- if .Values.frontoffice.ingress.hosts }}
+    {{- range $host := .Values.frontoffice.ingress.hosts }}
+    - host: {{ tpl $host $ }}
+      http:
+        paths:
+        {{- range $p := $paths }}
+          {{- if kindIs "map" $p }}
+          - path: {{ tpl $p.path $ }}
+            pathType: {{ $p.pathType | default $pathType }}
+            backend:
+              service:
+                {{- if $p.action }}
+                name: {{ $p.action }}
+                port:
+                  name: use-annotation
+                {{- else }}
+                name: {{ $p.service.name | default $defaultServiceName }}
+                port:
+                  number: {{ $p.service.port | default $defaultServicePort }}
+                {{- end }}
+          {{- else }}
+          - path: {{ tpl $p $ }}
+            pathType: {{ $pathType }}
+            backend:
+              service:
+                name: {{ $defaultServiceName }}
+                port:
+                  number: {{ $defaultServicePort }}
+          {{- end }}
+        {{- end }}
+    {{- end -}}
+  {{- else }}
+    - http:
+        paths:
+        {{- range $p := $paths }}
+          {{- if kindIs "map" $p }}
+          - path: {{ tpl $p.path $ }}
+            pathType: {{ $p.pathType | default $pathType }}
+            backend:
+              service:
+                {{- if $p.action }}
+                name: {{ $p.action }}
+                port:
+                  name: use-annotation
+                {{- else }}
+                name: {{ $p.service.name | default $defaultServiceName }}
+                port:
+                  number: {{ $p.service.port | default $defaultServicePort }}
+                {{- end }}
+          {{- else }}
+          - path: {{ tpl $p $ }}
+            pathType: {{ $pathType }}
+            backend:
+              service:
+                name: {{ $defaultServiceName }}
+                port:
+                  number: {{ $defaultServicePort }}
+          {{- end }}
+        {{- end }}
+  {{- end }}
+  {{- with .Values.frontoffice.ingress.tls }}
+  tls: {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end -}}

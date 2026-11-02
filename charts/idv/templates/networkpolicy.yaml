@@ -17,10 +17,26 @@ spec:
     {{- if .Values.networkPolicy.egress }}
     - Egress
     {{- end }}
+  # Component pods are labelled `app.kubernetes.io/instance: <release>-<component>`, so select
+  # every component of this release by name rather than by the bare release name.
   podSelector:
     matchLabels:
       app.kubernetes.io/managed-by: {{ .Release.Service }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+    matchExpressions:
+      - key: app.kubernetes.io/instance
+        operator: In
+        values:
+          - {{ .Release.Name }}-backoffice
+          {{- if .Values.config.services.frontoffice.enabled }}
+          - {{ .Release.Name }}-frontoffice
+          {{- end }}
+          {{- if .Values.config.services.deviceGtw.enabled }}
+          - {{ .Release.Name }}-device-gateway
+          {{- end }}
+          - {{ .Release.Name }}-workflow
+          - {{ .Release.Name }}-scheduler
+          - {{ .Release.Name }}-audit
+          - {{ .Release.Name }}-indexer
   {{- if .Values.networkPolicy.ingress }}
   ingress: {{- toYaml .Values.networkPolicy.ingress | nindent 4 -}}
   {{- end -}}

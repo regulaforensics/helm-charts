@@ -277,6 +277,7 @@ The feature is disabled by default (`configMapName: ""`) and changes nothing in 
 | `config.sdk.rfid.chipVerification.enabled`                | Whether to enable Chip Verification mode                                          | `false`                                                       |
 | `config.sdk.rfid.paSensitiveCodes`                        | RFID PKD PA Sensitive Codes to use                                                | `[]`                                                          |
 | `config.sdk.mDL.sessionVerification.enabled`              | Whether to enable MDL Session Verification mode                                   | `false`                                                       |
+| `config.sdk.options`                                      | Core (native SDK) options passed verbatim to the core library (e.g. `configPolicy`); disabled when unset | `{}`                                      |
 |                                                                                                                                                                                                               |
 | `config.service.mode`                                     | The mode to run core library process (`inProc` | `outOfProc`)                     | `inProc`                                                      |
 | `config.service.webServer.port`                           | Port server binding                                                               | `8080`                                                        |
@@ -381,6 +382,29 @@ The feature is disabled by default (`configMapName: ""`) and changes nothing in 
 | `config.service.sdkErrorLog.persistence.size`             | The size of SDK Error Log data Persistent Volume storage                                | `10Gi`                          |
 | `config.service.sdkErrorLog.persistence.storageClassName` | The SDK Error Log data Persistent Volume storage Class Name                             | `""`                            |
 | `config.service.sdkErrorLog.persistence.existingClaim`    | Name of the existing Persistent Volume Claim                                            | `""`                            |
+
+## Telemetry parameters
+
+The `config.service.telemetry` section is optional. It is omitted from the rendered config unless set, and
+`remote.enabled` / `local.enabled` are rendered only when explicitly specified.
+
+| Parameter                                  | Description                                                                          | Default |
+|--------------------------------------------|--------------------------------------------------------------------------------------|---------|
+| `config.service.telemetry`                 | Telemetry configuration. When empty, the `telemetry` section is not rendered         | `{}`    |
+| `config.service.telemetry.options`         | Free-form map with the telemetry config, passed to the service as is                 | `{}`    |
+| `config.service.telemetry.remote.enabled`  | Whether to enable remote telemetry                                                   | unset   |
+| `config.service.telemetry.local.enabled`   | Whether to enable local telemetry                                                    | unset   |
+
+```yaml
+config:
+  service:
+    telemetry:
+      options: {}
+      remote:
+        enabled: true
+      local:
+        enabled: false
+```
 
 
 > [!NOTE]

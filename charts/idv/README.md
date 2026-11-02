@@ -2,11 +2,14 @@
 
 Regula Identity Verification Platform. On-premise and cloud deployment.
 
-> **Installation and configuration guides live in [`docs/idv/`](../../README.md).**
+> **Installation and configuration guides live in [`docs/idv/`](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/README.md).**
 
 - [About](#about)
 - [Prerequisites](#prerequisites)
 - [Quick Reference](#quick-reference)
+- [Service Base URLs](#service-base-urls)
+- [Public Preview Components](#public-preview-components)
+- [Upgrading to 2.0.0 (IDV 3.10)](#upgrading-to-200-idv-310)
 - [Chart Parameters](#chart-parameters)
 - [In Cluster TLS](#in-cluster-tls-trusted-ca-bundle)
 - [Subchart Parameters](#subchart-parameters)
@@ -16,7 +19,7 @@ Regula Identity Verification Platform. On-premise and cloud deployment.
 ## About
 >
 > This file is the parameter reference (see [Chart Parameters](#chart-parameters) below). If you are installing IDV for the first time, start with
-> the [documentation index](../../README.md) instead — it covers requirements, a demo quickstart, the
+> the [documentation index](https://github.com/regulaforensics/helm-charts/blob/main/docs/idv/README.md) instead — it covers requirements, a demo quickstart, the
 > production installation, integrations, and troubleshooting in order.
 
 | Guide | |
@@ -88,6 +91,146 @@ helm upgrade idv regulaforensics/idv -n regula-idv -f values.yaml
 helm uninstall idv -n regula-idv
 ```
 
+## Service Base URLs
+
+Each public service can advertise its own base URL. When a service-level `baseUrl` is not set
+(`null`), the root `config.baseUrl` is used, so existing installations keep working unchanged.
+
+```yaml
+config:
+  # Fallback for every service that does not define its own baseUrl
+  baseUrl: "https://idv.example.com"
+  services:
+    backoffice:
+      baseUrl: "https://api.example.com"
+    # Public Preview services (see below)
+    frontoffice:
+      enabled: true
+      baseUrl: "https://frontoffice.example.com"
+    deviceGtw:
+      enabled: true
+      baseUrl: "https://device-gateway.example.com"
+```
+
+## Public Preview Components
+
+> [!NOTE]
+> **Public Preview:** the new IDV services, Frontoffice and Device Gateway, are available in Public
+> Preview. Use them for testing and evaluation. Both are disabled by default.
+
+### Frontoffice
+
+Frontoffice is the public, internet-facing entrypoint (`idv frontoffice start`). When
+`config.services.frontoffice.enabled` is `true`, the chart renders its own Deployment and Service
+(`<fullname>-frontoffice`), plus HPA/KEDA and PDB when configured through the `frontoffice.*`
+values. Expose it with the dedicated Ingress (`frontoffice.ingress.enabled`), which is separate from
+the top-level `ingress` that fronts the Backoffice.
+
+```yaml
+config:
+  services:
+    frontoffice:
+      enabled: true
+
+frontoffice:
+  ingress:
+    enabled: true
+    className: nginx
+    hosts:
+      - idv.example.com
+    paths:
+      - /
+    tls:
+      - secretName: idv-example-tls
+        hosts:
+          - idv.example.com
+```
+
+### Device Gateway
+
+The Device Gateway is a separate device-facing component (`idv device-gateway start`). When
+`config.services.deviceGtw.enabled` is `true`, the chart renders its own Deployment and Service
+(`<fullname>-device-gateway`), plus HPA/KEDA and PDB when configured through the `deviceGateway.*`
+values. It can also expose a dedicated Ingress (`deviceGateway.ingress.enabled`) with its own
+hostname, TLS certificate, ingress class, and annotations.
+
+Alternatively, expose it through the top-level `ingress` (custom `paths` with a per-path `service`),
+the top-level `route` (the default rule targets the Backoffice, so add a rule for the Device Gateway
+Service via `route.main.additionalRules`), or your own routing layer.
+
+```yaml
+config:
+  services:
+    deviceGtw:
+      enabled: true
+
+deviceGateway:
+  replicas: 2
+  ingress:
+    enabled: true
+    className: nginx
+    hosts:
+      - device-gateway.example.com
+    paths:
+      - /
+    tls:
+      - secretName: device-gateway-example-tls
+        hosts:
+          - device-gateway.example.com
+```
+
+Probes use `/api/v1/device-gtw/ping` (liveness) and `/api/v1/device-gtw/health` (readiness and startup).
+
+## Upgrading to 2.0.0 (IDV 3.10)
+
+Chart 2.0.0 ships IDV 3.10, which renames the `api` component to `backoffice` and adds the Frontoffice
+and Device Gateway components in Public Preview. Existing values keep working, but read this section
+before upgrading from 1.x.
+
+**Values**
+
+- The top-level `api:` and `config.services.api` keys are still honored. They are merged over the
+  `backoffice` defaults and the install prints a `DEPRECATED` note. Move them to `backoffice:` and
+  `config.services.backoffice` when convenient.
+- `config.services.backoffice.cors`, `config.mobile`, `config.smtp`, `config.oauth2`, `config.saml`
+  and `config.rateLimit` are deprecated. They are only used for the initial migration into the
+  platform database and will be removed from the chart in the next release.
+
+**Resources**
+
+- The Backoffice Deployment, HPA, PDB, ScaledObject, TriggerAuthentication and HTTPRoute are renamed
+  from `<fullname>-api` to `<fullname>-backoffice`. The container is renamed from `api` to
+  `backoffice` and now runs `idv backoffice start`. Update anything that refers to the old names,
+  such as `kubectl logs -c api`, log pipelines, dashboards and alerts.
+- If `backoffice.autoscaling.keda.triggers[].authenticationRef.name` (or the old `api.*` equivalent)
+  points at `<fullname>-api`, change it to `<fullname>-backoffice`.
+- The pre-3.10 Service `<fullname>-api` is kept and points at the Backoffice pods, so existing clients
+  and load balancers keep working. It copies the `backoffice.service` settings, so with
+  `type: LoadBalancer` both Services get a load balancer. Switch clients to `<fullname>-backoffice`,
+  then set `backoffice.legacyApiService.enabled: false`.
+- With `networkPolicy.enabled: true`, the NetworkPolicy now selects the IDV pods. In 1.x its selector
+  matched no pods, so the policy starts being enforced after the upgrade. Review
+  `networkPolicy.ingress` and `networkPolicy.egress` first.
+- The Indexer is now also deployed when only `config.faceSearch.enabled` is `true`.
+
+**Storage**
+
+- The per-entity `config.storage.<entity>.location.bucket` / `location.folder` keys were replaced by
+  a single backend-level `config.storage.s3.bucket` (or `gcs.bucket` / `az.container`) plus
+  `location.prefix` per entity. If your values still use the old per-entity keys, they are still
+  honored and rendered into the app config (the install prints a `DEPRECATED` note), so your data
+  path is preserved. Migrate to the single-bucket layout when convenient; the old keys are removed
+  in IDV 5.0.
+- Azure: the chart now renders `config.storage.az.container`. Set it explicitly before upgrading.
+- The default temp files location changed from prefix `tmp` with folder `files` to prefix `files/tmp`.
+
+> [!NOTE]
+> The Backoffice is briefly unavailable during this upgrade on both the `<fullname>-api` and
+> `<fullname>-backoffice` Service names. Because the component is renamed, the old Deployment is
+> replaced rather than rolled, so there is a short gap (typically about 20 seconds) until the new
+> pods are ready. The exact duration depends on your cluster (image pull, node capacity, probe
+> timings, replica count). Plan the upgrade for a maintenance window.
+
 ## Things to get right before production
 
 - **Override `config.fernetKey`.** The default is a real, working key published in this
@@ -125,8 +268,9 @@ env:
 
 > **Note:** In version 3.10, the `api` component was renamed to `backoffice`. The `api` component name remains supported for backward compatibility in version 3.10, but we recommend updating your configuration to use `backoffice`.
 >
-> During the upgrade, `backoffice` is unavailable for about 20 seconds. Plan the upgrade for a maintenance window.
-> **Public Preview**: The new IDV services—`frontoffice` and `devicegtw`—are currently available in Public Preview. You can use them for testing and evaluation.
+> During the upgrade, `backoffice` is unavailable for about 20 seconds. Plan the upgrade for a maintenance window. See [Upgrading to 2.0.0](#upgrading-to-200-idv-310).
+
+> **Public Preview:** the new IDV services, Frontoffice and Device Gateway, are available in Public Preview. Use them for testing and evaluation. See [Public Preview Components](#public-preview-components).
 
 | Parameter | Description | Default |
 |-----------------------------------------------------------|---------------------------------------------------|-----------------------------------|
@@ -144,10 +288,11 @@ env:
 | `tls.trustedCABundle.caStorePaths`                        | CA-store file(s) overlaid with the bundle (image-version-dependent; update on Python upgrade) | `[botocore, certifi, system]` |
 | `versionSha`                                              | Version SHA tag                                   | `latest`                          |
 | `image.repository`                                        | Image repository                                  | `regulaforensics/idv-coordinator` |
-| `image.pullPolicy`                                        | Image pull policy                                 | `IfNotPresent`                          |
+| `image.pullPolicy`                                        | Image pull policy                                 | `IfNotPresent`                    |
 | `image.tag`                                               | Image tag override                                | `""`                              |
 | `imagePullSecrets`                                        | Secrets for private registries                    | `{}`                              |
 | `licenseSecretName`                                       | Name of existing secret containing regula.license | `null`                            |
+| `api.*`                                                   | **Deprecated (renamed to `backoffice.*` in 3.10).** Still honored; merged over the `backoffice` values and prints a DEPRECATED note on install. | — |
 | `backoffice.replicas`                                            | Number of Backoffice replicas                            | `1`                               |
 | `backoffice.nodeSelector`                                        | Node selector for Backoffice pods                        | `{}`                              |
 | `backoffice.tolerations`                                         | Tolerations for Backoffice pods                          | `[]`                              |
@@ -160,6 +305,7 @@ env:
 | `backoffice.service.port`                                        | Backoffice service port                                  | `80`                              |
 | `backoffice.service.annotations`                                 | Backoffice service annotations                           | `{}`                              |
 | `backoffice.service.loadBalancerSourceRanges`                    | LoadBalancer source ranges for Backoffice                | `[]`                              |
+| `backoffice.legacyApiService.enabled`                            | Also create the pre-3.10 Service `<fullname>-api` pointing at the Backoffice pods (deprecated; keeps old clients working). Set `false` once nothing uses the old name. | `true` |
 | `backoffice.autoscaling.enabled`                                 | Enable Backoffice autoscaling                            | `false`                           |
 | `backoffice.autoscaling.minReplicas`                             | Minimum Backoffice replicas                              | `1`                               |
 | `backoffice.autoscaling.maxReplicas`                             | Maximum Backoffice replicas                              | `100`                             |
@@ -193,107 +339,117 @@ env:
 | `backoffice.probes.readinessProbe.successThreshold`              | Readiness success threshold                       | `1`                               |
 | `backoffice.probes.readinessProbe.failureThreshold`              | Readiness failure threshold                       | `3`                               |
 | `backoffice.probes.startupProbe.enabled`                         | Enable Backoffice startup probe                          | `false`                           |
-| `backoffice.probes.startupProbe.initialDelaySeconds`             | Startup initial delay                             | `20`                              |
+| `backoffice.probes.startupProbe.initialDelaySeconds`             | Startup initial delay                             | `10`                              |
 | `backoffice.probes.startupProbe.timeoutSeconds`                  | Startup timeout                                   | `5`                               |
 | `backoffice.probes.startupProbe.periodSeconds`                   | Startup period                                    | `10`                              |
 | `backoffice.probes.startupProbe.successThreshold`                | Startup success threshold                         | `1`                               |
 | `backoffice.probes.startupProbe.failureThreshold`                | Startup failure threshold                         | `3`                               |
-| `frontoffice.replicas` | Number of Frontoffice replicas | `1` |
-| `frontoffice.nodeSelector` | Node selector for Frontoffice pods | `{}` |
-| `frontoffice.tolerations` | Tolerations for Frontoffice pods | `[]` |
-| `frontoffice.affinity` | Affinity rules for Frontoffice pods | `{}` |
-| `frontoffice.resources` | Resource requests/limits for Frontoffice | `{}` |
-| `frontoffice.topologySpreadConstraints` | Topology spread constraints for Frontoffice | `[]` |
-| `frontoffice.terminationGracePeriodSeconds` | Frontoffice pod termination grace period | `45` |
-| `frontoffice.lifecycle` | Frontoffice pod lifecycle hooks | `{}` |
-| `frontoffice.service.type` | Frontoffice service type | `ClusterIP` |
-| `frontoffice.service.port` | Frontoffice service port | `80` |
-| `frontoffice.service.annotations` | Frontoffice service annotations | `{}` |
-| `frontoffice.service.loadBalancerSourceRanges` | LoadBalancer source ranges for Frontoffice | `[]` |
-| `frontoffice.ingress.enabled` | Enable dedicated Frontoffice Ingress | `false` |
-| `frontoffice.ingress.className` | Ingress class for Frontoffice | `""` |
-| `frontoffice.ingress.annotations` | Frontoffice Ingress annotations | `{}` |
-| `frontoffice.ingress.hosts` | Frontoffice Ingress hostnames | `[]` |
-| `frontoffice.ingress.paths` | Frontoffice Ingress paths | `[]` |
-| `frontoffice.ingress.pathType` | Frontoffice Ingress path type | `Prefix` |
-| `frontoffice.ingress.tls` | Frontoffice Ingress TLS entries | `[]` |
-| `frontoffice.autoscaling.enabled` | Enable Frontoffice autoscaling | `false` |
-| `frontoffice.autoscaling.minReplicas` | Minimum Frontoffice replicas | `1` |
-| `frontoffice.autoscaling.maxReplicas` | Maximum Frontoffice replicas | `100` |
-| `frontoffice.autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization percent for Frontoffice | `80` |
-| `frontoffice.autoscaling.targetMemoryUtilizationPercentage` | Target memory utilization percent for Frontoffice | `80` |
-| `frontoffice.autoscaling.keda.enabled` | Enable KEDA for Frontoffice | `false` |
-| `frontoffice.autoscaling.keda.triggers` | KEDA triggers for Frontoffice | `[]` |
-| `frontoffice.autoscaling.keda.TriggerAuthentication` | KEDA TriggerAuthentication for Frontoffice | `null` |
-| `frontoffice.podDisruptionBudget.enabled` | Enable PDB for Frontoffice | `false` |
-| `frontoffice.podDisruptionBudget.config.maxUnavailable` | PDB maxUnavailable for Frontoffice | `~` |
-| `frontoffice.podDisruptionBudget.config.minAvailable` | PDB minAvailable for Frontoffice | `1` |
-| `frontoffice.probes.livenessProbe.enabled` | Enable Frontoffice liveness probe | `true` |
-| `frontoffice.probes.livenessProbe.initialDelaySeconds` | Liveness initial delay | `5` |
-| `frontoffice.probes.livenessProbe.timeoutSeconds` | Liveness timeout | `5` |
-| `frontoffice.probes.livenessProbe.periodSeconds` | Liveness period | `10` |
-| `frontoffice.probes.livenessProbe.successThreshold` | Liveness success threshold | `1` |
-| `frontoffice.probes.livenessProbe.failureThreshold` | Liveness failure threshold | `3` |
-| `frontoffice.probes.readinessProbe.enabled` | Enable Frontoffice readiness probe | `true` |
-| `frontoffice.probes.readinessProbe.initialDelaySeconds` | Readiness initial delay | `5` |
-| `frontoffice.probes.readinessProbe.timeoutSeconds` | Readiness timeout | `5` |
-| `frontoffice.probes.readinessProbe.periodSeconds` | Readiness period | `10` |
-| `frontoffice.probes.readinessProbe.successThreshold` | Readiness success threshold | `1` |
-| `frontoffice.probes.readinessProbe.failureThreshold` | Readiness failure threshold | `3` |
-| `frontoffice.probes.startupProbe.enabled` | Enable Frontoffice startup probe | `false` |
-| `frontoffice.probes.startupProbe.initialDelaySeconds` | Startup initial delay | `10` |
-| `frontoffice.probes.startupProbe.timeoutSeconds` | Startup timeout | `5` |
-| `frontoffice.probes.startupProbe.periodSeconds` | Startup period | `10` |
-| `frontoffice.probes.startupProbe.successThreshold` | Startup success threshold | `1` |
-| `frontoffice.probes.startupProbe.failureThreshold` | Startup failure threshold | `3` |
-| `deviceGateway.replicas` | Number of Device Gateway replicas | `1` |
-| `deviceGateway.nodeSelector` | Node selector for Device Gateway pods | `{}` |
-| `deviceGateway.tolerations` | Tolerations for Device Gateway pods | `[]` |
-| `deviceGateway.affinity` | Affinity rules for Device Gateway pods | `{}` |
-| `deviceGateway.resources` | Resource requests/limits for Device Gateway | `{}` |
-| `deviceGateway.topologySpreadConstraints` | Topology spread constraints for Device Gateway | `[]` |
-| `deviceGateway.terminationGracePeriodSeconds` | Device Gateway pod termination grace period | `45` |
-| `deviceGateway.lifecycle` | Device Gateway pod lifecycle hooks | `{}` |
-| `deviceGateway.service.type` | Device Gateway service type | `ClusterIP` |
-| `deviceGateway.service.port` | Device Gateway service port | `80` |
-| `deviceGateway.service.annotations` | Device Gateway service annotations | `{}` |
-| `deviceGateway.service.loadBalancerSourceRanges` | LoadBalancer source ranges for Device Gateway | `[]` |
-| `deviceGateway.ingress.enabled` | Enable dedicated Device Gateway Ingress | `false` |
-| `deviceGateway.ingress.className` | Ingress class for Device Gateway | `""` |
-| `deviceGateway.ingress.annotations` | Device Gateway Ingress annotations | `{}` |
-| `deviceGateway.ingress.hosts` | Device Gateway Ingress hostnames | `[]` |
-| `deviceGateway.ingress.paths` | Device Gateway Ingress paths | `[]` |
-| `deviceGateway.ingress.pathType` | Device Gateway Ingress path type | `Prefix` |
-| `deviceGateway.ingress.tls` | Device Gateway Ingress TLS entries | `[]` |
-| `deviceGateway.autoscaling.enabled` | Enable Device Gateway autoscaling | `false` |
-| `deviceGateway.autoscaling.minReplicas` | Minimum Device Gateway replicas | `1` |
-| `deviceGateway.autoscaling.maxReplicas` | Maximum Device Gateway replicas | `100` |
-| `deviceGateway.autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization percent for Device Gateway | `80` |
-| `deviceGateway.autoscaling.targetMemoryUtilizationPercentage` | Target memory utilization percent for Device Gateway | `80` |
-| `deviceGateway.autoscaling.keda.enabled` | Enable KEDA for Device Gateway | `false` |
-| `deviceGateway.autoscaling.keda.triggers` | KEDA triggers for Device Gateway | `[]` |
-| `deviceGateway.autoscaling.keda.TriggerAuthentication` | KEDA TriggerAuthentication for Device Gateway | `null` |
-| `deviceGateway.podDisruptionBudget.enabled` | Enable PDB for Device Gateway | `false` |
-| `deviceGateway.podDisruptionBudget.config.maxUnavailable` | PDB maxUnavailable for Device Gateway | `~` |
-| `deviceGateway.podDisruptionBudget.config.minAvailable` | PDB minAvailable for Device Gateway | `1` |
-| `deviceGateway.probes.livenessProbe.enabled` | Enable Device Gateway liveness probe | `true` |
-| `deviceGateway.probes.livenessProbe.initialDelaySeconds` | Liveness initial delay | `5` |
-| `deviceGateway.probes.livenessProbe.timeoutSeconds` | Liveness timeout | `5` |
-| `deviceGateway.probes.livenessProbe.periodSeconds` | Liveness period | `10` |
-| `deviceGateway.probes.livenessProbe.successThreshold` | Liveness success threshold | `1` |
-| `deviceGateway.probes.livenessProbe.failureThreshold` | Liveness failure threshold | `3` |
-| `deviceGateway.probes.readinessProbe.enabled` | Enable Device Gateway readiness probe | `true` |
-| `deviceGateway.probes.readinessProbe.initialDelaySeconds` | Readiness initial delay | `5` |
-| `deviceGateway.probes.readinessProbe.timeoutSeconds` | Readiness timeout | `5` |
-| `deviceGateway.probes.readinessProbe.periodSeconds` | Readiness period | `10` |
-| `deviceGateway.probes.readinessProbe.successThreshold` | Readiness success threshold | `1` |
-| `deviceGateway.probes.readinessProbe.failureThreshold` | Readiness failure threshold | `3` |
-| `deviceGateway.probes.startupProbe.enabled` | Enable Device Gateway startup probe | `false` |
-| `deviceGateway.probes.startupProbe.initialDelaySeconds` | Startup initial delay | `10` |
-| `deviceGateway.probes.startupProbe.timeoutSeconds` | Startup timeout | `5` |
-| `deviceGateway.probes.startupProbe.periodSeconds` | Startup period | `10` |
-| `deviceGateway.probes.startupProbe.successThreshold` | Startup success threshold | `1` |
-| `deviceGateway.probes.startupProbe.failureThreshold` | Startup failure threshold | `3` |
+| `frontoffice.replicas`                                    | Number of Frontoffice replicas (Public Preview)   | `1`                               |
+| `frontoffice.nodeSelector`                                | Node selector for Frontoffice pods                | `{}`                              |
+| `frontoffice.tolerations`                                 | Tolerations for Frontoffice pods                  | `[]`                              |
+| `frontoffice.affinity`                                    | Affinity rules for Frontoffice pods               | `{}`                              |
+| `frontoffice.resources`                                   | Resource requests/limits for Frontoffice          | `{}`                              |
+| `frontoffice.topologySpreadConstraints`                   | Topology spread constraints for Frontoffice       | `[]`                              |
+| `frontoffice.terminationGracePeriodSeconds`               | Frontoffice pod termination grace period          | `45`                              |
+| `frontoffice.lifecycle`                                   | Frontoffice pod lifecycle hooks                   | `{}`                              |
+| `frontoffice.service.type`                                | Frontoffice service type                          | `ClusterIP`                       |
+| `frontoffice.service.port`                                | Frontoffice service port                          | `80`                              |
+| `frontoffice.service.annotations`                         | Frontoffice service annotations                   | `{}`                              |
+| `frontoffice.service.loadBalancerSourceRanges`            | LoadBalancer source ranges for Frontoffice        | `[]`                              |
+| `frontoffice.ingress.enabled`                             | Enable dedicated Frontoffice Ingress              | `false`                           |
+| `frontoffice.ingress.className`                           | Ingress class for Frontoffice                     | `""`                              |
+| `frontoffice.ingress.annotations`                         | Frontoffice Ingress annotations                   | `{}`                              |
+| `frontoffice.ingress.hosts`                               | Frontoffice Ingress hostnames                     | `[]`                              |
+| `frontoffice.ingress.paths`                               | Frontoffice Ingress paths                         | `[]`                              |
+| `frontoffice.ingress.pathType`                            | Frontoffice Ingress path type                     | `Prefix`                          |
+| `frontoffice.ingress.tls`                                 | Frontoffice Ingress TLS entries                   | `[]`                              |
+| `frontoffice.autoscaling.enabled`                         | Enable Frontoffice autoscaling                    | `false`                           |
+| `frontoffice.autoscaling.minReplicas`                     | Minimum Frontoffice replicas                      | `1`                               |
+| `frontoffice.autoscaling.maxReplicas`                     | Maximum Frontoffice replicas                      | `100`                             |
+| `frontoffice.autoscaling.targetCPUUtilizationPercentage`  | Target CPU utilization percent for Frontoffice    | `80`                              |
+| `frontoffice.autoscaling.targetMemoryUtilizationPercentage` | Target memory utilization percent for Frontoffice | `80`                              |
+| `frontoffice.autoscaling.keda.enabled`                    | Enable KEDA for Frontoffice                       | `false`                           |
+| `frontoffice.autoscaling.keda.minReplicaCount`            | KEDA minimum replica count for Frontoffice        | `1`                               |
+| `frontoffice.autoscaling.keda.maxReplicaCount`            | KEDA maximum replica count for Frontoffice        | `100`                             |
+| `frontoffice.autoscaling.keda.cooldownPeriod`             | KEDA cooldown period (seconds) for Frontoffice    | `300`                             |
+| `frontoffice.autoscaling.keda.pollingInterval`            | KEDA polling interval (seconds) for Frontoffice   | `30`                              |
+| `frontoffice.autoscaling.keda.triggers`                   | KEDA triggers for Frontoffice                     | `[]`                              |
+| `frontoffice.autoscaling.keda.TriggerAuthentication`      | KEDA TriggerAuthentication for Frontoffice        | `null`                            |
+| `frontoffice.autoscaling.keda.fallback`                   | KEDA fallback config when metrics unavailable     | `null`                            |
+| `frontoffice.podDisruptionBudget.enabled`                 | Enable PDB for Frontoffice                        | `false`                           |
+| `frontoffice.podDisruptionBudget.config.maxUnavailable`   | PDB maxUnavailable for Frontoffice                | `~`                               |
+| `frontoffice.podDisruptionBudget.config.minAvailable`     | PDB minAvailable for Frontoffice                  | `1`                               |
+| `frontoffice.probes.livenessProbe.enabled`                | Enable Frontoffice liveness probe                 | `true`                            |
+| `frontoffice.probes.livenessProbe.initialDelaySeconds`    | Liveness initial delay                            | `5`                               |
+| `frontoffice.probes.livenessProbe.timeoutSeconds`         | Liveness timeout                                  | `5`                               |
+| `frontoffice.probes.livenessProbe.periodSeconds`          | Liveness period                                   | `10`                              |
+| `frontoffice.probes.livenessProbe.successThreshold`       | Liveness success threshold                        | `1`                               |
+| `frontoffice.probes.livenessProbe.failureThreshold`       | Liveness failure threshold                        | `3`                               |
+| `frontoffice.probes.readinessProbe.enabled`               | Enable Frontoffice readiness probe                | `true`                            |
+| `frontoffice.probes.readinessProbe.initialDelaySeconds`   | Readiness initial delay                           | `5`                               |
+| `frontoffice.probes.readinessProbe.timeoutSeconds`        | Readiness timeout                                 | `5`                               |
+| `frontoffice.probes.readinessProbe.periodSeconds`         | Readiness period                                  | `10`                              |
+| `frontoffice.probes.readinessProbe.successThreshold`      | Readiness success threshold                       | `1`                               |
+| `frontoffice.probes.readinessProbe.failureThreshold`      | Readiness failure threshold                       | `3`                               |
+| `frontoffice.probes.startupProbe.enabled`                 | Enable Frontoffice startup probe                  | `false`                           |
+| `frontoffice.probes.startupProbe.initialDelaySeconds`     | Startup initial delay                             | `10`                              |
+| `frontoffice.probes.startupProbe.timeoutSeconds`          | Startup timeout                                   | `5`                               |
+| `frontoffice.probes.startupProbe.periodSeconds`           | Startup period                                    | `10`                              |
+| `frontoffice.probes.startupProbe.successThreshold`        | Startup success threshold                         | `1`                               |
+| `frontoffice.probes.startupProbe.failureThreshold`        | Startup failure threshold                         | `3`                               |
+| `deviceGateway.replicas`                                  | Number of Device Gateway replicas (Public Preview) | `1`                               |
+| `deviceGateway.nodeSelector`                              | Node selector for Device Gateway pods             | `{}`                              |
+| `deviceGateway.tolerations`                               | Tolerations for Device Gateway pods               | `[]`                              |
+| `deviceGateway.affinity`                                  | Affinity rules for Device Gateway pods            | `{}`                              |
+| `deviceGateway.resources`                                 | Resource requests/limits for Device Gateway       | `{}`                              |
+| `deviceGateway.topologySpreadConstraints`                 | Topology spread constraints for Device Gateway    | `[]`                              |
+| `deviceGateway.terminationGracePeriodSeconds`             | Device Gateway pod termination grace period       | `45`                              |
+| `deviceGateway.lifecycle`                                 | Device Gateway pod lifecycle hooks                | `{}`                              |
+| `deviceGateway.service.type`                              | Device Gateway service type                       | `ClusterIP`                       |
+| `deviceGateway.service.port`                              | Device Gateway service port                       | `80`                              |
+| `deviceGateway.service.annotations`                       | Device Gateway service annotations                | `{}`                              |
+| `deviceGateway.service.loadBalancerSourceRanges`          | LoadBalancer source ranges for Device Gateway     | `[]`                              |
+| `deviceGateway.ingress.enabled`                           | Enable dedicated Device Gateway Ingress           | `false`                           |
+| `deviceGateway.ingress.className`                         | Ingress class for Device Gateway                  | `""`                              |
+| `deviceGateway.ingress.annotations`                       | Device Gateway Ingress annotations                | `{}`                              |
+| `deviceGateway.ingress.hosts`                             | Device Gateway Ingress hostnames                  | `[]`                              |
+| `deviceGateway.ingress.paths`                             | Device Gateway Ingress paths                      | `[]`                              |
+| `deviceGateway.ingress.pathType`                          | Device Gateway Ingress path type                  | `Prefix`                          |
+| `deviceGateway.ingress.tls`                               | Device Gateway Ingress TLS entries                | `[]`                              |
+| `deviceGateway.autoscaling.enabled`                       | Enable Device Gateway autoscaling                 | `false`                           |
+| `deviceGateway.autoscaling.minReplicas`                   | Minimum Device Gateway replicas                   | `1`                               |
+| `deviceGateway.autoscaling.maxReplicas`                   | Maximum Device Gateway replicas                   | `100`                             |
+| `deviceGateway.autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization percent for Device Gateway | `80`                              |
+| `deviceGateway.autoscaling.targetMemoryUtilizationPercentage` | Target memory utilization percent for Device Gateway | `80`                              |
+| `deviceGateway.autoscaling.keda.enabled`                  | Enable KEDA for Device Gateway                    | `false`                           |
+| `deviceGateway.autoscaling.keda.minReplicaCount`          | KEDA minimum replica count for Device Gateway     | `1`                               |
+| `deviceGateway.autoscaling.keda.maxReplicaCount`          | KEDA maximum replica count for Device Gateway     | `100`                             |
+| `deviceGateway.autoscaling.keda.cooldownPeriod`           | KEDA cooldown period (seconds) for Device Gateway | `300`                             |
+| `deviceGateway.autoscaling.keda.pollingInterval`          | KEDA polling interval (seconds) for Device Gateway | `30`                              |
+| `deviceGateway.autoscaling.keda.triggers`                 | KEDA triggers for Device Gateway                  | `[]`                              |
+| `deviceGateway.autoscaling.keda.TriggerAuthentication`    | KEDA TriggerAuthentication for Device Gateway     | `null`                            |
+| `deviceGateway.autoscaling.keda.fallback`                 | KEDA fallback config when metrics unavailable     | `null`                            |
+| `deviceGateway.podDisruptionBudget.enabled`               | Enable PDB for Device Gateway                     | `false`                           |
+| `deviceGateway.podDisruptionBudget.config.maxUnavailable` | PDB maxUnavailable for Device Gateway             | `~`                               |
+| `deviceGateway.podDisruptionBudget.config.minAvailable`   | PDB minAvailable for Device Gateway               | `1`                               |
+| `deviceGateway.probes.livenessProbe.enabled`              | Enable Device Gateway liveness probe (`/api/v1/device-gtw/ping`) | `true`                            |
+| `deviceGateway.probes.livenessProbe.initialDelaySeconds`  | Liveness initial delay                            | `5`                               |
+| `deviceGateway.probes.livenessProbe.timeoutSeconds`       | Liveness timeout                                  | `5`                               |
+| `deviceGateway.probes.livenessProbe.periodSeconds`        | Liveness period                                   | `10`                              |
+| `deviceGateway.probes.livenessProbe.successThreshold`     | Liveness success threshold                        | `1`                               |
+| `deviceGateway.probes.livenessProbe.failureThreshold`     | Liveness failure threshold                        | `3`                               |
+| `deviceGateway.probes.readinessProbe.enabled`             | Enable Device Gateway readiness probe (`/api/v1/device-gtw/health`) | `true`                            |
+| `deviceGateway.probes.readinessProbe.initialDelaySeconds` | Readiness initial delay                           | `5`                               |
+| `deviceGateway.probes.readinessProbe.timeoutSeconds`      | Readiness timeout                                 | `5`                               |
+| `deviceGateway.probes.readinessProbe.periodSeconds`       | Readiness period                                  | `10`                              |
+| `deviceGateway.probes.readinessProbe.successThreshold`    | Readiness success threshold                       | `1`                               |
+| `deviceGateway.probes.readinessProbe.failureThreshold`    | Readiness failure threshold                       | `3`                               |
+| `deviceGateway.probes.startupProbe.enabled`               | Enable Device Gateway startup probe (`/api/v1/device-gtw/health`) | `false`                           |
+| `deviceGateway.probes.startupProbe.initialDelaySeconds`   | Startup initial delay                             | `10`                              |
+| `deviceGateway.probes.startupProbe.timeoutSeconds`        | Startup timeout                                   | `5`                               |
+| `deviceGateway.probes.startupProbe.periodSeconds`         | Startup period                                    | `10`                              |
+| `deviceGateway.probes.startupProbe.successThreshold`      | Startup success threshold                         | `1`                               |
+| `deviceGateway.probes.startupProbe.failureThreshold`      | Startup failure threshold                         | `3`                               |
 | `workflow.replicas`                                       | Number of Workflow replicas                       | `1`                               |
 | `workflow.nodeSelector`                                   | Node selector for Workflow pods                   | `{}`                              |
 | `workflow.tolerations`                                    | Tolerations for Workflow pods                     | `[]`                              |
@@ -339,50 +495,53 @@ env:
 | `indexer.resources`                                       | Resource requests/limits for Indexer              | `{}`                              |
 | `indexer.topologySpreadConstraints`                       | Topology spread for Indexer                       | `[]`                              |
 | |
-| `config.baseUrl`                                          | Application base URL                              | `""`                              |
-| `config.fernetKey`                                        | Fernet encryption key                             | `""`                              |
+| `config.baseUrl`                                          | Root application base URL; fallback for services without their own `baseUrl` | `"http://idv.example.com"` |
+| `config.fernetKey`                                        | Fernet encryption key. The default is a publicly known key; override it for production | Public default key |
 | `config.tenant`                                           | Tenant name/id used for named broker topics       | `null`                            |
 | `config.identifier`                                       | Instance identifier                               | `null`                            |
 | `config.basicAuth.enabled`                                | Enable username/password sign-in                  | `true`                            |
+| `config.services.backoffice.baseUrl`                             | Backoffice base URL (falls back to `config.baseUrl` when unset) | `null`                     |
 | `config.services.backoffice.port`                                | Internal Backoffice port                                 | `8000`                            |
 | `config.services.backoffice.host`                                | Backoffice bind host                                     | `0.0.0.0`                         |
 | `config.services.backoffice.workers`                             | Backoffice worker count                                  | `auto`                            |
 | `config.services.backoffice.threads`                             | Backoffice threads count                                 | `auto`                            |
 | `config.services.backoffice.keepalive`                           | Keepalive seconds                                 | `120`                             |
 | `config.services.backoffice.timeout`                             | Request timeout seconds                           | `120`                             |
-| `config.services.backoffice.cors.enabled`                        | Enable CORS                                       | `false`                           |
-| `config.services.backoffice.cors.origins`                        | Allowed origins                                   | `"*"`                             |
-| `config.services.backoffice.cors.methods`                        | Allowed methods                                   | `"*"`                             |
-| `config.services.backoffice.cors.headers`                        | Allowed headers                                   | `"*"`                             |
-| `config.services.backoffice.cors.maxAge`                         | CORS max age seconds                              | `0`                               |
+| `config.services.backoffice.cors.enabled`                        | **Deprecated.** Enable CORS                       | `false`                           |
+| `config.services.backoffice.cors.origins`                        | **Deprecated.** Allowed origins                   | `"*"`                             |
+| `config.services.backoffice.cors.methods`                        | **Deprecated.** Allowed methods                   | `"*"`                             |
+| `config.services.backoffice.cors.headers`                        | **Deprecated.** Allowed headers                   | `"*"`                             |
+| `config.services.backoffice.cors.maxAge`                         | **Deprecated.** CORS max age seconds              | `0`                               |
 | `config.services.backoffice.maxBodySize`                         | Max body size                                     | `64Mi`                            |
 | `config.services.backoffice.openapi`                             | Enable OpenAPI docs                               | `false`                           |
-| `config.services.frontoffice.enabled` | Enable Frontoffice service | `false` |
-| `config.services.frontoffice.port` | Internal Frontoffice port | `8001` |
-| `config.services.frontoffice.host` | Frontoffice bind host | `0.0.0.0` |
-| `config.services.frontoffice.workers` | Number of worker processes | `auto` |
-| `config.services.frontoffice.threads` | Number of threads per worker | `auto` |
-| `config.services.frontoffice.keepalive` | Keepalive seconds | `120` |
-| `config.services.frontoffice.timeout` | Request timeout seconds | `30` |
-| `config.services.frontoffice.maxBodySize` | Maximum request body size | `64Mi` |
-| `config.services.frontoffice.openapi` | Enable OpenAPI docs | `true` |
-| `config.services.deviceGtw.enabled` | Enable Device Gateway service | `false` |
-| `config.services.deviceGtw.baseUrl` | Public Device Gateway base URL; falls back to `config.baseUrl` when null | `null` |
-| `config.services.deviceGtw.openapi` | Expose OpenAPI documentation | `false` |
-| `config.services.deviceGtw.port` | Internal Device Gateway port | `8002` |
-| `config.services.deviceGtw.host` | Device Gateway bind host | `0.0.0.0` |
-| `config.services.deviceGtw.workers` | Number of worker processes (`auto` uses available CPUs) | `auto` |
-| `config.services.deviceGtw.threads` | Number of threads per worker (`auto` uses available CPUs) | `auto` |
-| `config.services.deviceGtw.keepalive` | Idle connection timeout in seconds | `120` |
-| `config.services.deviceGtw.timeout` | Request timeout in seconds | `30` |
-| `config.services.deviceGtw.maxBodySize` | Maximum accepted request body size | `64Mi` |
+| `config.services.api.*`                                          | **Deprecated (renamed to `config.services.backoffice.*` in 3.10).** Still honored; merged over the `backoffice` values. | — |
+| `config.services.frontoffice.enabled`                     | Enable Frontoffice service (Public Preview; renders all Frontoffice resources) | `false`                           |
+| `config.services.frontoffice.baseUrl`                     | Frontoffice base URL (falls back to `config.baseUrl` when unset) | `null`                            |
+| `config.services.frontoffice.port`                        | Internal Frontoffice port                         | `8001`                            |
+| `config.services.frontoffice.host`                        | Frontoffice bind host                             | `0.0.0.0`                         |
+| `config.services.frontoffice.workers`                     | Number of worker processes                        | `auto`                            |
+| `config.services.frontoffice.threads`                     | Number of threads per worker                      | `auto`                            |
+| `config.services.frontoffice.keepalive`                   | Keepalive seconds                                 | `120`                             |
+| `config.services.frontoffice.timeout`                     | Request timeout seconds                           | `30`                              |
+| `config.services.frontoffice.maxBodySize`                 | Maximum request body size                         | `64Mi`                            |
+| `config.services.frontoffice.openapi`                     | Enable OpenAPI docs                               | `true`                            |
+| `config.services.deviceGtw.enabled`                       | Enable Device Gateway service (Public Preview; renders all Device Gateway resources) | `false`                           |
+| `config.services.deviceGtw.baseUrl`                       | Device Gateway base URL (falls back to `config.baseUrl` when unset) | `null`                            |
+| `config.services.deviceGtw.port`                          | Internal Device Gateway port                      | `8002`                            |
+| `config.services.deviceGtw.host`                          | Device Gateway bind host                          | `0.0.0.0`                         |
+| `config.services.deviceGtw.workers`                       | Number of worker processes                        | `auto`                            |
+| `config.services.deviceGtw.threads`                       | Number of threads per worker                      | `auto`                            |
+| `config.services.deviceGtw.keepalive`                     | Keepalive seconds                                 | `120`                             |
+| `config.services.deviceGtw.timeout`                       | Request timeout seconds                           | `30`                              |
+| `config.services.deviceGtw.maxBodySize`                   | Maximum request body size                         | `64Mi`                            |
+| `config.services.deviceGtw.openapi`                       | Enable OpenAPI docs                               | `false`                           |
 | `config.services.workflow.workers`                        | Workflow service workers                          | `auto`                            |
 | `config.services.workflow.threads`                        | Workflow service threads per worker               | `32`                              |
 | `config.services.scheduler.jobs.reloadWorkflows.cron`     | Cron for reloading workflows                      | `"*/15 * * * * *"`                |
 | `config.services.scheduler.jobs.expireSessions.cron`      | Cron for expiring sessions                        | `"*/10 * * * * *"`                |
 | `config.services.scheduler.jobs.cleanSessions.cron`       | Cron for cleaning sessions                        | `null`                            |
 | `config.services.scheduler.jobs.cleanSessions.keepFor`    | Keep session data for                             | `null`                            |
-| `config.services.scheduler.jobs.expireDeviceLogs.cron`    | Cron for expiring device logs                     | `"* */5 * * *"`                   |
+| `config.services.scheduler.jobs.expireDeviceLogs.cron`    | Cron for expiring device logs                     | `"*/5 * * * *"`                   |
 | `config.services.scheduler.jobs.expireDeviceLogs.keepFor` | Keep device logs for                              | `"30d"`                           |
 | `config.services.scheduler.jobs.reloadLocales.cron`       | Cron for reloading locales                        | `"*/15 * * * * *"`                |
 | `config.services.scheduler.jobs.cronWorkflow.cron`        | Cron for generic workflow task                    | `"*/30 * * * * *"`                |
@@ -417,34 +576,28 @@ env:
 | `config.sentry.portal.dsn`                                | Sentry DSN (provide via env var for security)     | `null`                            |
 | `config.sentry.portal.environment`                        | Sentry environment name                           | `null`                            |
 | |
-| `config.storage.type`                                     | Storage type (s3|az|gcs)                          | `s3`                              |
+| `config.storage.type`                                     | Storage type (`s3`\|`az`\|`gcs`)                  | `s3`                              |
+| `config.storage.s3.bucket`                                | S3 bucket for all IDV data                        | `idv-bucket`                      |
 | `config.storage.s3.endpoint`                              | S3 endpoint                                       | `""`                              |
 | `config.storage.s3.accessKey`                             | S3 access key                                     | `null`                            |
 | `config.storage.s3.accessSecret`                          | S3 access secret                                  | `null`                            |
 | `config.storage.s3.region`                                | S3 region                                         | `"eu-central-1"`                  |
 | `config.storage.s3.secure`                                | Use HTTPS for S3                                  | `true`                            |
+| `config.storage.az.container`                             | Azure Blob container for all IDV data             | `null`                            |
 | `config.storage.az.storageAccount`                        | Azure storage account                             | `""`                              |
 | `config.storage.az.connectionString`                      | Azure connection string                           | `null`                            |
+| `config.storage.gcs.bucket`                               | GCS bucket for all IDV data                       | `null`                            |
 | `config.storage.gcs.gcsKeyJsonSecretName`                 | Secret name containing Google Service Account key | `null`                            |
-| `config.storage.sessions.location.bucket`                 | Sessions bucket                                   | `idv-bucket`                      |
 | `config.storage.sessions.location.prefix`                 | Sessions prefix                                   | `"sessions"`                      |
-| `config.storage.persons.location.bucket`                  | Persons bucket                                    | `idv-bucket`                      |
 | `config.storage.persons.location.prefix`                  | Persons prefix                                    | `"persons"`                       |
-| `config.storage.workflows.location.bucket`                | Workflows bucket                                  | `idv-bucket`                      |
 | `config.storage.workflows.location.prefix`                | Workflows prefix                                  | `"workflows"`                     |
-| `config.storage.userFiles.location.bucket`                | User files bucket                                 | `idv-bucket`                      |
 | `config.storage.userFiles.location.prefix`                | User files prefix                                 | `"files"`                         |
-| `config.storage.locales.location.bucket`                  | Locales bucket                                    | `idv-bucket`                      |
 | `config.storage.locales.location.prefix`                  | Locales prefix                                    | `"localization"`                  |
-| `config.storage.assets.location.bucket`                   | Assets bucket                                     | `idv-bucket`                      |
 | `config.storage.assets.location.prefix`                   | Assets prefix                                     | `"assets"`                        |
-| `config.storage.tempFiles.location.bucket`                | Temp files bucket                                 | `idv-bucket`                      |
-| `config.storage.tempFiles.location.prefix`                | Temp files prefix                                 | `"tmp"`                           |
-| `config.storage.tempFiles.location.folder`                | Temp files folder                                 | `"files"`                         |
-| `config.storage.banlists.location.bucket`                 | Banlists bucket                                   | `idv-bucket`                      |
+| `config.storage.tempFiles.location.prefix`                | Temp files prefix                                 | `"files/tmp"`                     |
 | `config.storage.banlists.location.prefix`                 | Banlists prefix                                   | `"banlist"`                       |
-| `config.storage.thumbnails.location.bucket`               | Thumbnails bucket                                 | `idv-bucket`                      |
 | `config.storage.thumbnails.location.prefix`               | Thumbnails prefix                                 | `"thumbnails"`                    |
+| `config.storage.<entity>.location.bucket` / `.folder`     | **Deprecated (pre-3.10 per-entity layout).** Still honored when set; removed in IDV 5.0 | — |
 | |
 | `config.faceSearch.enabled`                               | Enable Face search                                | `false`                           |
 | `config.faceSearch.limit`                                 | Max Face search results                           | `1000`                            |
@@ -454,14 +607,14 @@ env:
 | `config.faceSearch.database.opensearch.port`              | OpenSearch port                                   | `9200`                            |
 | `config.faceSearch.database.opensearch.useSsl`            | Use SSL for OpenSearch                            | `false`                           |
 | `config.faceSearch.database.opensearch.verifyCerts`       | Verify OpenSearch certs                           | `false`                           |
-| `config.faceSearch.database.opensearch.username`          | OpenSearch username                               | `admin`                           |
-| `config.faceSearch.database.opensearch.password`          | OpenSearch password                               | `""`                              |
+| `config.faceSearch.database.opensearch.username`          | OpenSearch username                               | `null`                            |
+| `config.faceSearch.database.opensearch.password`          | OpenSearch password                               | `null`                            |
 | `config.faceSearch.database.opensearch.dimension`         | Vector dimension                                  | `512`                             |
 | `config.faceSearch.database.opensearch.method`            | Vector index method                               | `hnsw`                            |
 | `config.faceSearch.database.opensearch.awsAuth.enabled`   | Enable AWS auth for OpenSearch                    | `false`                           |
-| `config.faceSearch.database.opensearch.awsAuth.region`    | AWS auth region                                   | `""`                              |
-| `config.faceSearch.database.opensearch.awsAuth.accessKey` | AWS auth access key                               | `""`                              |
-| `config.faceSearch.database.opensearch.awsAuth.secretKey` | AWS auth secret key                               | `""`                              |
+| `config.faceSearch.database.opensearch.awsAuth.region`    | AWS auth region                                   | `null`                            |
+| `config.faceSearch.database.opensearch.awsAuth.accessKey` | AWS auth access key                               | `null`                            |
+| `config.faceSearch.database.opensearch.awsAuth.secretKey` | AWS auth secret key                               | `null`                            |
 | |
 | `config.textSearch.enabled`                               | Enable Text search                                | `false`                           |
 | `config.textSearch.limit`                                 | Max Text search results                           | `1000`                            |
@@ -470,49 +623,49 @@ env:
 | `config.textSearch.database.opensearch.port`              | OpenSearch port                                   | `9200`                            |
 | `config.textSearch.database.opensearch.useSsl`            | Use SSL for OpenSearch                            | `false`                           |
 | `config.textSearch.database.opensearch.verifyCerts`       | Verify OpenSearch certs                           | `false`                           |
-| `config.textSearch.database.opensearch.username`          | OpenSearch username                               | `admin`                           |
-| `config.textSearch.database.opensearch.password`          | OpenSearch password                               | `""`                              |
+| `config.textSearch.database.opensearch.username`          | OpenSearch username                               | `null`                            |
+| `config.textSearch.database.opensearch.password`          | OpenSearch password                               | `null`                            |
 | `config.textSearch.database.opensearch.awsAuth.enabled`   | Enable AWS auth for OpenSearch                    | `false`                           |
-| `config.textSearch.database.opensearch.awsAuth.region`    | AWS auth region                                   | `""`                              |
-| `config.textSearch.database.opensearch.awsAuth.accessKey` | AWS auth access key                               | `""`                              |
-| `config.textSearch.database.opensearch.awsAuth.secretKey` | AWS auth secret key                               | `""`                              |
+| `config.textSearch.database.opensearch.awsAuth.region`    | AWS auth region                                   | `null`                            |
+| `config.textSearch.database.opensearch.awsAuth.accessKey` | AWS auth access key                               | `null`                            |
+| `config.textSearch.database.opensearch.awsAuth.secretKey` | AWS auth secret key                               | `null`                            |
 | |
-| `config.mobile`                                           | Mobile config                                     | `{}`                              |
+| `config.mobile`                                           | **Deprecated.** Mobile config                     | `{}`                              |
 | |
-| `config.smtp.enabled`                                     | Enable SMTP                                       | `false`                           |
-| `config.smtp.host`                                        | SMTP host                                         | `""`                              |
-| `config.smtp.port`                                        | SMTP port                                         | `587`                             |
-| `config.smtp.tls`                                         | Use TLS for SMTP                                  | `true`                            |
-| `config.smtp.username`                                    | SMTP username                                     | `""`                              |
-| `config.smtp.password`                                    | SMTP password                                     | `""`                              |
+| `config.smtp.enabled`                                     | **Deprecated.** Enable SMTP                       | `false`                           |
+| `config.smtp.host`                                        | **Deprecated.** SMTP host                         | `""`                              |
+| `config.smtp.port`                                        | **Deprecated.** SMTP port                         | `587`                             |
+| `config.smtp.tls`                                         | **Deprecated.** Use TLS for SMTP                  | `true`                            |
+| `config.smtp.username`                                    | **Deprecated.** SMTP username                     | `""`                              |
+| `config.smtp.password`                                    | **Deprecated.** SMTP password                     | `""`                              |
 | |
-| `config.oauth2.enabled`                                   | Enable OAuth2                                     | `false`                           |
-| `config.oauth2.accessTokenTtl`                            | OAuth2 access token TTL                           | `600`                             |
-| `config.oauth2.refreshTokenTtl`                           | OAuth2 refresh token TTL                          | `604800`                          |
-| `config.oauth2.providers`                                 | OAuth2 providers list                             | `[]`                              |
-| `config.oauth2.providers.name`                            | OAuth2 provider name                              | `null`                            |
-| `config.oauth2.providers.clientId`                        | OAuth2 provider clientId                          | `null`                            |
-| `config.oauth2.providers.scope`                           | OAuth2 provider scope                             | `null`                            |
-| `config.oauth2.providers.secret`                          | OAuth2 provider secret                            | `null`                            |
-| `config.oauth2.providers.type`                            | OAuth2 provider type                              | `null`                            |
-| `config.oauth2.providers.defaultRoles`                    | Roles to be assigned to the user                  | `null`                            |
-| `config.oauth2.providers.defaultGroups`                   | Groups to be assigned to the user                 | `null`                            |
-| `config.oauth2.providers.urls.jwk`                        | OAuth2 provider JWK URL                           | `null`                            |
-| `config.oauth2.providers.urls.authorize`                  | OAuth2 provider authorize URL                     | `null`                            |
-| `config.oauth2.providers.urls.token`                      | OAuth2 provider token URL                         | `null`                            |
-| `config.oauth2.providers.urls.refresh`                    | OAuth2 provider refresh URL                       | `null`                            |
-| `config.oauth2.providers.urls.revoke`                     | OAuth2 provider revoke URL                        | `null`                            |
+| `config.oauth2.enabled`                                   | **Deprecated.** Enable OAuth2                     | `false`                           |
+| `config.oauth2.accessTokenTtl`                            | **Deprecated.** OAuth2 access token TTL           | `600`                             |
+| `config.oauth2.refreshTokenTtl`                           | **Deprecated.** OAuth2 refresh token TTL          | `604800`                          |
+| `config.oauth2.providers`                                 | **Deprecated.** OAuth2 providers list             | `[]`                              |
+| `config.oauth2.providers.name`                            | **Deprecated.** OAuth2 provider name              | `null`                            |
+| `config.oauth2.providers.clientId`                        | **Deprecated.** OAuth2 provider clientId          | `null`                            |
+| `config.oauth2.providers.scope`                           | **Deprecated.** OAuth2 provider scope             | `null`                            |
+| `config.oauth2.providers.secret`                          | **Deprecated.** OAuth2 provider secret            | `null`                            |
+| `config.oauth2.providers.type`                            | **Deprecated.** OAuth2 provider type              | `null`                            |
+| `config.oauth2.providers.defaultRoles`                    | **Deprecated.** Roles to be assigned to the user  | `null`                            |
+| `config.oauth2.providers.defaultGroups`                   | **Deprecated.** Groups to be assigned to the user | `null`                            |
+| `config.oauth2.providers.urls.jwk`                        | **Deprecated.** OAuth2 provider JWK URL           | `null`                            |
+| `config.oauth2.providers.urls.authorize`                  | **Deprecated.** OAuth2 provider authorize URL     | `null`                            |
+| `config.oauth2.providers.urls.token`                      | **Deprecated.** OAuth2 provider token URL         | `null`                            |
+| `config.oauth2.providers.urls.refresh`                    | **Deprecated.** OAuth2 provider refresh URL       | `null`                            |
+| `config.oauth2.providers.urls.revoke`                     | **Deprecated.** OAuth2 provider revoke URL        | `null`                            |
 | |
-| `config.saml.enabled`                                     | Enable SAML                                       | `false`                           |
-| `config.saml.providers`                                   | Identity providers list                           | `[]`                              |
-| `config.saml.providers.name`                              | Identity provider name                            | `null`                            |
-| `config.saml.providers.defaultRoles`                      | Roles to be assigned to the user                  | `null`                            |
-| `config.saml.providers.defaultGroups`                     | Groups to be assigned to the user                 | `null`                            |
-| `config.saml.providers.entityId`                          | Identity provider entityId                        | `null`                            |
-| `config.saml.providers.ssoService.url`                    | Identity provider SSO service URL                 | `null`                            |
-| `config.saml.providers.security.x509cert`                 | Identity provider x509 cert (base64 encoded)      | `null`                            |
-| `config.saml.providers.security.spPrivateKey`             | Service provider private key (base64 encoded)     | `null`                            |
-| `config.saml.providers.security.spPublicCert`             | Service provider public cert (base64 encoded)     | `null`                            |
+| `config.saml.enabled`                                     | **Deprecated.** Enable SAML                       | `false`                           |
+| `config.saml.providers`                                   | **Deprecated.** Identity providers list           | `[]`                              |
+| `config.saml.providers.name`                              | **Deprecated.** Identity provider name            | `null`                            |
+| `config.saml.providers.defaultRoles`                      | **Deprecated.** Roles to be assigned to the user  | `null`                            |
+| `config.saml.providers.defaultGroups`                     | **Deprecated.** Groups to be assigned to the user | `null`                            |
+| `config.saml.providers.entityId`                          | **Deprecated.** Identity provider entityId        | `null`                            |
+| `config.saml.providers.ssoService.url`                    | **Deprecated.** Identity provider SSO service URL | `null`                            |
+| `config.saml.providers.security.x509cert`                 | **Deprecated.** Identity provider x509 cert (base64 encoded) | `null`                 |
+| `config.saml.providers.security.spPrivateKey`             | **Deprecated.** Service provider private key (base64 encoded) | `null`                |
+| `config.saml.providers.security.spPublicCert`             | **Deprecated.** Service provider public cert (base64 encoded) | `null`                |
 | |
 | `config.logging.level`                                    | Logging level                                     | `INFO`                            |
 | `config.logging.formatter`                                | Log formatter                                     | `"%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(message)s"` |
@@ -527,13 +680,15 @@ env:
 | `config.metrics.statsd.port`                              | StatsD port                                       | `9125`                            |
 | `config.metrics.statsd.prefix`                            | StatsD metrics prefix                             | `idv`                             |
 | |
-| `config.rateLimit.enabled`                                | Enable built‑in rate limiter                      | `true`                            |
-| `config.rateLimit.profiles.s.window`                      | Window duration for small profile                 | `"1m"`                            |
-| `config.rateLimit.profiles.s.limit`                       | Request limit for small profile                   | `10`                              |
-| `config.rateLimit.profiles.m.window`                      | Window duration for medium profile                | `"1m"`                            |
-| `config.rateLimit.profiles.m.limit`                       | Request limit for medium profile                  | `100`                             |
-| `config.rateLimit.profiles.l.window`                      | Window duration for large profile                 | `"1m"`                            |
-| `config.rateLimit.profiles.l.limit`                       | Request limit for large profile                   | `1000`                            |
+| `config.deviceRegistration.enabled`                       | Enable device registration                        | `false`                           |
+| |
+| `config.rateLimit.enabled`                                | **Deprecated.** Enable built‑in rate limiter      | `true`                            |
+| `config.rateLimit.profiles.s.window`                      | **Deprecated.** Window duration for small profile | `"1m"`                            |
+| `config.rateLimit.profiles.s.limit`                       | **Deprecated.** Request limit for small profile   | `10`                              |
+| `config.rateLimit.profiles.m.window`                      | **Deprecated.** Window duration for medium profile | `"1m"`                           |
+| `config.rateLimit.profiles.m.limit`                       | **Deprecated.** Request limit for medium profile  | `100`                             |
+| `config.rateLimit.profiles.l.window`                      | **Deprecated.** Window duration for large profile | `"1m"`                            |
+| `config.rateLimit.profiles.l.limit`                       | **Deprecated.** Request limit for large profile   | `1000`                            |
 | `config.authorizedKeys.enabled`                           | Enable authorized keys support                    | `false`                           |
 | |
 | `env`                                                     | Environment variables list                        | `[]`                              |
@@ -577,7 +732,7 @@ When IDV connects to its backends (MongoDB, S3/object storage, OpenSearch, Rabbi
 signed by an internal/private CA, IDV must trust that CA. Rather than rebuilding the image, set
 `tls.trustedCABundle.configMapName` to a ConfigMap containing a PEM CA bundle (for example one
 produced by [cert-manager trust-manager](https://cert-manager.io/docs/trust/trust-manager/),
-combining your private CA with the public CAs). For **all five** IDV deployments the chart then:
+combining your private CA with the public CAs). For **all** IDV deployments the chart then:
 
 - mounts the bundle as a directory at `tls.trustedCABundle.mountPath` (use this path for clients
   that take an explicit CA file, e.g. a MongoDB URL `…&tls=true&tlsCAFile=/etc/regula/tls/ca-bundle.pem`);
@@ -611,8 +766,8 @@ seems to be ignored, check these first.
 | `minio.auth.rootUser` | MinIO root user. Also used as the S3 access key                                          | `user`  |
 | `minio.auth.rootPassword` | MinIO root password. Also used as the S3 access secret                               | `password123` |
 | `minio.console.enabled` | Deploy the MinIO web console as a separate Deployment                                  | `false` |
-| `opensearch.enabled`  | Deploy OpenSearch subchart. Overrides all `faceSearch`/`textSearch` OpenSearch settings  | `false` |
-| `statsd.enabled`      | Deploy Prometheus StatsD exporter. Overrides `config.metrics.statsd.host`/`port`         | `false` |
+| `opensearch.enabled`  | Deploy OpenSearch subchart. Overrides all `faceSearch`/`textSearch` OpenSearch settings   | `false` |
+| `statsd.enabled`      | Deploy Prometheus StatsD exporter. Overrides `config.metrics.statsd.host`/`port`          | `false` |
 
 > **Upgrading to 1.16.0:** the MinIO subchart moved to
 > [`bitnami/minio`](https://github.com/bitnami/charts/tree/main/bitnami/minio). Dev/Test only —
@@ -623,12 +778,13 @@ seems to be ignored, check these first.
 
 ## Deployed Components
 
-Backoffice can be exposed through the main ingress/route, while Frontoffice can use its own dedicated Ingress. The remaining services communicate internally through the message broker.
+Backoffice is exposed through the main ingress/route, while Frontoffice and Device Gateway (Public Preview) can use their own dedicated Ingresses. The remaining services communicate internally through the message broker.
 
 | Component | Deployment | Command | Scales out | Deployed when |
 |---|---|---|---|---|
-| Frontoffice | `<release>-idv-frontoffice` | `idv webserver start` | Yes | `config.services.frontoffice.enabled` |
-| Backoffice | `<release>-idv-backoffice` | `idv webserver start` | Yes | Always |
+| Frontoffice (Public Preview) | `<release>-idv-frontoffice` | `idv frontoffice start` | Yes | `config.services.frontoffice.enabled` |
+| Backoffice | `<release>-idv-backoffice` | `idv backoffice start` | Yes | Always |
+| Device Gateway (Public Preview) | `<release>-idv-device-gateway` | `idv device-gateway start` | Yes | `config.services.deviceGtw.enabled` |
 | Workflow | `<release>-idv-workflow` | `idv workflow start` | Yes | Always |
 | Scheduler | `<release>-idv-scheduler` | `idv scheduler start` | No | Always |
 | Audit | `<release>-idv-audit` | `idv audit start` | No | Always |

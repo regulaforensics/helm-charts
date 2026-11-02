@@ -1,4 +1,5 @@
 {{- define "idv.config" -}}
+{{- include "idv.compat" . }}
 mode: cluster
 baseUrl: {{ quote .Values.config.baseUrl }}
 fernetKey: {{ quote .Values.config.fernetKey }}
@@ -9,24 +10,55 @@ basicAuth:
   enabled: {{ .Values.config.basicAuth.enabled }}
 
 services:
-  api:
+  backoffice:
     enabled: true
-    port: {{ .Values.config.services.api.port }}
-    host: {{ quote .Values.config.services.api.host }}
-    workers: {{ .Values.config.services.api.workers }}
-    threads: {{ .Values.config.services.api.threads }}
-    keepalive: {{ .Values.config.services.api.keepalive }}
-    timeout: {{ .Values.config.services.api.timeout }}
+    {{- if .Values.config.services.backoffice.baseUrl }}
+    baseUrl: {{ quote .Values.config.services.backoffice.baseUrl }}
+    {{- end }}
+    port: {{ .Values.config.services.backoffice.port }}
+    host: {{ quote .Values.config.services.backoffice.host }}
+    workers: {{ .Values.config.services.backoffice.workers }}
+    threads: {{ .Values.config.services.backoffice.threads }}
+    keepalive: {{ .Values.config.services.backoffice.keepalive }}
+    timeout: {{ .Values.config.services.backoffice.timeout }}
     cors:
-      enabled: {{ .Values.config.services.api.cors.enabled }}
-      {{- if .Values.config.services.api.cors.enabled }}
-      origins: {{ quote .Values.config.services.api.cors.origins }}
-      methods: {{ quote .Values.config.services.api.cors.methods }}
-      headers: {{ quote .Values.config.services.api.cors.headers }}
-      maxAge: {{ .Values.config.services.api.cors.maxAge }}
+      enabled: {{ .Values.config.services.backoffice.cors.enabled }}
+      {{- if .Values.config.services.backoffice.cors.enabled }}
+      origins: {{ quote .Values.config.services.backoffice.cors.origins }}
+      methods: {{ quote .Values.config.services.backoffice.cors.methods }}
+      headers: {{ quote .Values.config.services.backoffice.cors.headers }}
+      maxAge: {{ .Values.config.services.backoffice.cors.maxAge }}
       {{- end }}
-    maxBodySize: {{ .Values.config.services.api.maxBodySize }}
-    openapi: {{ .Values.config.services.api.openapi }}
+    maxBodySize: {{ .Values.config.services.backoffice.maxBodySize }}
+    openapi: {{ .Values.config.services.backoffice.openapi }}
+
+  frontoffice:
+    enabled: {{ .Values.config.services.frontoffice.enabled }}
+    {{- if .Values.config.services.frontoffice.baseUrl }}
+    baseUrl: {{ quote .Values.config.services.frontoffice.baseUrl }}
+    {{- end }}
+    port: {{ .Values.config.services.frontoffice.port }}
+    host: {{ quote .Values.config.services.frontoffice.host }}
+    workers: {{ .Values.config.services.frontoffice.workers }}
+    threads: {{ .Values.config.services.frontoffice.threads }}
+    keepalive: {{ .Values.config.services.frontoffice.keepalive }}
+    timeout: {{ .Values.config.services.frontoffice.timeout }}
+    maxBodySize: {{ .Values.config.services.frontoffice.maxBodySize }}
+    openapi: {{ .Values.config.services.frontoffice.openapi }}
+
+  deviceGtw:
+    enabled: {{ .Values.config.services.deviceGtw.enabled }}
+    {{- if .Values.config.services.deviceGtw.baseUrl }}
+    baseUrl: {{ quote .Values.config.services.deviceGtw.baseUrl }}
+    {{- end }}
+    port: {{ .Values.config.services.deviceGtw.port }}
+    host: {{ quote .Values.config.services.deviceGtw.host }}
+    workers: {{ .Values.config.services.deviceGtw.workers }}
+    threads: {{ .Values.config.services.deviceGtw.threads }}
+    keepalive: {{ .Values.config.services.deviceGtw.keepalive }}
+    timeout: {{ .Values.config.services.deviceGtw.timeout }}
+    maxBodySize: {{ .Values.config.services.deviceGtw.maxBodySize }}
+    openapi: {{ .Values.config.services.deviceGtw.openapi }}
 
   workflow:
     enabled: true
@@ -145,11 +177,12 @@ topics:
       x-message-ttl: 60000
 
 storage:
+  type: {{ .Values.config.storage.type }}
   {{- if eq .Values.config.storage.type "s3" }}
-  type: s3
   {{- if .Values.minio.enabled }}
   ## `s3` configuration has been overridden by `minio.enabled=true` value
   s3:
+    bucket: {{ quote (include "idv.storage.backendBucket" (dict "ctx" . "value" .Values.config.storage.s3.bucket)) }}
     endpoint: http://{{ template "idv.minio" . }}:9000
     accessKey: {{ quote (.Values.minio.auth.rootUser | default "console") }}
     accessSecret: {{ quote (.Values.minio.auth.rootPassword | default "console123") }}
@@ -157,6 +190,7 @@ storage:
     secure: false
   {{- else }}
   s3:
+    bucket: {{ quote (include "idv.storage.backendBucket" (dict "ctx" . "value" .Values.config.storage.s3.bucket)) }}
     endpoint: {{ .Values.config.storage.s3.endpoint }}
     accessKey: {{ quote .Values.config.storage.s3.accessKey }}
     accessSecret: {{ quote .Values.config.storage.s3.accessSecret }}
@@ -165,110 +199,63 @@ storage:
   {{- end }}
   {{- end }}
   {{- if eq .Values.config.storage.type "az" }}
-  type: az
   az:
+    container: {{ quote .Values.config.storage.az.container }}
     storageAccount: {{ quote .Values.config.storage.az.storageAccount }}
     connectionString: {{ quote .Values.config.storage.az.connectionString }}
   {{- end }}
   {{- if eq .Values.config.storage.type "gcs" }}
-  type: gcs
-  {{- if and (hasKey .Values.config.storage "gcs") .Values.config.storage.gcs.gcsKeyJsonSecretName }}
   gcs:
+    bucket: {{ quote (include "idv.storage.backendBucket" (dict "ctx" . "value" .Values.config.storage.gcs.bucket)) }}
+    {{- if .Values.config.storage.gcs.gcsKeyJsonSecretName }}
     gcsKeyJson: "/etc/credentials/gcs_key.json"
-  {{- end }}
+    {{- end }}
   {{- end }}
 
   sessions:
     location:
-      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
-      bucket: {{ quote .Values.config.storage.sessions.location.bucket }}
       prefix: {{ quote .Values.config.storage.sessions.location.prefix }}
-      {{- end }}
-      {{- if eq .Values.config.storage.type "az" }}
-      prefix: {{ quote .Values.config.storage.sessions.location.prefix }}
-      {{- end }}
+      {{- with include "idv.storage.legacyLocation" (dict "entity" .Values.config.storage.sessions) }}{{ . | nindent 6 }}{{- end }}
 
   persons:
     location:
-      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
-      bucket: {{ quote .Values.config.storage.persons.location.bucket }}
       prefix: {{ quote .Values.config.storage.persons.location.prefix }}
-      {{- end }}
-      {{- if eq .Values.config.storage.type "az" }}
-      prefix: {{ quote .Values.config.storage.persons.location.prefix }}
-      {{- end }}
+      {{- with include "idv.storage.legacyLocation" (dict "entity" .Values.config.storage.persons) }}{{ . | nindent 6 }}{{- end }}
 
   workflows:
     location:
-      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
-      bucket: {{ quote .Values.config.storage.workflows.location.bucket }}
       prefix: {{ quote .Values.config.storage.workflows.location.prefix }}
-      {{- end }}
-      {{- if eq .Values.config.storage.type "az" }}
-      prefix: {{ quote .Values.config.storage.workflows.location.prefix }}
-      {{- end }}
+      {{- with include "idv.storage.legacyLocation" (dict "entity" .Values.config.storage.workflows) }}{{ . | nindent 6 }}{{- end }}
 
   userFiles:
     location:
-      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
-      bucket: {{ quote .Values.config.storage.userFiles.location.bucket }}
       prefix: {{ quote .Values.config.storage.userFiles.location.prefix }}
-      {{- end }}
-      {{- if eq .Values.config.storage.type "az" }}
-      prefix: {{ quote .Values.config.storage.userFiles.location.prefix }}
-      {{- end }}
+      {{- with include "idv.storage.legacyLocation" (dict "entity" .Values.config.storage.userFiles) }}{{ . | nindent 6 }}{{- end }}
 
   locales:
     location:
-      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
-      bucket: {{ quote .Values.config.storage.locales.location.bucket }}
       prefix: {{ quote .Values.config.storage.locales.location.prefix }}
-      {{- end }}
-      {{- if eq .Values.config.storage.type "az" }}
-      prefix: {{ quote .Values.config.storage.locales.location.prefix }}
-      {{- end }}
-  
+      {{- with include "idv.storage.legacyLocation" (dict "entity" .Values.config.storage.locales) }}{{ . | nindent 6 }}{{- end }}
+
   assets:
     location:
-      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
-      bucket: {{ quote .Values.config.storage.assets.location.bucket }}
       prefix: {{ quote .Values.config.storage.assets.location.prefix }}
-      {{- end }}
-      {{- if eq .Values.config.storage.type "az" }}
-      prefix: {{ quote .Values.config.storage.assets.location.prefix }}
-      {{- end }}
+      {{- with include "idv.storage.legacyLocation" (dict "entity" .Values.config.storage.assets) }}{{ . | nindent 6 }}{{- end }}
 
   tempFiles:
     location:
-      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
-      bucket: {{ quote .Values.config.storage.tempFiles.location.bucket }}
       prefix: {{ quote .Values.config.storage.tempFiles.location.prefix }}
-      folder: {{ quote .Values.config.storage.tempFiles.location.folder }}
-      {{- end }}
-      {{- if eq .Values.config.storage.type "az" }}
-      prefix: {{ quote .Values.config.storage.tempFiles.location.prefix }}
-      folder: {{ quote .Values.config.storage.tempFiles.location.folder }}
-      {{- end }}
+      {{- with include "idv.storage.legacyLocation" (dict "entity" .Values.config.storage.tempFiles) }}{{ . | nindent 6 }}{{- end }}
 
   banlists:
     location:
-      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
-      bucket: {{ quote .Values.config.storage.banlists.location.bucket }}
       prefix: {{ quote .Values.config.storage.banlists.location.prefix }}
-      {{- end }}
-      {{- if eq .Values.config.storage.type "az" }}
-      prefix: {{ quote .Values.config.storage.banlists.location.prefix }}
-      {{- end }}
+      {{- with include "idv.storage.legacyLocation" (dict "entity" .Values.config.storage.banlists) }}{{ . | nindent 6 }}{{- end }}
 
   thumbnails:
     location:
-      {{- if or (eq .Values.config.storage.type "s3") (eq .Values.config.storage.type "gcs") }}
-      bucket: {{ quote .Values.config.storage.thumbnails.location.bucket }}
       prefix: {{ quote .Values.config.storage.thumbnails.location.prefix }}
-      {{- end }}
-      {{- if eq .Values.config.storage.type "az" }}
-      prefix: {{ quote .Values.config.storage.thumbnails.location.prefix }}
-      {{- end }}
+      {{- with include "idv.storage.legacyLocation" (dict "entity" .Values.config.storage.thumbnails) }}{{ . | nindent 6 }}{{- end }}
 
 faceSearch:
   enabled: {{ .Values.config.faceSearch.enabled }}
@@ -320,7 +307,7 @@ textSearch:
     type: {{ .Values.config.textSearch.database.type }}
     {{- if eq .Values.config.textSearch.database.type "opensearch" }}
     {{- if .Values.opensearch.enabled }}
-    ## `faceSearch` configuration has been overridden by `opensearch.enabled=true` value
+    ## `textSearch` configuration has been overridden by `opensearch.enabled=true` value
     opensearch:
       host: opensearch
       port: "9200"
@@ -328,7 +315,6 @@ textSearch:
       verifyCerts: false
       username: ""
       password: ""
-      dimension: 512
       awsAuth:
         enabled: false
     {{- else }}

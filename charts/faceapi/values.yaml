@@ -145,11 +145,23 @@ config:
       #         platform:
       #         - ios
 
+    # Core (native SDK) options passed verbatim to the core library.
+    # Empty by default; populate to enable.
+    # Example:
+    #   options:
+    #     configPolicy: Update
+    options: {}
+
   service:
     webServer:
       port: 41101
       workers: 1
       timeout: 30
+
+      # Max request body size in Kb. Default is 102400 (100Mb).
+      # To remove the limit entirely, set to null (e.g. `--set config.service.webServer.maxBodySize=null`
+      # or `maxBodySize: null` in your values file).
+      maxBodySize: 102400
 
       demoApp:
         enabled: true

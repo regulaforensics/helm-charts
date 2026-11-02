@@ -43,7 +43,9 @@ if the encryption key changed.
 
 ## Scaling
 
-Frontoffice, Backoffice, and Workflow support horizontal scaling. Scheduler, Audit, and Indexer are designed to run as single instances and should not be scaled out. Running multiple `scheduler` replicas causes each scheduled job to run multiple times.
+Frontoffice (Public Preview), Backoffice, and Workflow support horizontal scaling. Scheduler, Audit, and Indexer are designed to run as single instances and should not be scaled out. Running multiple `scheduler` replicas causes each scheduled job to run multiple times.
+
+Frontoffice is in Public Preview and is disabled by default. Enable it with `config.services.frontoffice.enabled: true`.
 
 To configure a fixed number of replicas:
 
@@ -98,7 +100,7 @@ workflow:
         replicas: 2
 ```
 
-Scale frontoffice and backoffice based on request volume, and workflow based on queue length. See
+Scale frontoffice (Public Preview) and backoffice based on request volume, and workflow based on queue length. See
 [Integrations](04-integrations.md#metrics).
 
 ## Disruption Budgets
@@ -167,7 +169,7 @@ Search indexes can be rebuilt, so backing them up is optional.
 
 IDV is deployed in your own infrastructure, so you are responsible for setting up disaster recovery. The appropriate approach depends on your recovery objectives and infrastructure. Options range from backup and restore to running IDV across two sites.
 
-For multi-site deployments, replicate stateful components between sites, including database replica sets, object storage, search indexes, and the message broker. Frontoffice, Backoffice, and Workflow support horizontal scaling.
+For multi-site deployments, replicate stateful components between sites, including database replica sets, object storage, search indexes, and the message broker. Frontoffice (Public Preview), Backoffice, and Workflow support horizontal scaling.
 
 The trade-offs between approaches are covered in the [platform disaster recovery guide](https://docs.regulaforensics.com/develop/idv/administration/disaster-recovery/).
 

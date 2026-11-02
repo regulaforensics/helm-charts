@@ -107,7 +107,7 @@ licenseSecretName: idv-license
 
 image:
   # Always pin the version in production.
-  tag: "3.9.1"
+  tag: "3.10.0"
   pullPolicy: IfNotPresent
 
 config:

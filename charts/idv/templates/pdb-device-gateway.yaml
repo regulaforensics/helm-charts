@@ -1,0 +1,17 @@
+{{- if and .Values.config.services.deviceGtw.enabled (or .Values.deviceGateway.podDisruptionBudget.enabled .Values.deviceGateway.autoscaling.enabled) }}
+kind: PodDisruptionBudget
+apiVersion: policy/v1
+metadata:
+  name: {{ include "idv.fullname" . }}-device-gateway
+  labels:
+    {{- include "idv.deviceGateway.labels" . | nindent 4 }}
+  {{- with .Values.deviceGateway.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "idv.deviceGateway.selectorLabels" . | nindent 6 }}
+  {{- toYaml .Values.deviceGateway.podDisruptionBudget.config | nindent 2 }}
+{{- end }}

@@ -1,0 +1,21 @@
+{{- if and .Values.config.services.deviceGtw.enabled .Values.deviceGateway.autoscaling.enabled .Values.deviceGateway.autoscaling.keda.enabled .Values.deviceGateway.autoscaling.keda.TriggerAuthentication }}
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ include "idv.fullname" . }}-device-gateway
+  labels:
+    {{- include "idv.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.deviceGateway.autoscaling.keda.TriggerAuthentication.secretTargetRef }}
+  secretTargetRef:
+  {{- range .Values.deviceGateway.autoscaling.keda.TriggerAuthentication.secretTargetRef }}
+  - parameter: {{ .parameter }}
+    name: {{ .name }}
+    key: {{ .key }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.deviceGateway.autoscaling.keda.TriggerAuthentication.podIdentity }}
+  podIdentity:
+    provider: {{ .Values.deviceGateway.autoscaling.keda.TriggerAuthentication.podIdentity.provider }}
+  {{- end }}
+{{- end }}

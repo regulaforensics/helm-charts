@@ -1,0 +1,26 @@
+{{- if .Values.config.services.frontoffice.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "idv.fullname" . }}-frontoffice
+  labels:
+    {{- include "idv.frontoffice.labels" . | nindent 4 }}
+  {{- with .Values.frontoffice.service.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.frontoffice.service.type }}
+  ports:
+    - port: {{ .Values.frontoffice.service.port }}
+      targetPort: frontoffice
+      protocol: TCP
+      name: frontoffice
+  {{- if .Values.frontoffice.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.frontoffice.service.loadBalancerIP }}
+  {{- end }}
+  {{- if .Values.frontoffice.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges: {{- toYaml .Values.frontoffice.service.loadBalancerSourceRanges | nindent 4 }}
+  {{- end }}
+  selector:
+    {{- include "idv.frontoffice.selectorLabels" . | nindent 4 }}
+{{- end }}

@@ -1,0 +1,26 @@
+{{- if .Values.config.services.deviceGtw.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "idv.fullname" . }}-device-gateway
+  labels:
+    {{- include "idv.deviceGateway.labels" . | nindent 4 }}
+  {{- with .Values.deviceGateway.service.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.deviceGateway.service.type }}
+  ports:
+    - port: {{ .Values.deviceGateway.service.port }}
+      targetPort: device-gateway
+      protocol: TCP
+      name: device-gateway
+  {{- if .Values.deviceGateway.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.deviceGateway.service.loadBalancerIP }}
+  {{- end }}
+  {{- if .Values.deviceGateway.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges: {{- toYaml .Values.deviceGateway.service.loadBalancerSourceRanges | nindent 4 }}
+  {{- end }}
+  selector:
+    {{- include "idv.deviceGateway.selectorLabels" . | nindent 4 }}
+{{- end }}

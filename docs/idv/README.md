@@ -7,7 +7,7 @@ production installation.
 
 | | |
 |---|---|
-| Chart version | `2.0.1` |
+| Chart version | `2.0.2` |
 | Application version | `3.10.0` |
 | Kubernetes | 1.23 or newer |
 | Helm | 3.10 or newer |

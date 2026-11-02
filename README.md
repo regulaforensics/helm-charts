@@ -25,7 +25,7 @@ Unlike a classic Helm repository, an OCI registry has no `helm search repo` equi
 ```
 helm pull oci://public.ecr.aws/regulaforensics/charts/docreader --version 2.22.0
 helm pull oci://public.ecr.aws/regulaforensics/charts/faceapi --version 3.14.0
-helm pull oci://public.ecr.aws/regulaforensics/charts/idv --version 2.0.1
+helm pull oci://public.ecr.aws/regulaforensics/charts/idv --version 2.0.2
 ```
 
 For example, install or upgrade Docreader with:

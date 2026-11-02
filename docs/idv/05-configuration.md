@@ -173,7 +173,7 @@ For production deployments, keep the first four disabled and use externally mana
 
 ## Settings Outside the Chart
 
-IDV Helm chart 2.0.1 supports the settings required for a standard Kubernetes deployment.
+IDV Helm chart 2.0.2 supports the settings required for a standard Kubernetes deployment.
 
 > **Important**
 >

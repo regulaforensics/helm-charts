@@ -23,9 +23,9 @@ The same public charts are also available as OCI artifacts from Amazon ECR Publi
 Unlike a classic Helm repository, an OCI registry has no `helm search repo` equivalent. Specify the chart and exact chart version when pulling or installing it:
 
 ```
-helm pull oci://public.ecr.aws/regulaforensics/charts/docreader --version 2.16.0
-helm pull oci://public.ecr.aws/regulaforensics/charts/faceapi --version 3.7.1
-helm pull oci://public.ecr.aws/regulaforensics/charts/idv --version 1.15.0
+helm pull oci://public.ecr.aws/regulaforensics/charts/docreader --version 2.22.0
+helm pull oci://public.ecr.aws/regulaforensics/charts/faceapi --version 3.14.0
+helm pull oci://public.ecr.aws/regulaforensics/charts/idv --version 2.0.1
 ```
 
 For example, install or upgrade Docreader with:
@@ -33,7 +33,7 @@ For example, install or upgrade Docreader with:
 ```
 helm upgrade --install docreader \
   oci://public.ecr.aws/regulaforensics/charts/docreader \
-  --version 2.16.0
+  --version 2.22.0
 ```
 
 - [Docreader](https://github.com/regulaforensics/helm-charts/tree/main/charts/docreader)

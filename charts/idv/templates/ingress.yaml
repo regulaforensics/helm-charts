@@ -1,6 +1,7 @@
+{{- include "idv.compat" . }}
 {{- if .Values.ingress.enabled -}}
-{{- $defaultServiceName := printf "%s-api" (include "idv.fullname" .) -}}
-{{- $defaultServicePort := .Values.api.service.port -}}
+{{- $defaultServiceName := printf "%s-backoffice" (include "idv.fullname" .) -}}
+{{- $defaultServicePort := .Values.backoffice.service.port -}}
 {{- $paths := .Values.ingress.paths -}}
 {{- $pathType := .Values.ingress.pathType | default "Prefix" -}}
 apiVersion: networking.k8s.io/v1

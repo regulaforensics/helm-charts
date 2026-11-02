@@ -126,6 +126,7 @@ env:
 > **Note:** In version 3.10, the `api` component was renamed to `backoffice`. The `api` component name remains supported for backward compatibility in version 3.10, but we recommend updating your configuration to use `backoffice`.
 >
 > During the upgrade, `backoffice` is unavailable for about 20 seconds. Plan the upgrade for a maintenance window.
+> **Public Preview**: The new IDV services—`frontoffice` and `devicegtw`—are currently available in Public Preview. You can use them for testing and evaluation.
 
 | Parameter | Description | Default |
 |-----------------------------------------------------------|---------------------------------------------------|-----------------------------------|
@@ -245,6 +246,54 @@ env:
 | `frontoffice.probes.startupProbe.periodSeconds` | Startup period | `10` |
 | `frontoffice.probes.startupProbe.successThreshold` | Startup success threshold | `1` |
 | `frontoffice.probes.startupProbe.failureThreshold` | Startup failure threshold | `3` |
+| `deviceGateway.replicas` | Number of Device Gateway replicas | `1` |
+| `deviceGateway.nodeSelector` | Node selector for Device Gateway pods | `{}` |
+| `deviceGateway.tolerations` | Tolerations for Device Gateway pods | `[]` |
+| `deviceGateway.affinity` | Affinity rules for Device Gateway pods | `{}` |
+| `deviceGateway.resources` | Resource requests/limits for Device Gateway | `{}` |
+| `deviceGateway.topologySpreadConstraints` | Topology spread constraints for Device Gateway | `[]` |
+| `deviceGateway.terminationGracePeriodSeconds` | Device Gateway pod termination grace period | `45` |
+| `deviceGateway.lifecycle` | Device Gateway pod lifecycle hooks | `{}` |
+| `deviceGateway.service.type` | Device Gateway service type | `ClusterIP` |
+| `deviceGateway.service.port` | Device Gateway service port | `80` |
+| `deviceGateway.service.annotations` | Device Gateway service annotations | `{}` |
+| `deviceGateway.service.loadBalancerSourceRanges` | LoadBalancer source ranges for Device Gateway | `[]` |
+| `deviceGateway.ingress.enabled` | Enable dedicated Device Gateway Ingress | `false` |
+| `deviceGateway.ingress.className` | Ingress class for Device Gateway | `""` |
+| `deviceGateway.ingress.annotations` | Device Gateway Ingress annotations | `{}` |
+| `deviceGateway.ingress.hosts` | Device Gateway Ingress hostnames | `[]` |
+| `deviceGateway.ingress.paths` | Device Gateway Ingress paths | `[]` |
+| `deviceGateway.ingress.pathType` | Device Gateway Ingress path type | `Prefix` |
+| `deviceGateway.ingress.tls` | Device Gateway Ingress TLS entries | `[]` |
+| `deviceGateway.autoscaling.enabled` | Enable Device Gateway autoscaling | `false` |
+| `deviceGateway.autoscaling.minReplicas` | Minimum Device Gateway replicas | `1` |
+| `deviceGateway.autoscaling.maxReplicas` | Maximum Device Gateway replicas | `100` |
+| `deviceGateway.autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization percent for Device Gateway | `80` |
+| `deviceGateway.autoscaling.targetMemoryUtilizationPercentage` | Target memory utilization percent for Device Gateway | `80` |
+| `deviceGateway.autoscaling.keda.enabled` | Enable KEDA for Device Gateway | `false` |
+| `deviceGateway.autoscaling.keda.triggers` | KEDA triggers for Device Gateway | `[]` |
+| `deviceGateway.autoscaling.keda.TriggerAuthentication` | KEDA TriggerAuthentication for Device Gateway | `null` |
+| `deviceGateway.podDisruptionBudget.enabled` | Enable PDB for Device Gateway | `false` |
+| `deviceGateway.podDisruptionBudget.config.maxUnavailable` | PDB maxUnavailable for Device Gateway | `~` |
+| `deviceGateway.podDisruptionBudget.config.minAvailable` | PDB minAvailable for Device Gateway | `1` |
+| `deviceGateway.probes.livenessProbe.enabled` | Enable Device Gateway liveness probe | `true` |
+| `deviceGateway.probes.livenessProbe.initialDelaySeconds` | Liveness initial delay | `5` |
+| `deviceGateway.probes.livenessProbe.timeoutSeconds` | Liveness timeout | `5` |
+| `deviceGateway.probes.livenessProbe.periodSeconds` | Liveness period | `10` |
+| `deviceGateway.probes.livenessProbe.successThreshold` | Liveness success threshold | `1` |
+| `deviceGateway.probes.livenessProbe.failureThreshold` | Liveness failure threshold | `3` |
+| `deviceGateway.probes.readinessProbe.enabled` | Enable Device Gateway readiness probe | `true` |
+| `deviceGateway.probes.readinessProbe.initialDelaySeconds` | Readiness initial delay | `5` |
+| `deviceGateway.probes.readinessProbe.timeoutSeconds` | Readiness timeout | `5` |
+| `deviceGateway.probes.readinessProbe.periodSeconds` | Readiness period | `10` |
+| `deviceGateway.probes.readinessProbe.successThreshold` | Readiness success threshold | `1` |
+| `deviceGateway.probes.readinessProbe.failureThreshold` | Readiness failure threshold | `3` |
+| `deviceGateway.probes.startupProbe.enabled` | Enable Device Gateway startup probe | `false` |
+| `deviceGateway.probes.startupProbe.initialDelaySeconds` | Startup initial delay | `10` |
+| `deviceGateway.probes.startupProbe.timeoutSeconds` | Startup timeout | `5` |
+| `deviceGateway.probes.startupProbe.periodSeconds` | Startup period | `10` |
+| `deviceGateway.probes.startupProbe.successThreshold` | Startup success threshold | `1` |
+| `deviceGateway.probes.startupProbe.failureThreshold` | Startup failure threshold | `3` |
 | `workflow.replicas`                                       | Number of Workflow replicas                       | `1`                               |
 | `workflow.nodeSelector`                                   | Node selector for Workflow pods                   | `{}`                              |
 | `workflow.tolerations`                                    | Tolerations for Workflow pods                     | `[]`                              |
@@ -317,6 +366,16 @@ env:
 | `config.services.frontoffice.timeout` | Request timeout seconds | `30` |
 | `config.services.frontoffice.maxBodySize` | Maximum request body size | `64Mi` |
 | `config.services.frontoffice.openapi` | Enable OpenAPI docs | `true` |
+| `config.services.deviceGtw.enabled` | Enable Device Gateway service | `false` |
+| `config.services.deviceGtw.baseUrl` | Public Device Gateway base URL; falls back to `config.baseUrl` when null | `null` |
+| `config.services.deviceGtw.openapi` | Expose OpenAPI documentation | `false` |
+| `config.services.deviceGtw.port` | Internal Device Gateway port | `8002` |
+| `config.services.deviceGtw.host` | Device Gateway bind host | `0.0.0.0` |
+| `config.services.deviceGtw.workers` | Number of worker processes (`auto` uses available CPUs) | `auto` |
+| `config.services.deviceGtw.threads` | Number of threads per worker (`auto` uses available CPUs) | `auto` |
+| `config.services.deviceGtw.keepalive` | Idle connection timeout in seconds | `120` |
+| `config.services.deviceGtw.timeout` | Request timeout in seconds | `30` |
+| `config.services.deviceGtw.maxBodySize` | Maximum accepted request body size | `64Mi` |
 | `config.services.workflow.workers`                        | Workflow service workers                          | `auto`                            |
 | `config.services.workflow.threads`                        | Workflow service threads per worker               | `32`                              |
 | `config.services.scheduler.jobs.reloadWorkflows.cron`     | Cron for reloading workflows                      | `"*/15 * * * * *"`                |
@@ -552,8 +611,8 @@ seems to be ignored, check these first.
 | `minio.auth.rootUser` | MinIO root user. Also used as the S3 access key                                          | `user`  |
 | `minio.auth.rootPassword` | MinIO root password. Also used as the S3 access secret                               | `password123` |
 | `minio.console.enabled` | Deploy the MinIO web console as a separate Deployment                                  | `false` |
-| `opensearch.enabled`  | Deploy OpenSearch subchart. Overrides all `faceSearch`/`textSearch` OpenSearch settings   | `false` |
-| `statsd.enabled`      | Deploy Prometheus StatsD exporter. Overrides `config.metrics.statsd.host`/`port`          | `false` |
+| `opensearch.enabled`  | Deploy OpenSearch subchart. Overrides all `faceSearch`/`textSearch` OpenSearch settings  | `false` |
+| `statsd.enabled`      | Deploy Prometheus StatsD exporter. Overrides `config.metrics.statsd.host`/`port`         | `false` |
 
 > **Upgrading to 1.16.0:** the MinIO subchart moved to
 > [`bitnami/minio`](https://github.com/bitnami/charts/tree/main/bitnami/minio). Dev/Test only —

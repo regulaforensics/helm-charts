@@ -10,7 +10,7 @@ on:
         type: string
       helm_version:
         description: version of the helm binary
-        default: v3.21.4
+        default: v3.22.1
         required: false
         type: string
     secrets:
@@ -69,7 +69,7 @@ jobs:
           ct install --namespace test-charts \
             --config "${CT_CONFIGFILE}" \
             --helm-extra-args='--timeout 600s' \
-            --helm-extra-set-args '--set=licenseSecretName=license --set=mongodb.enabled=true --set=rabbitmq.enabled=true --set=minio.enabled=true --set=minio.auth.rootUser=user --set=minio.auth.rootPassword=password123 --set=minio.resources.requests.memory=512Mi --set=api.probes.startupProbe.enabled=true --set=api.probes.startupProbe.failureThreshold=30'
+            --helm-extra-set-args '--set=licenseSecretName=license --set=mongodb.enabled=true --set=rabbitmq.enabled=true --set=minio.enabled=true --set=minio.auth.rootUser=user --set=minio.auth.rootPassword=password123 --set=minio.resources.requests.memory=512Mi --set=backoffice.probes.startupProbe.enabled=true --set=backoffice.probes.startupProbe.failureThreshold=30 --set=config.services.frontoffice.enabled=true --set=frontoffice.probes.startupProbe.enabled=true --set=frontoffice.probes.startupProbe.failureThreshold=30 --set=config.services.deviceGtw.enabled=true --set=deviceGateway.probes.startupProbe.enabled=true --set=deviceGateway.probes.startupProbe.failureThreshold=30'
 
       - name: Dump Kubernetes debug info (on failure)
         if: steps.list-changed.outputs.changed == 'true' && steps.ct-install.outcome != 'success'

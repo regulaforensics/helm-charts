@@ -7,17 +7,17 @@ credentials for each. See [Requirements](01-requirements.md).
 
 Main steps: 
 
-- [Step 1. Create the namespace and license secret](#1-create-a-namespace-and-add-the-license)
-- [Step 2. Generate the encryption key](#2-generate-the-encryption-key)
+- [Step 1. Create the namespace and license secret](#1-create-namespace-and-add-license)
+- [Step 2. Generate the encryption key](#2-generate-encryption-key)
 - [Step 3. Configure credentials](#3-configure-credentials)
-- [Step 4. Configure the address and HTTPS](#4-configure-the-address-and-https)
+- [Step 4. Configure the address and HTTPS](#4-configure-address-and-https)
 - [Step 5. Configure `values.yaml`](#5-configure-valuesyaml)
 - [Step 6. Install IDV](#6-install-idv)
-- [Step 7. Create the first user](#7-create-the-first-user)
+- [Step 7. Create the first user](#7-create-first-user)
 - [Check before going live](#check-before-going-live)
 - [Next](#next-steps)
 
-## 1. Create a Namespace and Add the License
+## 1. Create Namespace and Add License
 
 Create the namespace where IDV will be installed, then add the license. The key inside the Secret must be exactly `regula.license`.
 
@@ -29,7 +29,7 @@ kubectl create secret generic idv-license \
   --from-file=regula.license=./regula.license
 ```
 
-## 2. Generate the Encryption Key
+## 2. Generate Encryption Key
 
 IDV encrypts sensitive database fields with a "Fernet key". Generate one:
 
@@ -69,7 +69,7 @@ Step 5 below connects these values to IDV through the `env:` list. Do not put cr
 
 > Use the **top-level `env:`**, never `config.env:`. They are separate configuration options. See [Configuration](05-configuration.md#env-vs-configenv).
 
-## 4. Configure the Address and HTTPS
+## 4. Configure Address and HTTPS
 
 Pay particular attention to the following requirements:
 
@@ -278,7 +278,7 @@ There is no `indexer` component unless you enable search.
 
 If something goes wrong, see [Troubleshooting](08-troubleshooting.md)
 
-## 7. Create the First User
+## 7. Create First User
 
 A new installation has no accounts and no default password. Nobody can log in until you create
 the first account:

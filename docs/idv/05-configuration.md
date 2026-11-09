@@ -30,7 +30,7 @@ For settings that are also configurable through the Platform UI, UI values take 
 Two things follow from this:
 
 - Anything under `config:` is stored in plain text in the ConfigMap and can be read by anyone with access to the namespace. Do not put credentials there. Use a Secret instead (see below [Passing secrets](#passing-secrets)).
-- **All services share one config.** Otherwise, changing it could sound as though changing a setting through UI restarts all services.
+- **All services share one config.** 
 
 To see the config your cluster is actually using, run the following command:
 
@@ -171,7 +171,7 @@ For production deployments, keep the first four disabled and use externally mana
 
 `statsd` is different because it is a stateless metrics exporter that does not store application data. You can enable it in production.
 
-## Settings Outside the Chart
+## Settings Outside Chart
 
 IDV Helm chart 2.0.2 supports the settings required for a standard Kubernetes deployment.
 
@@ -188,7 +188,6 @@ IDV Helm chart 2.0.2 supports the settings required for a standard Kubernetes de
 | `metrics.alerts`, `metrics.database` | Prometheus alert access and database-backed metrics |
 | `services.audit.backoffice.keepFor` | `backoffice` audit retention, separate from `user.keepFor` |
 | `deviceMessageTracking` | Device message history |
-| `replicationBus`, `services.mongoReplicator`, `services.searchReplicator` | Multi-site replication |
 | Advanced `saml.providers[].security` options | Signature and digest algorithms, assertion signing |
 
 Contact Regula support if your deployment needs one of these. Editing the ConfigMap directly is not a

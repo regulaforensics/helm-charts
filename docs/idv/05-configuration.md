@@ -30,7 +30,7 @@ For settings that are also configurable through the Platform UI, UI values take 
 Two things follow from this:
 
 - Anything under `config:` is stored in plain text in the ConfigMap and can be read by anyone with access to the namespace. Do not put credentials there. Use a Secret instead (see below [Passing secrets](#passing-secrets)).
-- **All services share one config.** Otherwise, changing it could sound as though changing a setting through UI restarts all services.
+- All services share one config.
 
 To see the config your cluster is actually using, run the following command:
 
@@ -107,8 +107,9 @@ kubectl set env deploy/idv-backoffice --list -n regula-idv | grep IDV_CONFIG
 
 ## Storage
 
-Set `config.storage.type` to `s3`, `az`, or `gcs`. Kubernetes deployments use object storage; local
-filesystem storage (`fs`) is not available.
+The Platform supports the following storage types: Amazon S3 and S3-compatible storage (`s3`), Azure Blob Storage (`az`), Google Cloud Storage (`gs`), and local file system (`fs`).
+
+For Kubernetes deployments, use object storage.
 
 Through this chart, IDV stores these kinds of data: `sessions`, `persons`, `workflows`, `userFiles`,
 `locales`, `assets`, `thumbnails`, `tempFiles`, and `banlists`. Each data type requires an existing storage location. They can

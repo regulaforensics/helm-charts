@@ -43,9 +43,9 @@ if the encryption key changed.
 
 ## Scaling
 
-Frontoffice (Public Preview), Backoffice, and Workflow support horizontal scaling. Scheduler, Audit, and Indexer are designed to run as single instances and should not be scaled out. Running multiple `scheduler` replicas causes each scheduled job to run multiple times.
+Backoffice, Frontoffice, Device Gateway, and Workflow support horizontal scaling. Scheduler, Audit, and Indexer are designed to run as single instances and should not be scaled out. Running multiple Scheduler replicas causes each scheduled job to run multiple times.
 
-Frontoffice is in Public Preview and is disabled by default. Enable it with `config.services.frontoffice.enabled: true`.
+Frontoffice is disabled by default. Enable it by setting `config.services.frontoffice.enabled` to `true`. Device Gateway is enabled by default in IDV 4.0.
 
 To configure a fixed number of replicas:
 
@@ -54,6 +54,8 @@ frontoffice:
   replicas: 2
 backoffice:
   replicas: 3
+deviceGateway:
+  replicas: 2
 workflow:
   replicas: 4
 ```
@@ -61,7 +63,7 @@ workflow:
 ### Automatic scaling on CPU and memory
 
 ```yaml
-backoffice:
+deviceGateway:
   autoscaling:
     enabled: true
     minReplicas: 2
@@ -108,7 +110,7 @@ Scale frontoffice (Public Preview) and backoffice based on request volume, and w
 It's recommended to enable `podDisruptionBudget` in production environments to prevent Kubernetes from stopping all replicas of a service during maintenance:
 
 ```yaml
-backoffice:
+deviceGateway:
   podDisruptionBudget:
     enabled: true
     config:
@@ -169,7 +171,7 @@ Search indexes can be rebuilt, so backing them up is optional.
 
 IDV is deployed in your own infrastructure, so you are responsible for setting up disaster recovery. The appropriate approach depends on your recovery objectives and infrastructure. Options range from backup and restore to running IDV across two sites.
 
-For multi-site deployments, replicate stateful components between sites, including database replica sets, object storage, search indexes, and the message broker. Frontoffice (Public Preview), Backoffice, and Workflow support horizontal scaling.
+For multi-site deployments, replicate stateful components between sites, including database replica sets, object storage, search indexes, and the message broker. Frontoffice, Backoffice, Workflow, and Device Gateway support horizontal scaling.
 
 The trade-offs between approaches are covered in the [platform disaster recovery guide](https://docs.regulaforensics.com/develop/idv/administration/disaster-recovery/).
 

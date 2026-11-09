@@ -107,9 +107,7 @@ kubectl set env deploy/idv-backoffice --list -n regula-idv | grep IDV_CONFIG
 
 ## Storage
 
-The Platform supports the following storage types: Amazon S3 and S3-compatible storage (`s3`), Azure Blob Storage (`az`), Google Cloud Storage (`gs`), and local file system (`fs`).
-
-For Kubernetes deployments, use object storage.
+Set `config.storage.type` to `s3`, `az`, or `gs`. Kubernetes deployments use object storage; local filesystem storage (`fs`) is not available.
 
 Through this chart, IDV stores these kinds of data: `sessions`, `persons`, `workflows`, `userFiles`,
 `locales`, `assets`, `thumbnails`, `tempFiles`, and `banlists`. Each data type requires an existing storage location. They can

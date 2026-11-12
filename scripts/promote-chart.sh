@@ -3,12 +3,12 @@
 # Promote a chart from the upstream development repository into this one and open
 # a draft release PR.
 #
-# The upstream chart is copied verbatim; the only fields rewritten are `version`
-# and `appVersion` in Chart.yaml, and `image.pullPolicy` in values.yaml (and its
-# README row), which is set to IfNotPresent because released image tags are
-# immutable while upstream uses Always for its mutable development tags.
-# Everything else (templates, values, README, vendored subcharts) is taken as-is,
-# and files removed upstream are removed here.
+# The upstream chart is copied with release-specific normalization: `version`
+# and `appVersion` in Chart.yaml, `image.pullPolicy` in values.yaml (and its
+# README row), and the README's repository channel instructions. Pull policy is
+# IfNotPresent because released tags are immutable; README commands and marked
+# channel prose use the public repository instead of the private test channel.
+# Everything else is taken as-is, and files removed upstream are removed here.
 #
 # Only charts/<chart>/ is written. Guides under docs/<chart>/ live outside the chart
 # directory and are never touched, so they must be updated by hand when values or
@@ -141,8 +141,8 @@ version_gt() {
   return 1
 }
 
-# Filters (stdin -> stdout) that apply the promoted pull policy. Idempotent, so
-# they can be run on either repository's content.
+# Filters (stdin -> stdout) that apply release-specific normalization. Idempotent,
+# so they can be run on either repository's content for source matching.
 #
 # values.yaml: only `pullPolicy` directly inside the top-level `image:` block;
 # subchart images such as `minio.clientImage` keep their own value.
@@ -154,11 +154,16 @@ normalize_values() {
     { print }'
 }
 
-# README.md: the `image.pullPolicy` table row. When the column is padded wide
-# enough, six spaces after `Always` are consumed so it stays aligned.
+# README.md: replace the marked channel prose, private repository URL and alias,
+# plus the `image.pullPolicy` row. Keep unrelated text (e.g. private CA guidance).
+# Six spaces after `Always` are consumed when available to preserve table alignment.
 normalize_readme() {
   local row='^(\|[[:space:]]*`image\.pullPolicy`[[:space:]]*\|[^|]*\|[[:space:]]*)'
   sed -E \
+    -e '/^<!-- helm:channel:start -->$/,/^<!-- helm:channel:end -->$/c\
+These examples use the public stable charts from https://regulaforensics.github.io/helm-charts.' \
+    -e 's@https://raw\.githubusercontent\.com/regulaforensics/helm-test/refs/heads/helm-chart-releases/helm-releases/@https://regulaforensics.github.io/helm-charts@g' \
+    -e 's/regulaforensics-test/regulaforensics/g' \
     -e "s/${row}\`Always\`      ( +\|)/\1\`${PROMOTED_PULL_POLICY}\`\2/" \
     -e "s/${row}\`Always\`( *\|)/\1\`${PROMOTED_PULL_POLICY}\`\2/"
 }
@@ -172,7 +177,7 @@ image_pull_policy() {
 # Content fingerprint of a chart at a revision, ignoring Chart.yaml. Git blob
 # ids are content hashes, so the same content fingerprints identically in both
 # repositories. values.yaml and README.md are hashed after normalisation, so the
-# pull policy rewrite above does not stop a promoted chart matching its source.
+# pull policy and README channel rewrites do not stop matching a promoted chart.
 fingerprint() {
   local repo="$1" rev="$2" name="$3" meta path rel sha
   local pfx="charts/${name}/"

@@ -4,7 +4,7 @@ Fast and accurate data extraction from identity documents. On-premise and cloud 
 
 ## Add Chart
 
-First of all, you need to add the `regulaforensics` chart:
+These examples use the public stable charts from https://regulaforensics.github.io/helm-charts.
 
 ```console
 helm repo add regulaforensics https://regulaforensics.github.io/helm-charts

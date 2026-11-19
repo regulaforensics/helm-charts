@@ -90,8 +90,7 @@ jobs:
           ct install --namespace test-charts \
             --config "${CT_CONFIGFILE}" \
             --helm-extra-args='--timeout 600s' \
-            --helm-extra-set-args "${HELM_TEST_SET_ARGS}" \
-            --excluded-charts api-gateway
+            --helm-extra-set-args "${HELM_TEST_SET_ARGS}"
 
       - name: Dump Kubernetes debug info (on failure)
         if: steps.list-changed.outputs.changed == 'true' && steps.ct-install.outcome != 'success'

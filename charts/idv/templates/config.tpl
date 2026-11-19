@@ -5,6 +5,7 @@ baseUrl: {{ quote .Values.config.baseUrl }}
 fernetKey: {{ quote .Values.config.fernetKey }}
 identifier: {{ quote .Values.config.identifier }}
 tenant: {{ quote .Values.config.tenant }}
+tenantId: {{ quote .Values.config.tenantId }}
 env: {{ quote .Values.config.env }}
 basicAuth:
   enabled: {{ .Values.config.basicAuth.enabled }}

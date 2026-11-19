@@ -51,13 +51,14 @@ jobs:
           # Persisted for the branch push performed by the script.
           token: ${{ secrets.REGULA_BOT_TOKEN }}
 
-      - name: Set up Helm
+      - name: Set up Helm 4
         uses: azure/setup-helm@2f5e7bc67f1f9972ab16657bb795f36d8f04de0e # v5
         with:
           # Keep in step with the helm_version default in lint-test.yml. The
           # promotion pre-flight (lint/template) only has value if it renders
           # the chart the same way CI will.
-          version: v3.22.1
+          version: v4.3.1
+          checksum-policy: required
 
       - name: Configure Git
         run: |

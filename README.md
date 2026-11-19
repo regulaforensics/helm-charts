@@ -42,3 +42,7 @@ helm upgrade --install docreader \
 
 <!-- Keep full URL links to repo files because this README syncs from main to gh-pages.  -->
 Chart documentation is available at [docs.regulaforensics.com](https://docs.regulaforensics.com).
+
+## Chart CI
+
+Pull requests use Helm 4.3.1 and Chart Testing to lint changed charts and install them in kind. Public release PRs test the image selected by the chart's `appVersion`, not the `develop` image used by `helm-test`. CI leaves Device Gateway off until a promoted IDV image supports `idv device-gateway start`.

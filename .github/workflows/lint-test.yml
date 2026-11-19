@@ -10,7 +10,7 @@ on:
         type: string
       helm_version:
         description: version of the helm binary
-        default: v3.22.1
+        default: v4.3.1
         required: false
         type: string
     secrets:
@@ -19,6 +19,23 @@ on:
 
 env:
   CT_CONFIGFILE: ${{ inputs.ct_configfile }}
+  HELM_TEST_SET_ARGS: >-
+    --set=licenseSecretName=license
+    --set=postgresql.enabled=true
+    --set=config.service.sessionApi.enabled=true
+    --set=milvus.enabled=true
+    --set=config.service.search.enabled=true
+    --set=mongodb.enabled=true
+    --set=rabbitmq.enabled=true
+    --set=minio.enabled=true
+    --set=minio.auth.rootUser=user
+    --set=minio.auth.rootPassword=password123
+    --set=minio.resources.requests.memory=512Mi
+    --set=backoffice.probes.startupProbe.enabled=true
+    --set=backoffice.probes.startupProbe.failureThreshold=30
+    --set=config.services.frontoffice.enabled=true
+    --set=frontoffice.probes.startupProbe.enabled=true
+    --set=frontoffice.probes.startupProbe.failureThreshold=30
 
 jobs:
   lint-test:
@@ -29,10 +46,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Helm
+      - name: Set up Helm 4
         uses: azure/setup-helm@2f5e7bc67f1f9972ab16657bb795f36d8f04de0e # v5
         with:
           version: ${{ inputs.helm_version }}
+          checksum-policy: required
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
@@ -69,7 +87,7 @@ jobs:
           ct install --namespace test-charts \
             --config "${CT_CONFIGFILE}" \
             --helm-extra-args='--timeout 600s' \
-            --helm-extra-set-args '--set=licenseSecretName=license --set=mongodb.enabled=true --set=rabbitmq.enabled=true --set=minio.enabled=true --set=minio.auth.rootUser=user --set=minio.auth.rootPassword=password123 --set=minio.resources.requests.memory=512Mi --set=backoffice.probes.startupProbe.enabled=true --set=backoffice.probes.startupProbe.failureThreshold=30 --set=config.services.frontoffice.enabled=true --set=frontoffice.probes.startupProbe.enabled=true --set=frontoffice.probes.startupProbe.failureThreshold=30 --set=config.services.deviceGtw.enabled=true --set=deviceGateway.probes.startupProbe.enabled=true --set=deviceGateway.probes.startupProbe.failureThreshold=30'
+            --helm-extra-set-args "${HELM_TEST_SET_ARGS}"
 
       - name: Dump Kubernetes debug info (on failure)
         if: steps.list-changed.outputs.changed == 'true' && steps.ct-install.outcome != 'success'
@@ -113,13 +131,13 @@ jobs:
           kubectl -n $ns get all -o yaml > /tmp/debug.log 2>&1 || true
 
       - name: Upload debug artifacts
-        if: failure()
+        if: failure() || steps.ct-install.outcome == 'failure'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: kubernetes-debug-logs-${{ github.run_id }}
           path: /tmp/debug.log
           retention-days: 7
 
-      - name: Fail if ct install failed
+      - name: Fail if chart install failed
         if: steps.list-changed.outputs.changed == 'true' && steps.ct-install.outcome != 'success'
         run: exit 1

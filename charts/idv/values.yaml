@@ -467,6 +467,7 @@ config:
   baseUrl: "http://idv.example.com"
   fernetKey: "tton53xJw0QV6vfaOTNRP_YGnPc76ZJkXFdVFZSnaKQ="
   tenant: null
+  tenantId: null
   env: null
   identifier: null
   basicAuth:

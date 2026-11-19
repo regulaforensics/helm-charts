@@ -9,7 +9,7 @@ Regula Identity Verification Platform. On-premise and cloud deployment.
 - [Quick Reference](#quick-reference)
 - [Service Base URLs](#service-base-urls)
 - [Public Preview Components](#public-preview-components)
-- [Upgrading to 2.0.0 (IDV 3.10)](#upgrading-to-200-idv-310)
+- [Upgrading from 1.x to 2.x (IDV 3.10)](#upgrading-from-1x-to-2x-idv-310)
 - [Chart Parameters](#chart-parameters)
 - [In Cluster TLS](#in-cluster-tls-trusted-ca-bundle)
 - [Subchart Parameters](#subchart-parameters)
@@ -41,6 +41,8 @@ Regula Identity Verification Platform. On-premise and cloud deployment.
   into a Secret
 
 ## Quick Reference
+
+These examples use the public stable charts from https://regulaforensics.github.io/helm-charts.
 
 ```console
 helm repo add regulaforensics https://regulaforensics.github.io/helm-charts
@@ -181,11 +183,11 @@ deviceGateway:
 
 Probes use `/api/v1/device-gtw/ping` (liveness) and `/api/v1/device-gtw/health` (readiness and startup).
 
-## Upgrading to 2.0.0 (IDV 3.10)
+## Upgrading from 1.x to 2.x (IDV 3.10)
 
-Chart 2.0.0 ships IDV 3.10, which renames the `api` component to `backoffice` and adds the Frontoffice
-and Device Gateway components in Public Preview. Existing values keep working, but read this section
-before upgrading from 1.x.
+The 2.x chart line starts with IDV 3.10, which renames the `api` component to `backoffice` and adds
+the Frontoffice and Device Gateway components in Public Preview. Existing values keep working, but
+read this section before upgrading from 1.x.
 
 **Values**
 
@@ -268,7 +270,7 @@ env:
 
 > **Note:** In version 3.10, the `api` component was renamed to `backoffice`. The `api` component name remains supported for backward compatibility in version 3.10, but we recommend updating your configuration to use `backoffice`.
 >
-> During the upgrade, `backoffice` is unavailable for about 20 seconds. Plan the upgrade for a maintenance window. See [Upgrading to 2.0.0](#upgrading-to-200-idv-310).
+> During the upgrade, `backoffice` is unavailable for about 20 seconds. Plan the upgrade for a maintenance window. See [Upgrading from 1.x to 2.x](#upgrading-from-1x-to-2x-idv-310).
 
 > **Public Preview:** the new IDV services, Frontoffice and Device Gateway, are available in Public Preview. Use them for testing and evaluation. See [Public Preview Components](#public-preview-components).
 
@@ -497,7 +499,8 @@ env:
 | |
 | `config.baseUrl`                                          | Root application base URL; fallback for services without their own `baseUrl` | `"http://idv.example.com"` |
 | `config.fernetKey`                                        | Fernet encryption key. The default is a publicly known key; override it for production | Public default key |
-| `config.tenant`                                           | Tenant name/id used for named broker topics       | `null`                            |
+| `config.tenant`                                           | Tenant name; also prefixes broker topic names     | `null`                            |
+| `config.tenantId`                                         | Optional tenant identifier (string)               | `null`                            |
 | `config.identifier`                                       | Instance identifier                               | `null`                            |
 | `config.basicAuth.enabled`                                | Enable username/password sign-in                  | `true`                            |
 | `config.services.backoffice.baseUrl`                             | Backoffice base URL (falls back to `config.baseUrl` when unset) | `null`                     |

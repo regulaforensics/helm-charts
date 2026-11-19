@@ -19,8 +19,6 @@ on:
 
 env:
   CT_CONFIGFILE: ${{ inputs.ct_configfile }}
-  # Re-enable Device Gateway and its startup probe when the promoted IDV image
-  # supports `idv device-gateway start`. helm-test exercises it against develop.
   HELM_TEST_SET_ARGS: >-
     --set=licenseSecretName=license
     --set=postgresql.enabled=true
@@ -38,7 +36,6 @@ env:
     --set=config.services.frontoffice.enabled=true
     --set=frontoffice.probes.startupProbe.enabled=true
     --set=frontoffice.probes.startupProbe.failureThreshold=30
-    --set=config.services.deviceGtw.enabled=false
 
 jobs:
   lint-test:

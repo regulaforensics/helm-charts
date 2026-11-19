@@ -23,9 +23,9 @@ The same public charts are also available as OCI artifacts from Amazon ECR Publi
 Unlike a classic Helm repository, an OCI registry has no `helm search repo` equivalent. Specify the chart version (not the application version) when pulling or installing it:
 
 ```
-helm pull oci://public.ecr.aws/regulaforensics/charts/docreader --version 2.23.0
+helm pull oci://public.ecr.aws/regulaforensics/charts/docreader --version 2.24.0
 helm pull oci://public.ecr.aws/regulaforensics/charts/faceapi --version 3.14.0
-helm pull oci://public.ecr.aws/regulaforensics/charts/idv --version 2.0.2
+helm pull oci://public.ecr.aws/regulaforensics/charts/idv --version 2.0.5
 ```
 
 For example, install or upgrade Docreader with:
@@ -33,7 +33,7 @@ For example, install or upgrade Docreader with:
 ```
 helm upgrade --install docreader \
   oci://public.ecr.aws/regulaforensics/charts/docreader \
-  --version 2.23.0
+  --version 2.24.0
 ```
 
 - [Docreader](https://github.com/regulaforensics/helm-charts/tree/main/charts/docreader)
@@ -45,4 +45,4 @@ Chart documentation is available at [docs.regulaforensics.com](https://docs.regu
 
 ## Chart CI
 
-Pull requests use Helm 4.3.1 and Chart Testing to lint changed charts and install them in kind. Public release PRs test the image selected by the chart's `appVersion`, not the `develop` image used by `helm-test`. CI leaves Device Gateway off until a promoted IDV image supports `idv device-gateway start`.
+Pull requests use Helm 4.3.1 and Chart Testing to lint changed charts and install them in kind. Public release PRs test the image selected by the chart's `appVersion`, not the `develop` image used by `helm-test`. Public CI uses the chart default (Device Gateway off); restore Device Gateway and its startup probe to the install test when a promoted image supports `idv device-gateway start`.
